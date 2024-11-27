@@ -6,7 +6,7 @@ import DisplayAmount from "@components/DisplayAmount";
 import TokenInput from "@components/Input/TokenInput";
 import { erc20Abi, zeroAddress } from "viem";
 import { useEffect, useState } from "react";
-import { ContractUrl, formatBigInt, formatDuration, shortenAddress } from "@utils";
+import { ContractUrl, formatBigInt, formatDuration, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { Address } from "viem";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -160,7 +160,7 @@ export default function PositionChallenge() {
 				},
 				{
 					title: "Price: ",
-					value: formatBigInt(BigInt(position.price), 36 - position.collateralDecimals) + " ZCHF",
+					value: formatBigInt(BigInt(position.price), 36 - position.collateralDecimals) + ` ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: "Transaction:",
@@ -215,7 +215,7 @@ export default function PositionChallenge() {
 								<DisplayLabel label="Starting Price" />
 								<DisplayAmount
 									amount={BigInt(position.price)}
-									currency={"ZCHF"}
+									currency={TOKEN_SYMBOL}
 									digits={36 - position.collateralDecimals}
 									address={ADDRESS[chainId].frankenCoin}
 									/* subAmount={maxProceeds}
@@ -228,7 +228,7 @@ export default function PositionChallenge() {
 								<DisplayLabel label="Potential Reward" />
 								<DisplayAmount
 									amount={(BigInt(position.price) * amount * 2n) / 100n}
-									currency={"ZCHF"}
+									currency={TOKEN_SYMBOL}
 									digits={36}
 									address={ADDRESS[chainId].frankenCoin}
 									className="mt-2"
@@ -286,7 +286,7 @@ export default function PositionChallenge() {
 							<ol className="flex flex-col gap-y-2 pl-6 [&>li]:list-decimal">
 								<li>
 									During the fixed price phase, anyone can buy the {position.collateralSymbol} you provided at the
-									liquidation price of {formatBigInt(BigInt(position.price), 36 - position.collateralDecimals)} ZCHF each.
+									liquidation price of {formatBigInt(BigInt(position.price), 36 - position.collateralDecimals)} {TOKEN_SYMBOL} each.
 								</li>
 								<li>
 									If there are any {position.collateralSymbol} left after the fixed price phase ends, you get the
