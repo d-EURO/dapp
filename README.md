@@ -15,8 +15,8 @@
 
 ```Bash
 # clone and install deps.
-git clone https://github.com/Frankencoin-ZCHF/frankencoin-dapp.git
-cd frankencoin-dapp
+git clone https://github.com/d-EURO/dapp
+cd dapp
 yarn install --frozen-lockfile
 
 # deploy
@@ -30,10 +30,10 @@ yarn run dev
 ### Copy .env.example and adjust your environment
 
 ```TS
-NEXT_PUBLIC_LANDINGPAGE_URL=https://frankencoin.com
-NEXT_PUBLIC_APP_URL=https://app.frankencoin.com
-NEXT_PUBLIC_API_URL=https://api.frankencoin.com
-NEXT_PUBLIC_PONDER_URL=https://ponder.frankencoin.com
+NEXT_PUBLIC_LANDINGPAGE_URL=https://deuro.com/
+NEXT_PUBLIC_APP_URL=https://app.deuro.com/
+NEXT_PUBLIC_API_URL=https://api.deuro.com
+NEXT_PUBLIC_PONDER_URL=https://ponder.deuro.com
 NEXT_PUBLIC_CHAIN_NAME=mainnet
 NEXT_PUBLIC_WAGMI_ID=...
 NEXT_PUBLIC_RPC_URL_MAINNET=...
@@ -45,10 +45,10 @@ NEXT_PUBLIC_RPC_URL_POLYGON=...
 ```TS
 // Config
 export const CONFIG: ConfigEnv = {
-	landing: process.env.NEXT_PUBLIC_LANDINGPAGE_URL || "https://frankencoin.com",
-	app: process.env.NEXT_PUBLIC_APP_URL || "https://app.frankencoin.com",
-	api: process.env.NEXT_PUBLIC_API_URL || "https://api.frankencoin.com",
-	ponder: process.env.NEXT_PUBLIC_PONDER_URL || "https://ponder.frankencoin.com",
+	landing: process.env.NEXT_PUBLIC_LANDINGPAGE_URL || "https://deuro.com",
+	app: process.env.NEXT_PUBLIC_APP_URL || "https://app.deuro.com",
+	api: process.env.NEXT_PUBLIC_API_URL || "https://api.deuro.com",
+	ponder: process.env.NEXT_PUBLIC_PONDER_URL || "https://ponder.deuro.com",
 	chain: process.env.NEXT_PUBLIC_CHAIN_NAME == "polygon" ? polygon : mainnet,
 	wagmiId: process.env.NEXT_PUBLIC_WAGMI_ID || "...",
 	rpc:

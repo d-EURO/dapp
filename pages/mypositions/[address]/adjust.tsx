@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { formatUnits, maxUint256, erc20Abi, Address, parseUnits } from "viem";
 import Head from "next/head";
 import TokenInput from "@components/Input/TokenInput";
-import { abs, formatBigInt, formatCurrency, shortenAddress } from "@utils";
+import { abs, formatBigInt, formatCurrency, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import Button from "@components/Button";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -153,11 +153,11 @@ export default function PositionAdjust() {
 		if (isCooldown) {
 			return `This position is ${position.cooldown > 1e30 ? "closed" : "in cooldown, please wait"}`;
 		} else if (amount - BigInt(position.minted) > maxTotalLimit) {
-			return `This position is limited to ${formatCurrency(formatUnits(maxTotalLimit, 18), 2, 2)} ZCHF`;
+			return `This position is limited to ${formatCurrency(formatUnits(maxTotalLimit, 18), 2, 2)} ${TOKEN_SYMBOL}`;
 		} else if (-paidOutAmount() > userFrankBalance) {
-			return "Insufficient ZCHF in wallet";
+			return `Insufficient ${TOKEN_SYMBOL} in wallet`;
 		} else if (liqPrice * collateralAmount < amount * 10n ** 18n) {
-			return `Can mint at most ${formatUnits((collateralAmount * liqPrice) / 10n ** 36n, 0)} ZCHF given price and collateral.`;
+			return `Can mint at most ${formatUnits((collateralAmount * liqPrice) / 10n ** 36n, 0)} ${TOKEN_SYMBOL} given price and collateral.`;
 		} else if (BigInt(position.price) * collateralAmount < amount * 10n ** 18n) {
 			return "Amount can only be increased after new price has gone through cooldown.";
 		} else {
@@ -258,7 +258,7 @@ export default function PositionAdjust() {
 	return (
 		<>
 			<Head>
-				<title>Frankencoin - Manage Position</title>
+				<title>dEURO - Manage Position</title>
 			</Head>
 
 			<div className="md:mt-8">
@@ -272,7 +272,7 @@ export default function PositionAdjust() {
 						<div className="space-y-8">
 							<TokenInput
 								label="Amount"
-								symbol="ZCHF"
+								symbol={TOKEN_SYMBOL}
 								output={position.closed ? "0" : ""}
 								balanceLabel="Max:"
 								max={maxTotalLimit}
@@ -297,7 +297,7 @@ export default function PositionAdjust() {
 							<TokenInput
 								label="Liquidation Price"
 								balanceLabel="Current Value"
-								symbol={"ZCHF"}
+								symbol={TOKEN_SYMBOL}
 								max={BigInt(position.price)}
 								value={liqPrice.toString()}
 								digit={36 - position.collateralDecimals}
@@ -348,7 +348,7 @@ export default function PositionAdjust() {
 									</div>
 									<div className="text-right">
 										{/* <span className="text-xs mr-3">{formatCurrency(0)}%</span> */}
-										{formatCurrency(formatUnits(BigInt(position.minted), 18))} ZCHF
+										{formatCurrency(formatUnits(BigInt(position.minted), 18))} {TOKEN_SYMBOL}
 									</div>
 								</div>
 
@@ -358,7 +358,7 @@ export default function PositionAdjust() {
 									</div>
 									<div className="text-right">
 										{/* <span className="text-xs mr-3">{formatCurrency(0)}%</span> */}
-										{formatCurrency(formatUnits(paidOutAmount(), 18))} ZCHF
+										{formatCurrency(formatUnits(paidOutAmount(), 18))} {TOKEN_SYMBOL}
 									</div>
 								</div>
 
@@ -368,7 +368,7 @@ export default function PositionAdjust() {
 									</div>
 									<div className="text-right">
 										{/* <span className="text-xs mr-3">{formatCurrency(0)}%</span> */}
-										{formatCurrency(formatUnits(returnFromReserve(), 18))} ZCHF
+										{formatCurrency(formatUnits(returnFromReserve(), 18))} {TOKEN_SYMBOL}
 									</div>
 								</div>
 
@@ -379,7 +379,7 @@ export default function PositionAdjust() {
 									</div>
 									<div className="text-right">
 										{/* <span className="text-xs mr-3">{formatCurrency(0)}%</span> */}
-										{formatCurrency(formatUnits(fees, 18))} ZCHF
+										{formatCurrency(formatUnits(fees, 18))} {TOKEN_SYMBOL}
 									</div>
 								</div>
 
@@ -391,7 +391,7 @@ export default function PositionAdjust() {
 									</div>
 									<div className="text-right">
 										{/* <span className="text-xs mr-3">100%</span> */}
-										<span>{formatCurrency(formatUnits(amount, 18))} ZCHF</span>
+										<span>{formatCurrency(formatUnits(amount, 18))} {TOKEN_SYMBOL}</span>
 									</div>
 								</div>
 							</div>

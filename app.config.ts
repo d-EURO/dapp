@@ -17,10 +17,10 @@ export type ConfigEnv = { landing: string; app: string; api: string; ponder: str
 
 // Config
 export const CONFIG: ConfigEnv = {
-	landing: process.env.NEXT_PUBLIC_LANDINGPAGE_URL || "https://frankencoin.com",
-	app: process.env.NEXT_PUBLIC_APP_URL || "https://app.frankencoin.com",
-	api: process.env.NEXT_PUBLIC_API_URL || "https://api.frankencoin.com",
-	ponder: process.env.NEXT_PUBLIC_PONDER_URL || "https://ponder.frankencoin.com",
+	landing: process.env.NEXT_PUBLIC_LANDINGPAGE_URL || "https://deuro.com",
+	app: process.env.NEXT_PUBLIC_APP_URL || "https://app.deuro.com",
+	api: process.env.NEXT_PUBLIC_API_URL || "https://api.deuro.com",
+	ponder: process.env.NEXT_PUBLIC_PONDER_URL || "https://ponder.deuro.com",
 	chain: process.env.NEXT_PUBLIC_CHAIN_NAME == "polygon" ? polygon : mainnet,
 	wagmiId: process.env.NEXT_PUBLIC_WAGMI_ID || "3321ad5a4f22083fe6fe82208a4c9ddc",
 	rpc:
@@ -47,8 +47,8 @@ export const FRANKENCOIN_API_CLIENT = axios.create({
 // WAGMI CONFIG
 export const WAGMI_CHAIN = CONFIG.chain;
 export const WAGMI_METADATA = {
-	name: "Frankencoin",
-	description: "Frankencoin Frontend Application",
+	name: "dEuro",
+	description: "dEuro Frontend Application",
 	url: CONFIG.landing,
 	icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
