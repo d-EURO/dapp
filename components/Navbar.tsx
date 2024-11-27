@@ -42,7 +42,7 @@ export default function Navbar() {
 			<header className="flex items-center py-2 md:py-4 px-4 md:gap-x-4 relative w-full">
 				<Link className="" href={CONFIG.landing}>
 					<picture>
-						<img className="h-9 transition" src="/coin/zchf.png" alt="Logo" />
+						<img className="h-9 transition" src="/coin/logo.png" alt="Logo" />
 					</picture>
 				</Link>
 
