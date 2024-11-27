@@ -28,3 +28,5 @@ export const SOCIAL = {
 	Partner_Ammer: "https://ammer.cash/",
 	Partner_Zipper: "https://zippy.swiss/",
 };
+
+export const TOKEN_SYMBOL = "dEURO";
