@@ -64,10 +64,6 @@ export default function EquityInteractionCard() {
 					className="underline"
 				>
 					WFPS
-				</Link>{" "}
-				for{" "}
-				<Link href={SOCIAL.Uniswap_WFPS_Polygon} target="_blank" className="underline">
-					trading on Polygon
 				</Link>
 			</div>
 		</div>
