@@ -59,20 +59,7 @@ export default function StableCoinBridgeXCHF() {
 					</Link>
 				</div>
 
-				<div className="mx-auto max-w-full flex-col h-2 w-72">
-					<a
-						href={SOCIAL.Uniswap_Mainnet}
-						target="_blank"
-						rel="noreferrer"
-						className="flex items-center justify-center underline"
-					>
-						Also available on
-						<picture>
-							<img src="/assets/uniswap.svg" alt="logo" className="w-6 mb-2 mx-1" />
-						</picture>
-						Uniswap.
-					</a>
-				</div>
+				<div className="mx-auto max-w-full flex-col h-2 w-72"></div>
 			</div>
 
 			<div className={`bg-gray-200 rounded-full text-center max-h-7 max-w-[100] text-gray-900 font-bold ${statusColor}`}>

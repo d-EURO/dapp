@@ -8,7 +8,7 @@ import Button from "@components/Button";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { Address } from "viem";
-import { formatBigInt, formatCurrency, min, shortenAddress, toTimestamp } from "@utils";
+import { formatBigInt, formatCurrency, min, shortenAddress, TOKEN_SYMBOL, toTimestamp } from "@utils";
 import { toast } from "react-toastify";
 import { TxToast, renderErrorToast, renderErrorTxStackToast, renderErrorTxToast } from "@components/TxToast";
 import DateInput from "@components/Input/DateInput";
@@ -124,7 +124,7 @@ export default function PositionBorrow({}) {
 		setAmount(valueBigInt);
 		if (valueBigInt > borrowingLimit) {
 			if (availableAmount < valueBigInt) {
-				setError("Can not mint more than " + formatCurrency(parseInt(borrowingLimit.toString()) / 1e18, 2, 2) + " ZCHF");
+				setError("Can not mint more than " + formatCurrency(parseInt(borrowingLimit.toString()) / 1e18, 2, 2) + ` ${TOKEN_SYMBOL}`);
 			} else if (availableAmount > userValue) {
 				setError(`Not enough ${position.collateralSymbol} in your wallet.`);
 			}
@@ -136,7 +136,7 @@ export default function PositionBorrow({}) {
 	const onChangeCollateral = (value: string) => {
 		const valueBigInt = (BigInt(value) * BigInt(position.price)) / BigInt(1e18);
 		if (valueBigInt > borrowingLimit) {
-			setError("Can not mint more than " + formatCurrency(parseInt(borrowingLimit.toString()) / 1e18, 2, 2) + " ZCHF");
+			setError("Can not mint more than " + formatCurrency(parseInt(borrowingLimit.toString()) / 1e18, 2, 2) + ` ${TOKEN_SYMBOL}`);
 		} else {
 			setError("");
 		}
@@ -227,7 +227,7 @@ export default function PositionBorrow({}) {
 			const toastContent = [
 				{
 					title: `Amount: `,
-					value: formatBigInt(amount) + " ZCHF",
+					value: formatBigInt(amount) + ` ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: `Collateral: `,
@@ -241,10 +241,10 @@ export default function PositionBorrow({}) {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: cloneWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Minting ZCHF`} rows={toastContent} />,
+					render: <TxToast title={`Minting ${TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title="Successfully Minted ZCHF" rows={toastContent} />,
+					render: <TxToast title={`Successfully Minted ${TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 			});
 		} catch (error) {
@@ -257,18 +257,18 @@ export default function PositionBorrow({}) {
 	return (
 		<>
 			<Head>
-				<title>Frankencoin - Mint</title>
+				<title>dEURO - Mint</title>
 			</Head>
 
 			<div className="mt-8">
 				<section className="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div className="bg-card-body-primary shadow-lg rounded-xl p-4 flex flex-col gap-y-4">
-						<div className="text-lg font-bold text-center mt-3">Mint Frankencoins For Yourself</div>
+						<div className="text-lg font-bold text-center mt-3">Mint Decentralized Euros For Yourself</div>
 						<div className="space-y-8">
 							<TokenInput
 								label="Mint Amount"
 								balanceLabel="Limit:"
-								symbol="ZCHF"
+								symbol={TOKEN_SYMBOL}
 								max={availableAmount}
 								value={amount.toString()}
 								onChange={onChangeAmount}
@@ -319,7 +319,7 @@ export default function PositionBorrow({}) {
 									</div>
 									<div className="text-right">
 										<span className="text-xs mr-3">{formatCurrency(paidOutToWalletPct)}%</span>
-										<span>{formatCurrency(formatUnits(paidOutToWallet, 18))} ZCHF</span>
+										<span>{formatCurrency(formatUnits(paidOutToWallet, 18))} {TOKEN_SYMBOL}</span>
 									</div>
 								</div>
 
@@ -329,7 +329,7 @@ export default function PositionBorrow({}) {
 									</div>
 									<div className="text-right">
 										<span className="text-xs mr-3">{formatCurrency(position.reserveContribution / 10000, 2, 2)}%</span>
-										<span>{formatCurrency(formatUnits(borrowersReserveContribution, 18))} ZCHF</span>
+										<span>{formatCurrency(formatUnits(borrowersReserveContribution, 18))} {TOKEN_SYMBOL}</span>
 									</div>
 								</div>
 
@@ -340,7 +340,7 @@ export default function PositionBorrow({}) {
 									</div>
 									<div className="text-right">
 										<span className="text-xs mr-3">{formatBigInt(feePercent, 4)}%</span>
-										<span>{formatCurrency(formatUnits(fees, 18))} ZCHF</span>
+										<span>{formatCurrency(formatUnits(fees, 18))} {TOKEN_SYMBOL}</span>
 									</div>
 								</div>
 
@@ -352,7 +352,7 @@ export default function PositionBorrow({}) {
 									</div>
 									<div className="text-right">
 										<span className="text-xs mr-3">100%</span>
-										<span>{formatCurrency(formatUnits(amount, 18))} ZCHF</span>
+										<span>{formatCurrency(formatUnits(amount, 18))} {TOKEN_SYMBOL}</span>
 									</div>
 								</div>
 							</div>
@@ -368,13 +368,13 @@ export default function PositionBorrow({}) {
 								<div className="mt-2 flex">
 									<div className="flex-1">Liquidation Price</div>
 									<div className="">
-										{formatCurrency(formatUnits(BigInt(position.price), 36 - position.collateralDecimals))} ZCHF
+										{formatCurrency(formatUnits(BigInt(position.price), 36 - position.collateralDecimals))} {TOKEN_SYMBOL}
 									</div>
 								</div>
 
 								<div className="mt-2 flex">
 									<div className="flex-1">Market Price</div>
-									<div className="">{formatCurrency(collateralPriceZchf)} ZCHF</div>
+									<div className="">{formatCurrency(collateralPriceZchf)} {TOKEN_SYMBOL}</div>
 								</div>
 
 								<div className="mt-2 flex">
