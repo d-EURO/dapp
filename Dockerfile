@@ -6,7 +6,7 @@ WORKDIR /app
 USER node
 
 COPY --chown=node . .
-RUN yarn install --production --frozen-lockfile
+RUN yarn install --frozen-lockfile
 RUN yarn build
 
 CMD ["yarn", "start"]
