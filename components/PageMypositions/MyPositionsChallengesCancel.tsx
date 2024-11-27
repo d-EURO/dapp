@@ -3,7 +3,7 @@ import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { CONFIG, WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
-import { formatBigInt } from "@utils";
+import { formatBigInt, TOKEN_SYMBOL } from "@utils";
 import { renderErrorToast, renderErrorTxToast, TxToast } from "@components/TxToast";
 import { RootState } from "../../redux/redux.store";
 import { useSelector } from "react-redux";
@@ -51,8 +51,8 @@ export default function MyPositionsChallengesCancel({ challenge, hidden }: Props
 					value: formatBigInt(r, p.collateralDecimals) + " " + p.collateralSymbol,
 				},
 				{
-					title: `Expected ZCHF: `,
-					value: "0.00 ZCHF",
+					title: `Expected ${TOKEN_SYMBOL}: `,
+					value: "0.00 " + TOKEN_SYMBOL,
 				},
 				{
 					title: "Transaction:",
