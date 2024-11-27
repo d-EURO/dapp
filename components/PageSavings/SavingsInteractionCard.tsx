@@ -14,6 +14,7 @@ import { RootState } from "../../redux/redux.store";
 import SavingsActionInterest from "./SavingsActionInterest";
 import SavingsActionSave from "./SavingsActionSave";
 import SavingsActionWithdraw from "./SavingsActionWithdraw";
+import { TOKEN_SYMBOL } from "@utils";
 
 export default function SavingsInteractionCard() {
 	const [amount, setAmount] = useState(0n);
@@ -36,7 +37,7 @@ export default function SavingsInteractionCard() {
 	const account = address || zeroAddress;
 	const ADDR = ADDRESS[chainId];
 
-	const fromSymbol = "ZCHF";
+	const fromSymbol = TOKEN_SYMBOL;
 	const change: bigint = amount - (userSavingsBalance + userSavingsInterest);
 	const direction: boolean = amount >= userSavingsBalance + userSavingsInterest;
 	const claimable: boolean = userSavingsInterest > 0n;

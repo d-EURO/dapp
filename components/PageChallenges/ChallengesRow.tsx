@@ -9,6 +9,7 @@ import { useRouter as useNavigation } from "next/navigation";
 import Button from "@components/Button";
 import { useContractUrl } from "@hooks";
 import AppBox from "@components/AppBox";
+import { TOKEN_SYMBOL } from "@utils";
 
 interface Props {
 	headers: string[];
@@ -107,7 +108,7 @@ export default function ChallengesRow({ headers, challenge }: Props) {
 			{/* Current Price */}
 			<div className="flex flex-col">
 				<div className="text-md text-text-primary">
-					{challengePriceSearch ? formatCurrency(challengePrice, 2, 2) : "(pending)"} ZCHF
+					{challengePriceSearch ? formatCurrency(challengePrice, 2, 2) : "(pending)"} {TOKEN_SYMBOL}
 				</div>
 			</div>
 

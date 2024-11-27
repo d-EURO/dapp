@@ -3,7 +3,7 @@ import AppBox from "@components/AppBox";
 import DisplayLabel from "@components/DisplayLabel";
 import DisplayAmount from "@components/DisplayAmount";
 import { usePoolStats } from "@hooks";
-import { formatBigInt, formatDuration, shortenAddress } from "@utils";
+import { formatBigInt, formatDuration, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useAccount, useChainId, useReadContract } from "wagmi";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
@@ -34,7 +34,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 	const chainId = useChainId();
 	const poolStats = usePoolStats();
 	const account = address || zeroAddress;
-	const direction: boolean = tokenFromTo.from === "ZCHF";
+	const direction: boolean = tokenFromTo.from === TOKEN_SYMBOL;
 
 	useEffect(() => {
 		setAmount(0n);
@@ -55,7 +55,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 			const toastContent = [
 				{
 					title: "Amount:",
-					value: formatBigInt(amount) + " ZCHF",
+					value: formatBigInt(amount) + " " + TOKEN_SYMBOL,
 				},
 				{
 					title: "Spender: ",
@@ -69,10 +69,10 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Approving ZCHF`} rows={toastContent} />,
+					render: <TxToast title={`Approving ${TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title="Successfully Approved ZCHF" rows={toastContent} />,
+					render: <TxToast title={`Successfully Approved ${TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 			});
 		} catch (error) {
@@ -93,7 +93,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 			const toastContent = [
 				{
 					title: "Amount:",
-					value: formatBigInt(amount, 18) + " ZCHF",
+					value: formatBigInt(amount, 18) + " " + TOKEN_SYMBOL,
 				},
 				{
 					title: "Shares: ",
@@ -107,7 +107,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: investWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Investing ZCHF`} rows={toastContent} />,
+					render: <TxToast title={`Investing ${TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 				success: {
 					render: <TxToast title="Successfully Invested" rows={toastContent} />,
@@ -138,7 +138,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 				},
 				{
 					title: "Receive: ",
-					value: formatBigInt(result) + " ZCHF",
+					value: formatBigInt(result) + " " + TOKEN_SYMBOL,
 				},
 				{
 					title: "Transaction: ",
@@ -178,8 +178,8 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 
 	const fromBalance = direction ? poolStats.frankenBalance : poolStats.equityBalance;
 	const result = (direction ? fpsResult : frankenResult) || 0n;
-	const fromSymbol = direction ? "ZCHF" : "FPS";
-	const toSymbol = !direction ? "ZCHF" : "FPS";
+	const fromSymbol = direction ? TOKEN_SYMBOL : "FPS";
+	const toSymbol = !direction ? TOKEN_SYMBOL : "FPS";
 	const unlocked =
 		poolStats.equityUserVotes > 86_400 * 90 && poolStats.equityUserVotes < 86_400 * 365 * 30 && poolStats.equityUserVotes > 0n;
 	const redeemLeft = 86400n * 90n - (poolStats.equityBalance ? poolStats.equityUserVotes / poolStats.equityBalance / 2n ** 20n : 0n);
@@ -269,7 +269,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 					<DisplayAmount
 						className="mt-4"
 						amount={(poolStats.equityPrice * poolStats.equityBalance) / BigInt(1e18)}
-						currency="ZCHF"
+						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].frankenCoin}
 					/>
 				</AppBox>

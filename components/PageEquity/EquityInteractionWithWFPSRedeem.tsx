@@ -3,7 +3,7 @@ import AppBox from "@components/AppBox";
 import DisplayLabel from "@components/DisplayLabel";
 import DisplayAmount from "@components/DisplayAmount";
 import { usePoolStats } from "@hooks";
-import { formatBigInt, formatDuration, shortenAddress } from "@utils";
+import { formatBigInt, formatDuration, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
@@ -150,7 +150,7 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 				},
 				{
 					title: "Receive: ",
-					value: formatBigInt(calculateProceeds) + " ZCHF",
+					value: formatBigInt(calculateProceeds) + " " + TOKEN_SYMBOL,
 				},
 				{
 					title: "Transaction: ",
@@ -175,7 +175,7 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 	};
 
 	const fromSymbol = "WFPS";
-	const toSymbol = "ZCHF";
+	const toSymbol = TOKEN_SYMBOL;
 	const unlocked = wfpsHolding > 86_400 * 90 && wfpsHolding < 86_400 * 365 * 30;
 	const redeemLeft = unlocked ? 0n : 86_400n * 90n - wfpsHolding;
 
@@ -253,7 +253,7 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 					<DisplayAmount
 						className="mt-4"
 						amount={(poolStats.equityPrice * wfpsBalance) / BigInt(1e18)}
-						currency="ZCHF"
+						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].frankenCoin}
 					/>
 				</AppBox>
