@@ -4,6 +4,7 @@ import { PositionQuery, PriceQueryObjectArray } from "@frankencoin/api";
 import TokenLogo from "../TokenLogo";
 import { formatCurrency } from "../../utils/format";
 import { Address } from "viem/accounts";
+import { TOKEN_SYMBOL } from "@utils";
 
 export function calcOverviewStats(listByCollateral: PositionQuery[][], prices: PriceQueryObjectArray) {
 	const stats = [];
@@ -114,13 +115,13 @@ export default function CollateralAndPositionsOverview() {
 					<div className="mb-5">
 						The highest liquidation price from all positions is{" "}
 						<span className="front-bold font-semibold text-text-header">
-							{formatCurrency(stat.highestZCHFPrice.toString(), 2)} ZCHF/{stat.collateral.symbol}
+							{formatCurrency(stat.highestZCHFPrice.toString(), 2)} {TOKEN_SYMBOL}/{stat.collateral.symbol}
 						</span>
 						, which represents the worst{" "}
 						<span className="front-bold font-semibold text-text-header">collateralisation of {stat.collateralizedPct}%</span>{" "}
 						for this collateral. The current price of {stat.collateral.name} ({stat.collateral.symbol}) on Coingecko is{" "}
 						<span className="front-bold font-semibold text-text-header">
-							{formatCurrency(stat.collateralPriceInZCHF.toString(), 2)} ZCHF/{stat.collateral.symbol}
+							{formatCurrency(stat.collateralPriceInZCHF.toString(), 2)} {TOKEN_SYMBOL}/{stat.collateral.symbol}
 						</span>{" "}
 						or {formatCurrency((stat.collateral.price.usd ?? "0").toString(), 2)} USD/{stat.collateral.symbol}.
 					</div>

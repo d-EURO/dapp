@@ -47,8 +47,8 @@ export const FRANKENCOIN_API_CLIENT = axios.create({
 // WAGMI CONFIG
 export const WAGMI_CHAIN = CONFIG.chain;
 export const WAGMI_METADATA = {
-	name: "dEuro",
-	description: "dEuro Frontend Application",
+	name: "dEURO",
+	description: "dEURO Frontend Application",
 	url: CONFIG.landing,
 	icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };

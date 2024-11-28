@@ -8,6 +8,7 @@ import { formatCurrency } from "../../utils/format";
 import { useContractUrl } from "@hooks";
 import MyPositionsChallengesCancel from "./MyPositionsChallengesCancel";
 import AppBox from "@components/AppBox";
+import { TOKEN_SYMBOL } from "@utils";
 
 interface Props {
 	headers: string[];
@@ -96,7 +97,7 @@ export default function MyPositionsChallengesRow({ headers, challenge }: Props) 
 			{/* Current Price */}
 			<div className="flex flex-col">
 				<div className="text-md text-text-primary">
-					{formatCurrency(formatUnits(challengePrice, 36 - position.collateralDecimals), 2, 2)} ZCHF
+					{formatCurrency(formatUnits(challengePrice, 36 - position.collateralDecimals), 2, 2)} {TOKEN_SYMBOL}
 				</div>
 			</div>
 

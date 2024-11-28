@@ -8,6 +8,7 @@ import { PositionQuery } from "@frankencoin/api";
 import DisplayCollateralBorrowTable from "./DisplayCollateralBorrowTable";
 import Button from "@components/Button";
 import AppBox from "@components/AppBox";
+import { TOKEN_SYMBOL } from "@utils";
 
 interface Props {
 	headers: string[];
@@ -85,7 +86,7 @@ export default function BorrowRow({ headers, position }: Props) {
 			</div>
 
 			<div className="flex flex-col gap-2 text-text-header">
-				<div className="col-span-2 text-md">{formatCurrency(available, 2, 2)} ZCHF</div>
+				<div className="col-span-2 text-md">{formatCurrency(available, 2, 2)} {TOKEN_SYMBOL}</div>
 			</div>
 
 			<div className="flex flex-col gap-2 text-text-header">
