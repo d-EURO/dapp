@@ -68,7 +68,7 @@ export default function EquityInteractionCard() {
 					target="_blank"
 					className="underline"
 				>
-					WFPS
+					{POOL_SHARE_TOKEN_SYMBOL}
 				</Link>
 			</div>
 		</div>

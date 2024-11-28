@@ -12,7 +12,7 @@ export default function ChallengesPage() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - Auctions</title>
+				<title>dEuro - Auctions</title>
 			</Head>
 
 			<div className="md:mt-8">

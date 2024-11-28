@@ -14,7 +14,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 	return (
 		<div>
 			<Head>
-				<title>Frankencoin - Home</title>
+				<title>dEuro - Home</title>
 			</Head>
 
 			<Navbar />

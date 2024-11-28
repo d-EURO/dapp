@@ -62,7 +62,7 @@ export default function PositionDetail() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - Position Overview</title>
+				<title>dEuro - Position Overview</title>
 			</Head>
 			<div className="md:mt-8">
 				<section className="grid grid-cols-1 md:grid-cols-2 gap-4">

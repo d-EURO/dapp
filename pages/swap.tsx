@@ -174,7 +174,7 @@ export default function Swap() {
 	return (
 		<>
 			<Head>
-				<title>Frankencoin - Swap</title>
+				<title>dEuro - Swap</title>
 			</Head>
 
 			<div className="md:mt-8">
