@@ -11,3 +11,7 @@ export const SOCIAL = {
 };
 
 export const TOKEN_SYMBOL = "dEURO";
+
+export const POOL_SHARE_TOKEN_SYMBOL = "DEPS";
+
+export const NATIVE_POOL_SHARE_TOKEN_SYMBOL = "nDEPS";

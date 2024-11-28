@@ -5,7 +5,7 @@ import { useFPSQuery, usePoolStats, useTradeQuery } from "@hooks";
 import { useChainId } from "wagmi";
 import dynamic from "next/dynamic";
 import { ADDRESS } from "@frankencoin/zchf";
-import { TOKEN_SYMBOL } from "@utils";
+import { POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export default function EquityFPSDetailsCard() {
@@ -19,12 +19,12 @@ export default function EquityFPSDetailsCard() {
 			<div id="chart-timeline">
 				<div className="flex justify-between">
 					<div>
-						<DisplayLabel label="FPS Price" />
+						<DisplayLabel label={`${POOL_SHARE_TOKEN_SYMBOL} Price`} />
 						<DisplayAmount className="mt-4" amount={poolStats.equityPrice} currency={TOKEN_SYMBOL} />
 					</div>
 					<div className="text-right">
 						<DisplayLabel label="Supply" />
-						<DisplayAmount className="mt-4" amount={poolStats.equitySupply} currency="FPS" />
+						<DisplayAmount className="mt-4" amount={poolStats.equitySupply} currency={POOL_SHARE_TOKEN_SYMBOL} />
 					</div>
 				</div>
 				<ApexChart
@@ -86,7 +86,7 @@ export default function EquityFPSDetailsCard() {
 					}}
 					series={[
 						{
-							name: "FPS Price",
+							name: `${POOL_SHARE_TOKEN_SYMBOL} Price`,
 							data: trades.map((trade) => {
 								return [parseFloat(trade.time) * 1000, Math.round(Number(trade.lastPrice) / 10 ** 16) / 100];
 							}),
