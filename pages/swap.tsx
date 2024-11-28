@@ -1,6 +1,6 @@
 import Head from "next/head";
 import TokenInput from "@components/Input/TokenInput";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useContractUrl, useSwapStats } from "@hooks";
 import { erc20Abi, formatUnits, maxUint256 } from "viem";
 import Button from "@components/Button";
@@ -9,15 +9,24 @@ import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowDown, faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
-import { formatBigInt, shortenAddress } from "@utils";
+import { formatBigInt, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { TxToast, renderErrorToast, renderErrorTxToast } from "@components/TxToast";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../app.config";
 import Link from "next/link";
 import AppCard from "@components/AppCard";
 import { ADDRESS, StablecoinBridgeABI } from "@frankencoin/zchf";
+import TokenInputSelect from "@components/Input/TokenInputSelect";
+
+const STABLECOIN_SYMBOLS = ["EURT", "EURC", "VEUR", "EURS"];
 
 export default function Swap() {
+	const [fromSymbol, setFromSymbol] = useState(TOKEN_SYMBOL);
+	const [fromOptions, setFromOptions] = useState([TOKEN_SYMBOL]);
+
+	const [toSymbol, setToSymbol] = useState(STABLECOIN_SYMBOLS[0]);
+	const [toOptions, setToOptions] = useState(STABLECOIN_SYMBOLS);
+
 	const [amount, setAmount] = useState(0n);
 	const [error, setError] = useState("");
 	const [direction, setDirection] = useState(true);
@@ -26,7 +35,7 @@ export default function Swap() {
 	const [isBurning, setBurning] = useState(false);
 
 	const chainId = useChainId();
-	const swapStats = useSwapStats();
+	const swapStats = useSwapStats(); // returns onchain data, change it to return balances of stablecoins as well
 	const xchfUrl = useContractUrl(ADDRESS[chainId].xchf);
 
 	const handleApprove = async () => {
@@ -148,28 +157,60 @@ export default function Swap() {
 		}
 	};
 
-	const fromBalance = direction ? swapStats.xchfUserBal : swapStats.zchfUserBal;
-	const toBalance = !direction ? swapStats.xchfUserBal : swapStats.zchfUserBal;
-	const fromSymbol = direction ? "XCHF" : "ZCHF";
-	const toSymbol = !direction ? "XCHF" : "ZCHF";
-	const swapLimit = direction ? swapStats.bridgeLimit - swapStats.xchfBridgeBal : swapStats.xchfBridgeBal;
+	const getBalanceBySymbol = useCallback(
+		(symbol: string) => {
+			switch (symbol) {
+				case TOKEN_SYMBOL:
+					return swapStats.xchfUserBal;
+				default:
+					return swapStats.zchfUserBal;
+			}
+		},
+		[swapStats]
+	);
+
+	const getSwapLimitBySymbol = useCallback(
+		(symbol: string) => {
+			switch (symbol) {
+				case TOKEN_SYMBOL:
+					return swapStats.bridgeLimit - swapStats.xchfBridgeBal;
+				default:
+					return swapStats.xchfBridgeBal;
+			}
+		},
+		[swapStats]
+	);
+
 
 	const onChangeDirection = () => {
-		setDirection(!direction);
+		// swap symbols
+		const prevFromSymbol = fromSymbol;
+		const prevToSymbol = toSymbol;
+		setFromSymbol(prevToSymbol);
+		setToSymbol(prevFromSymbol);
+
+		// swap options
+		const prevFromOptions = fromOptions;
+		const prevToOptions = toOptions;
+		setFromOptions(prevToOptions);
+		setToOptions(prevFromOptions);
 	};
 
 	const onChangeAmount = (value: string) => {
 		const valueBigInt = BigInt(value);
 		setAmount(valueBigInt);
+	};
 
-		if (valueBigInt > fromBalance) {
+	// For triggering errors when the amount or the symbol is changed
+	useEffect(() => {
+		if (amount > getBalanceBySymbol(fromSymbol)) {
 			setError(`Not enough ${fromSymbol} in your wallet.`);
-		} else if (valueBigInt > swapLimit) {
+		} else if (amount > getSwapLimitBySymbol(fromSymbol)) {
 			setError(`Not enough ${toSymbol} available to swap.`);
 		} else {
 			setError("");
 		}
-	};
+	}, [amount, fromSymbol, toSymbol]);
 
 	return (
 		<>
@@ -179,22 +220,15 @@ export default function Swap() {
 
 			<div className="md:mt-8">
 				<AppCard>
-					<Link href={xchfUrl} target="_blank">
-						<div className="mt-4 text-lg font-bold underline text-center">
-							Swap XCHF and ZCHF
-							<FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 ml-2" />
-						</div>
-					</Link>
-					<div className="mt-8">
-						Swapping from XCHF to ZCHF will cease to function on 2024-10-26 as the crypto franc is{" "}
-						<Link href="https://www.bitcoinsuisse.com/cryptofranc">discontinued by the isser</Link>.
-					</div>
+					<div className="mt-4 text-lg font-bold underline text-center">Swap {TOKEN_SYMBOL} for other stablecoins</div>
 
 					<div className="mt-8">
-						<TokenInput
-							max={fromBalance}
+						<TokenInputSelect
+							max={getBalanceBySymbol(fromSymbol)}
 							symbol={fromSymbol}
-							limit={swapLimit}
+							symbolOptions={fromOptions}
+							symbolOnChange={(o) => setFromSymbol(o.value)}
+							limit={getSwapLimitBySymbol(fromSymbol)}
 							limitLabel="Swap limit"
 							placeholder={"Swap Amount"}
 							onChange={onChangeAmount}
@@ -209,9 +243,11 @@ export default function Swap() {
 						</Button>
 					</div>
 
-					<TokenInput
+					<TokenInputSelect
 						symbol={toSymbol}
-						max={toBalance}
+						symbolOptions={toOptions}
+						symbolOnChange={(o) => setToSymbol(o.value)}
+						max={getBalanceBySymbol(toSymbol)}
 						output={formatUnits(amount, 18)}
 						note={`1 ${fromSymbol} = 1 ${toSymbol}`}
 						label="Receive"
