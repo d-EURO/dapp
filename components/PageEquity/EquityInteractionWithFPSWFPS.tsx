@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AppBox from "@components/AppBox";
 import DisplayLabel from "@components/DisplayLabel";
 import DisplayAmount from "@components/DisplayAmount";
-import { formatBigInt, formatDuration, shortenAddress } from "@utils";
+import { formatBigInt, formatDuration, NATIVE_POOL_SHARE_TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL, shortenAddress } from "@utils";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
@@ -38,7 +38,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 	const { address } = useAccount();
 	const chainId = useChainId();
 	const account = address || zeroAddress;
-	const direction: boolean = tokenFromTo.from === "FPS";
+	const direction: boolean = tokenFromTo.from === NATIVE_POOL_SHARE_TOKEN_SYMBOL;
 
 	useEffect(() => {
 		setError("");
@@ -106,7 +106,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 			const toastContent = [
 				{
 					title: "Amount:",
-					value: formatBigInt(amount) + " FPS",
+					value: formatBigInt(amount) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: "Spender: ",
@@ -120,10 +120,10 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: writeHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Approving FPS`} rows={toastContent} />,
+					render: <TxToast title={`Approving ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title="Successfully Approved FPS" rows={toastContent} />,
+					render: <TxToast title={`Successfully Approved ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 			});
 		} catch (error) {
@@ -146,11 +146,11 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 			const toastContent = [
 				{
 					title: "Amount:",
-					value: formatBigInt(amount) + " FPS",
+					value: formatBigInt(amount) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: "Receive: ",
-					value: formatBigInt(amount) + " WFPS",
+					value: formatBigInt(amount) + " " + POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: "Transaction: ",
@@ -160,10 +160,10 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: writeHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Wrapping FPS`} rows={toastContent} />,
+					render: <TxToast title={`Wrapping ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title="Successfully Wrapped FPS" rows={toastContent} />,
+					render: <TxToast title={`Successfully Wrapped ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 			});
 		} catch (error) {
@@ -187,11 +187,11 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 			const toastContent = [
 				{
 					title: "Amount:",
-					value: formatBigInt(amount) + " WFPS",
+					value: formatBigInt(amount) + " " + POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: "Receive: ",
-					value: formatBigInt(amount) + " FPS",
+					value: formatBigInt(amount) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: "Transaction: ",
@@ -201,10 +201,10 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: writeHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Unwrapping WFPS`} rows={toastContent} />,
+					render: <TxToast title={`Unwrapping ${POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title="Successfully Unwrapped WFPS" rows={toastContent} />,
+					render: <TxToast title={`Successfully Unwrapped ${POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 			});
 		} catch (error) {
@@ -216,8 +216,8 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 	};
 
 	const fromBalance = direction ? fpsBalance : wfpsBalance;
-	const fromSymbol = direction ? "FPS" : "WFPS";
-	const toSymbol = !direction ? "FPS" : "WFPS";
+	const fromSymbol = direction ? NATIVE_POOL_SHARE_TOKEN_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
+	const toSymbol = !direction ? NATIVE_POOL_SHARE_TOKEN_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
 
 	const onChangeAmount = (value: string) => {
 		const valueBigInt = BigInt(value);
@@ -285,18 +285,18 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 			<div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-2">
 				<AppBox>
 					<DisplayLabel label="Your Balance" />
-					<DisplayAmount className="mt-4" amount={fpsBalance} currency="FPS" address={ADDRESS[chainId].equity} />
+					<DisplayAmount className="mt-4" amount={fpsBalance} currency={NATIVE_POOL_SHARE_TOKEN_SYMBOL} address={ADDRESS[chainId].equity} />
 				</AppBox>
 				<AppBox>
-					<DisplayLabel label="Holding Duration FPS" />
+					<DisplayLabel label={`Holding Duration ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} />
 					{fpsHolding > 0 && fpsHolding < 86_400 * 365 * 10 ? formatDuration(fpsHolding) : "-"}
 				</AppBox>
 				<AppBox>
 					<DisplayLabel label="Your Balance" />
-					<DisplayAmount className="mt-4" amount={wfpsBalance} currency="WFPS" address={ADDRESS[chainId].wFPS} />
+					<DisplayAmount className="mt-4" amount={wfpsBalance} currency={POOL_SHARE_TOKEN_SYMBOL} address={ADDRESS[chainId].wFPS} />
 				</AppBox>
 				<AppBox>
-					<DisplayLabel label="Holding Duration WFPS Contract" />
+					<DisplayLabel label={`Holding Duration ${POOL_SHARE_TOKEN_SYMBOL}`} />
 					{wfpsHolding > 0 && wfpsHolding < 86_400 * 365 * 10 ? formatDuration(wfpsHolding) : "-"}
 				</AppBox>
 			</div>

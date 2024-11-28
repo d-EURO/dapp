@@ -3,7 +3,7 @@ import AppBox from "@components/AppBox";
 import DisplayLabel from "@components/DisplayLabel";
 import DisplayAmount from "@components/DisplayAmount";
 import { usePoolStats } from "@hooks";
-import { formatBigInt, formatDuration, shortenAddress, TOKEN_SYMBOL } from "@utils";
+import { formatBigInt, formatDuration, NATIVE_POOL_SHARE_TOKEN_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useAccount, useChainId, useReadContract } from "wagmi";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
@@ -97,7 +97,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 				},
 				{
 					title: "Shares: ",
-					value: formatBigInt(result) + " FPS",
+					value: formatBigInt(result) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: "Transaction: ",
@@ -134,7 +134,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 			const toastContent = [
 				{
 					title: "Amount:",
-					value: formatBigInt(amount) + " FPS",
+					value: formatBigInt(amount) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: "Receive: ",
@@ -148,7 +148,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: redeemWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Redeeming FPS`} rows={toastContent} />,
+					render: <TxToast title={`Redeeming ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
 				},
 				success: {
 					render: <TxToast title="Successfully Redeemed" rows={toastContent} />,
@@ -178,8 +178,8 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 
 	const fromBalance = direction ? poolStats.frankenBalance : poolStats.equityBalance;
 	const result = (direction ? fpsResult : frankenResult) || 0n;
-	const fromSymbol = direction ? TOKEN_SYMBOL : "FPS";
-	const toSymbol = !direction ? TOKEN_SYMBOL : "FPS";
+	const fromSymbol = direction ? TOKEN_SYMBOL : NATIVE_POOL_SHARE_TOKEN_SYMBOL;
+	const toSymbol = !direction ? TOKEN_SYMBOL : NATIVE_POOL_SHARE_TOKEN_SYMBOL;
 	const unlocked =
 		poolStats.equityUserVotes > 86_400 * 90 && poolStats.equityUserVotes < 86_400 * 365 * 30 && poolStats.equityUserVotes > 0n;
 	const redeemLeft = 86400n * 90n - (poolStats.equityBalance ? poolStats.equityUserVotes / poolStats.equityBalance / 2n ** 20n : 0n);
@@ -262,7 +262,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 			<div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-2">
 				<AppBox>
 					<DisplayLabel label="Your Balance" />
-					<DisplayAmount className="mt-4" amount={poolStats.equityBalance} currency="FPS" address={ADDRESS[chainId].equity} />
+					<DisplayAmount className="mt-4" amount={poolStats.equityBalance} currency={NATIVE_POOL_SHARE_TOKEN_SYMBOL} address={ADDRESS[chainId].equity} />
 				</AppBox>
 				<AppBox>
 					<DisplayLabel label="Value at Current Price" />
