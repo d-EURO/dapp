@@ -24,7 +24,7 @@ export default function Positions() {
 	return (
 		<>
 			<Head>
-				<title>dEuro - Positions</title>
+				<title>dEURO - Positions</title>
 			</Head>
 
 			{/* Section Positions */}

@@ -6,7 +6,7 @@ export default function Custom404() {
 	return (
 		<main className="container-xl mx-auto">
 			<Head>
-				<title>dEuro - 404</title>
+				<title>dEURO - 404</title>
 			</Head>
 
 			{/* To load dynamic classes */}
