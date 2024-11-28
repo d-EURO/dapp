@@ -188,7 +188,7 @@ export default function PositionChallenge() {
 	return (
 		<>
 			<Head>
-				<title>dEuro - Challenge</title>
+				<title>dEURO - Challenge</title>
 			</Head>
 
 			{/* <div>

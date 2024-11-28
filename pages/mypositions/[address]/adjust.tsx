@@ -258,7 +258,7 @@ export default function PositionAdjust() {
 	return (
 		<>
 			<Head>
-				<title>dEuro - Manage Position</title>
+				<title>dEURO - Manage Position</title>
 			</Head>
 
 			<div className="md:mt-8">

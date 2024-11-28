@@ -3,8 +3,8 @@ import { NextSeo } from "next-seo";
 export default function NextSeoProvider() {
 	return (
 		<NextSeo
-			title="dEuro"
-			description="The dEuro is a collateralized, oracle-free stablecoin that tracks the value of the Swiss franc."
+			title="dEURO"
+			description="The dEURO is a collateralized, oracle-free stablecoin that tracks the value of the Swiss franc."
 			openGraph={{
 				type: "website",
 				locale: "en_US",

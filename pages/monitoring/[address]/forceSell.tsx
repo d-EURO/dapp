@@ -154,7 +154,7 @@ export default function MonitoringForceSell() {
 	return (
 		<>
 			<Head>
-				<title>dEuro - Force Sell</title>
+				<title>dEURO - Force Sell</title>
 			</Head>
 
 			<div className="md:mt-8">

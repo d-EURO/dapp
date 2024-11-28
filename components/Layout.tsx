@@ -14,7 +14,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 	return (
 		<div>
 			<Head>
-				<title>dEuro - Home</title>
+				<title>dEURO - Home</title>
 			</Head>
 
 			<Navbar />
