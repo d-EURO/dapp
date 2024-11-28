@@ -1,0 +1,9 @@
+.dev/
+.next/
+generated/
+node_modules/
+.env.example
+.gitignore
+.prettierrc.json
+Dockerfile
+README.md
