@@ -168,7 +168,7 @@ export default function ChallengePlaceBid() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - Bid</title>
+				<title>dEuro - Bid</title>
 			</Head>
 
 			<div className="md:mt-8">

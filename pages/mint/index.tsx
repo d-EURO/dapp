@@ -13,7 +13,7 @@ export default function Borrow() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - Borrow</title>
+				<title>dEuro - Borrow</title>
 			</Head>
 
 			<div className="mt-8">

@@ -257,7 +257,7 @@ export default function PositionBorrow({}) {
 	return (
 		<>
 			<Head>
-				<title>dEURO - Mint</title>
+				<title>dEuro - Mint</title>
 			</Head>
 
 			<div className="mt-8">

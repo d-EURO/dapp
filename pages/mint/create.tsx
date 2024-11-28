@@ -303,7 +303,7 @@ export default function PositionCreate({}) {
 	return (
 		<>
 			<Head>
-				<title>dEURO - Propose Position</title>
+				<title>dEuro - Propose Position</title>
 			</Head>
 
 			<div className="md:mt-8">

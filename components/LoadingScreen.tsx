@@ -16,7 +16,7 @@ export default function LoadingScreen() {
 						<picture>
 							<img className="h-10 mr-4" src="/coin/logo.png" alt="Logo" />
 						</picture>
-						<h1>dEURO is loading...</h1>
+						<h1>dEuro is loading...</h1>
 					</div>
 
 					<div className="absolute bottom-[20%]">

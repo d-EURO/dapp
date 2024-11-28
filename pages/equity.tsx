@@ -7,7 +7,7 @@ export default function Equity() {
 	return (
 		<>
 			<Head>
-				<title>Frankencoin - Equity</title>
+				<title>dEuro - Equity</title>
 			</Head>
 
 			<div className="md:mt-8">
