@@ -8,6 +8,7 @@ import MyPositionsDisplayCollateral from "./MyPositionsDisplayCollateral";
 import { useRouter as useNavigate } from "next/navigation";
 import Button from "@components/Button";
 import AppBox from "@components/AppBox";
+import { TOKEN_SYMBOL } from "@utils";
 
 interface Props {
 	headers: string[];
@@ -159,15 +160,15 @@ export default function MypositionsRow({ headers, subHeaders, position }: Props)
 			{/* Liquidation */}
 			<div className="flex flex-col">
 				<span className={liquidationPct < 110 ? `text-md font-bold text-text-warning` : "text-md text-text-primary"}>
-					{formatCurrency(liquidationZCHF, 2, 2)} ZCHF
+					{formatCurrency(liquidationZCHF, 2, 2)} {TOKEN_SYMBOL}
 				</span>
-				<span className="text-sm text-text-subheader">{formatCurrency(collTokenPrice / zchfPrice, 2, 2)} ZCHF</span>
+				<span className="text-sm text-text-subheader">{formatCurrency(collTokenPrice / zchfPrice, 2, 2)} {TOKEN_SYMBOL}</span>
 			</div>
 
 			{/* Loan Value */}
 			<div className="flex flex-col">
-				<span className="text-md text-text-primary">{formatCurrency(loanZCHF, 2, 2)} ZCHF</span>
-				<span className="text-sm text-text-subheader">{formatCurrency(balance * liquidationZCHF - loanZCHF, 2, 2)} ZCHF</span>
+				<span className="text-md text-text-primary">{formatCurrency(loanZCHF, 2, 2)} {TOKEN_SYMBOL}</span>
+				<span className="text-sm text-text-subheader">{formatCurrency(balance * liquidationZCHF - loanZCHF, 2, 2)} {TOKEN_SYMBOL}</span>
 			</div>
 
 			{/* State */}

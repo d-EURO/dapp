@@ -19,7 +19,7 @@ export default function SavingsPage() {
 	return (
 		<main className="section">
 			<Head>
-				<title>Frankencoin - Savings</title>
+				<title>dEURO - Savings</title>
 			</Head>
 
 			<div className="mt-10">

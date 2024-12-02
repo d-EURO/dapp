@@ -1,5 +1,5 @@
 import { useSwapStats } from "@hooks";
-import { SOCIAL, formatCurrency } from "@utils";
+import { TOKEN_SYMBOL, formatCurrency } from "@utils";
 import Link from "next/link";
 import TokenLogo from "@components/TokenLogo";
 
@@ -23,12 +23,12 @@ export default function StableCoinBridgeXCHF() {
 			</div>
 
 			<div className="mb-5">
-				This Stablecoin Bridge facilitates the conversion between the Crypto Franc (XCHF) stablecoin and Frankencoin (ZCHF). The
-				bridge contract was initialized with a{" "}
+				This Stablecoin Bridge facilitates the conversion between the Crypto Franc (XCHF) stablecoin and Frankencoin ({TOKEN_SYMBOL}).
+				The bridge contract was initialized with a{" "}
 				<span className="front-bold font-semibold text-card-content-highlight">
-					maximum minting limit of {formatCurrency(limit.toString(), 2)} ZCHF
+					maximum minting limit of {formatCurrency(limit.toString(), 2)} {TOKEN_SYMBOL}
 				</span>
-				, representing the upper bound for the amount of ZCHF that can be minted through this bridge.{" "}
+				, representing the upper bound for the amount of {TOKEN_SYMBOL} that can be minted through this bridge.{" "}
 				<a href="https://docs.frankencoin.com/swap" target="_blank" rel="noreferrer" className="justify-center underline">
 					Read more
 				</a>
@@ -41,7 +41,7 @@ export default function StableCoinBridgeXCHF() {
 				</span>
 				, which corresponds to the available{" "}
 				<span className="front-bold font-semibold text-card-content-highlight">
-					liquidity of {formatCurrency((limit - minted).toString(), 2)} ZCHF
+					liquidity of {formatCurrency((limit - minted).toString(), 2)} {TOKEN_SYMBOL}
 				</span>
 				. This amount constitutes to{" "}
 				<span className="front-bold font-semibold text-card-content-highlight">{ratio}% of the maximum minting limit</span>{" "}
@@ -59,20 +59,7 @@ export default function StableCoinBridgeXCHF() {
 					</Link>
 				</div>
 
-				<div className="mx-auto max-w-full flex-col h-2 w-72">
-					<a
-						href={SOCIAL.Uniswap_Mainnet}
-						target="_blank"
-						rel="noreferrer"
-						className="flex items-center justify-center underline"
-					>
-						Also available on
-						<picture>
-							<img src="/assets/uniswap.svg" alt="logo" className="w-6 mb-2 mx-1" />
-						</picture>
-						Uniswap.
-					</a>
-				</div>
+				<div className="mx-auto max-w-full flex-col h-2 w-72"></div>
 			</div>
 
 			<div className={`bg-gray-200 rounded-full text-center max-h-7 max-w-[100] text-gray-900 font-bold ${statusColor}`}>

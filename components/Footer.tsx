@@ -41,9 +41,6 @@ export default function Footer() {
 					<FooterButton link={DynamicDocs()} text="Doc" icon={faBook} />
 				</li>
 				<li>
-					<FooterButton link={SOCIAL.SubStack} text="Blog" icon={faBookmark} />
-				</li>
-				<li>
 					<FooterButton link={SOCIAL.Github_contract} text="Github" icon={faGithub} />
 				</li>
 				<li>

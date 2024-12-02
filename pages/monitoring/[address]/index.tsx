@@ -4,7 +4,7 @@ import Link from "next/link";
 import AppBox from "@components/AppBox";
 import DisplayLabel from "@components/DisplayLabel";
 import DisplayAmount from "@components/DisplayAmount";
-import { formatDate, shortenAddress } from "@utils";
+import { formatDate, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { useContractUrl } from "@hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -62,7 +62,7 @@ export default function PositionDetail() {
 	return (
 		<>
 			<Head>
-				<title>Frankencoin - Position Overview</title>
+				<title>dEURO - Position Overview</title>
 			</Head>
 			<div className="md:mt-8">
 				<section className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -79,7 +79,7 @@ export default function PositionDetail() {
 								<DisplayLabel label="Minted Total" />
 								<DisplayAmount
 									amount={BigInt(position.minted)}
-									currency="ZCHF"
+									currency={TOKEN_SYMBOL}
 									address={ADDRESS[chainId].frankenCoin}
 									className="mt-2"
 								/>
@@ -98,7 +98,7 @@ export default function PositionDetail() {
 								<DisplayLabel label="Liquidation Price" />
 								<DisplayAmount
 									amount={BigInt(position.price)}
-									currency={"ZCHF"}
+									currency={TOKEN_SYMBOL}
 									digits={36 - position.collateralDecimals}
 									address={ADDRESS[chainId].frankenCoin}
 									className="mt-2"
@@ -106,13 +106,13 @@ export default function PositionDetail() {
 							</AppBox>
 							<AppBox>
 								<DisplayLabel label="Retained Reserve" />
-								<DisplayAmount amount={reserve} currency={"ZCHF"} address={ADDRESS[chainId].frankenCoin} className="mt-2" />
+								<DisplayAmount amount={reserve} currency={TOKEN_SYMBOL} address={ADDRESS[chainId].frankenCoin} className="mt-2" />
 							</AppBox>
 							<AppBox>
 								<DisplayLabel label="Limit" />
 								<DisplayAmount
 									amount={BigInt(position.limitForClones)}
-									currency={"ZCHF"}
+									currency={TOKEN_SYMBOL}
 									address={ADDRESS[chainId].frankenCoin}
 									className="mt-2"
 								/>
@@ -152,7 +152,7 @@ export default function PositionDetail() {
 									<p>
 										This position is subject to a cooldown period that ends on {formatDate(position.cooldown)} as its
 										owner has recently increased the applicable liquidation price. The cooldown period gives other users
-										an opportunity to challenge the position before additional Frankencoins can be minted.
+										an opportunity to challenge the position before additional dEuros can be minted.
 									</p>
 								</AppBox>
 							</div>

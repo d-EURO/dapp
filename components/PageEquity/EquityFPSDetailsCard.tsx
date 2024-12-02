@@ -5,6 +5,7 @@ import { useFPSQuery, usePoolStats, useTradeQuery } from "@hooks";
 import { useChainId } from "wagmi";
 import dynamic from "next/dynamic";
 import { ADDRESS } from "@frankencoin/zchf";
+import { POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export default function EquityFPSDetailsCard() {
@@ -18,12 +19,12 @@ export default function EquityFPSDetailsCard() {
 			<div id="chart-timeline">
 				<div className="flex justify-between">
 					<div>
-						<DisplayLabel label="FPS Price" />
-						<DisplayAmount className="mt-4" amount={poolStats.equityPrice} currency="ZCHF" />
+						<DisplayLabel label={`${POOL_SHARE_TOKEN_SYMBOL} Price`} />
+						<DisplayAmount className="mt-4" amount={poolStats.equityPrice} currency={TOKEN_SYMBOL} />
 					</div>
 					<div className="text-right">
 						<DisplayLabel label="Supply" />
-						<DisplayAmount className="mt-4" amount={poolStats.equitySupply} currency="FPS" />
+						<DisplayAmount className="mt-4" amount={poolStats.equitySupply} currency={POOL_SHARE_TOKEN_SYMBOL} />
 					</div>
 				</div>
 				<ApexChart
@@ -85,7 +86,7 @@ export default function EquityFPSDetailsCard() {
 					}}
 					series={[
 						{
-							name: "FPS Price",
+							name: `${POOL_SHARE_TOKEN_SYMBOL} Price`,
 							data: trades.map((trade) => {
 								return [parseFloat(trade.time) * 1000, Math.round(Number(trade.lastPrice) / 10 ** 16) / 100];
 							}),
@@ -99,7 +100,7 @@ export default function EquityFPSDetailsCard() {
 					<DisplayAmount
 						className="mt-4"
 						amount={(poolStats.equitySupply * poolStats.equityPrice) / BigInt(1e18)}
-						currency="ZCHF"
+						currency={TOKEN_SYMBOL}
 					/>
 				</AppBox>
 				<AppBox>
@@ -107,7 +108,7 @@ export default function EquityFPSDetailsCard() {
 					<DisplayAmount
 						className="mt-4"
 						amount={poolStats.frankenTotalReserve}
-						currency="ZCHF"
+						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].frankenCoin}
 					/>
 				</AppBox>
@@ -116,7 +117,7 @@ export default function EquityFPSDetailsCard() {
 					<DisplayAmount
 						className="mt-4"
 						amount={poolStats.frankenEquity}
-						currency="ZCHF"
+						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].frankenCoin}
 					/>
 				</AppBox>
@@ -125,7 +126,7 @@ export default function EquityFPSDetailsCard() {
 					<DisplayAmount
 						className="mt-4"
 						amount={poolStats.frankenMinterReserve}
-						currency="ZCHF"
+						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].frankenCoin}
 					/>
 				</AppBox>
@@ -134,7 +135,7 @@ export default function EquityFPSDetailsCard() {
 					<DisplayAmount
 						className="mt-4 text-text-success"
 						amount={profit}
-						currency="ZCHF"
+						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].frankenCoin}
 					/>
 				</AppBox>
@@ -143,7 +144,7 @@ export default function EquityFPSDetailsCard() {
 					<DisplayAmount
 						className="mt-4 text-text-warning"
 						amount={loss}
-						currency="ZCHF"
+						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].frankenCoin}
 					/>
 				</AppBox>
