@@ -1,6 +1,6 @@
 import { Address, formatUnits, zeroAddress } from "viem";
 import TableRow from "../Table/TableRow";
-import { BidsQueryItem, ChallengesId } from "@frankencoin/api";
+import { BidsQueryItem, ChallengesId } from "@deuro/api";
 import { RootState } from "../../redux/redux.store";
 import { useSelector } from "react-redux";
 import TokenLogo from "@components/TokenLogo";

@@ -1,4 +1,4 @@
-import { ChallengesQueryItem, PositionQuery, PositionsQueryObjectArray } from "@frankencoin/api";
+import { ChallengesQueryItem, PositionQuery, PositionsQueryObjectArray } from "@deuro/api";
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { CONFIG, WAGMI_CONFIG } from "../../app.config";
@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { Address } from "viem";
 import { useAccount } from "wagmi";
 import Button from "@components/Button";
-import { ADDRESS, MintingHubV1ABI, MintingHubV2ABI } from "@frankencoin/zchf";
+import { ADDRESS, MintingHubV2ABI } from "@frankencoin/zchf";
 
 interface Props {
 	challenge: ChallengesQueryItem;
@@ -39,8 +39,8 @@ export default function MyPositionsChallengesCancel({ challenge, hidden }: Props
 			setCancelling(true);
 
 			const cancelWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: p.version == 1 ? ADDRESS[chainId].mintingHubV1 : ADDRESS[chainId].mintingHubV2,
-				abi: p.version == 1 ? MintingHubV1ABI : MintingHubV2ABI,
+				address: ADDRESS[chainId].mintingHubV2,
+				abi: MintingHubV2ABI,
 				functionName: "bid",
 				args: [n, r, false],
 			});

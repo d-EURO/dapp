@@ -7,7 +7,7 @@ import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { CONFIG, WAGMI_CONFIG } from "../../app.config";
 import { useAccount } from "wagmi";
 import { ADDRESS, SavingsABI } from "@frankencoin/zchf";
-import { ApiLeadrateInfo, LeadrateProposed } from "@frankencoin/api";
+import { ApiLeadrateInfo, LeadrateProposed } from "@deuro/api";
 import Button from "@components/Button";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { toast } from "react-toastify";

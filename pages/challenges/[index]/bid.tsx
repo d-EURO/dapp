@@ -20,8 +20,8 @@ import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useRouter as useNavigation } from "next/navigation";
-import { ADDRESS, FrankencoinABI, MintingHubV1ABI, MintingHubV2ABI } from "@frankencoin/zchf";
-import { ChallengesId } from "@frankencoin/api";
+import { ADDRESS, FrankencoinABI, MintingHubV2ABI } from "@frankencoin/zchf";
+import { ChallengesId } from "@deuro/api";
 
 export default function ChallengePlaceBid() {
 	const [isInit, setInit] = useState(false);
@@ -64,8 +64,8 @@ export default function ChallengePlaceBid() {
 			}
 
 			const _price = await readContract(WAGMI_CONFIG, {
-				address: position.version === 1 ? ADDR.mintingHubV1 : ADDR.mintingHubV2,
-				abi: position.version === 1 ? MintingHubV1ABI : MintingHubV2ABI,
+				address: ADDR.mintingHubV2,
+				abi: MintingHubV2ABI,
 				functionName: "price",
 				args: [parseInt(challenge.number.toString())],
 			});
@@ -128,8 +128,8 @@ export default function ChallengePlaceBid() {
 			setBidding(true);
 
 			const bidWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: position.version === 1 ? ADDRESS[chainId].mintingHubV1 : ADDRESS[chainId].mintingHubV2,
-				abi: position.version === 1 ? MintingHubV1ABI : MintingHubV2ABI,
+				address: ADDRESS[chainId].mintingHubV2,
+				abi: MintingHubV2ABI,
 				functionName: "bid",
 				args: [parseInt(challenge.number.toString()), amount, false],
 			});

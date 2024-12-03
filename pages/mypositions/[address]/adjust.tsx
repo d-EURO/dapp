@@ -13,7 +13,7 @@ import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
-import { PositionQuery } from "@frankencoin/api";
+import { PositionQuery } from "@deuro/api";
 import { ADDRESS, PositionV1ABI, PositionV2ABI } from "@frankencoin/zchf";
 
 export default function PositionAdjust() {
@@ -76,7 +76,7 @@ export default function PositionAdjust() {
 
 			const _balanceChallenge = await readContract(WAGMI_CONFIG, {
 				address: position.position,
-				abi: position.version === 1 ? PositionV1ABI : PositionV2ABI,
+				abi: PositionV2ABI,
 				functionName: "challengedAmount",
 			});
 			setChallengeSize(_balanceChallenge);
@@ -89,13 +89,6 @@ export default function PositionAdjust() {
 	if (!position) return null;
 
 	const isCooldown: boolean = position.cooldown * 1000 - Date.now() > 0;
-
-	const price: number = parseFloat(formatUnits(BigInt(position.price), 36 - position.collateralDecimals));
-	const collateralPriceZchf: number = prices[position.collateral.toLowerCase() as Address].price.chf || 1;
-	const interest: number = position.annualInterestPPM / 10 ** 6;
-	const reserve: number = position.reserveContribution / 10 ** 6;
-	const effectiveLTV: number = (price * (1 - reserve)) / collateralPriceZchf;
-	const effectiveInterest: number = interest / (1 - reserve);
 
 	const maxMintableForCollateralAmount: bigint = BigInt(formatUnits(BigInt(position.price) * collateralAmount, 36 - 18).split(".")[0]);
 	const maxMintableInclClones: bigint = BigInt(position.availableForClones) + BigInt(position.minted);

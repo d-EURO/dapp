@@ -1,4 +1,4 @@
-import { MinterQuery } from "@frankencoin/api";
+import { MinterQuery } from "@deuro/api";
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { CONFIG, WAGMI_CONFIG } from "../../app.config";

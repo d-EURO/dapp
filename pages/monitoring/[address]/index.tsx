@@ -14,7 +14,7 @@ import { RootState } from "../../../redux/redux.store";
 import { CONFIG, WAGMI_CONFIG } from "../../../app.config";
 import { useEffect, useState } from "react";
 import { readContract } from "wagmi/actions";
-import { ChallengesQueryItem, PositionQuery } from "@frankencoin/api";
+import { ChallengesQueryItem, PositionQuery } from "@deuro/api";
 import { useRouter as useNavigation } from "next/navigation";
 import Button from "@components/Button";
 import { ADDRESS, FrankencoinABI } from "@frankencoin/zchf";
@@ -40,7 +40,7 @@ export default function PositionDetail() {
 
 		const fetchAsync = async function () {
 			const data = await readContract(WAGMI_CONFIG, {
-				address: position.zchf,
+				address: position.deuro,
 				abi: FrankencoinABI,
 				functionName: "calculateAssignedReserve",
 				args: [BigInt(position.minted), position.reserveContribution],
