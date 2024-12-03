@@ -6,7 +6,7 @@ import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { CONFIG, WAGMI_CONFIG } from "../../app.config";
 import { useAccount } from "wagmi";
-import { ADDRESS, SavingsABI } from "@frankencoin/zchf";
+import { ADDRESS, SavingsABI } from "@deuro/eurocoin";
 import { ApiLeadrateInfo, LeadrateProposed } from "@deuro/api";
 import Button from "@components/Button";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";

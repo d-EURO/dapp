@@ -20,7 +20,7 @@ import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useRouter as useNavigation } from "next/navigation";
-import { ADDRESS, FrankencoinABI, MintingHubV2ABI } from "@frankencoin/zchf";
+import { ADDRESS, DecentralizedEUROABI, MintingHubV2ABI } from "@deuro/eurocoin";
 import { ChallengesId } from "@deuro/api";
 
 export default function ChallengePlaceBid() {
@@ -55,8 +55,8 @@ export default function ChallengePlaceBid() {
 		const fetchAsync = async function () {
 			if (acc !== undefined) {
 				const _balance = await readContract(WAGMI_CONFIG, {
-					address: ADDR.frankenCoin,
-					abi: FrankencoinABI,
+					address: ADDR.decentralizedEURO,
+					abi: DecentralizedEUROABI,
 					functionName: "balanceOf",
 					args: [acc],
 				});
@@ -212,7 +212,7 @@ export default function ChallengePlaceBid() {
 								<DisplayAmount
 									amount={auctionPrice}
 									digits={36 - position.collateralDecimals}
-									address={ADDRESS[chainId].frankenCoin}
+									address={ADDRESS[chainId].decentralizedEURO}
 									currency={TOKEN_SYMBOL}
 									className="mt-4"
 								/>

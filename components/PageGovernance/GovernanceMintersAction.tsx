@@ -9,7 +9,7 @@ import { useAccount } from "wagmi";
 import Button from "@components/Button";
 import { Address } from "viem";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
-import { ADDRESS, FrankencoinABI } from "@frankencoin/zchf";
+import { ADDRESS, DecentralizedEUROABI } from "@deuro/eurocoin";
 
 interface Props {
 	minter: MinterQuery;
@@ -34,8 +34,8 @@ export default function GovernanceMintersAction({ minter, disabled }: Props) {
 			setVetoing(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].frankenCoin,
-				abi: FrankencoinABI,
+				address: ADDRESS[chainId].decentralizedEURO,
+				abi: DecentralizedEUROABI,
 				functionName: "denyMinter",
 				args: [m, h, msg],
 			});

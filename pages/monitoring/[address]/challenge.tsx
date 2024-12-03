@@ -19,7 +19,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import Link from "next/link";
 import { useRouter as useNavigation } from "next/navigation";
-import { ADDRESS, MintingHubV1ABI, MintingHubV2ABI } from "@frankencoin/zchf";
+import { ADDRESS, MintingHubV2ABI } from "@deuro/eurocoin";
 
 export default function PositionChallenge() {
 	const [amount, setAmount] = useState(0n);
@@ -46,7 +46,7 @@ export default function PositionChallenge() {
 	// ---------------------------------------------------------------------------
 	useEffect(() => {
 		const acc: Address | undefined = account.address;
-		const fc: Address = ADDRESS[WAGMI_CHAIN.id].frankenCoin;
+		const fc: Address = ADDRESS[WAGMI_CHAIN.id].decentralizedEURO;
 		if (acc === undefined) return;
 		if (!position || !position.collateral) return;
 
@@ -119,7 +119,7 @@ export default function PositionChallenge() {
 				},
 				{
 					title: "Spender: ",
-					value: shortenAddress(ADDRESS[chainId].mintingHubV1),
+					value: shortenAddress(ADDRESS[chainId].mintingHubV2),
 				},
 				{
 					title: "Transaction:",
@@ -217,7 +217,7 @@ export default function PositionChallenge() {
 									amount={BigInt(position.price)}
 									currency={TOKEN_SYMBOL}
 									digits={36 - position.collateralDecimals}
-									address={ADDRESS[chainId].frankenCoin}
+									address={ADDRESS[chainId].decentralizedEURO}
 									/* subAmount={maxProceeds}
 									subCurrency={"% (Coingecko)"}
 									subColor={maxProceeds > 0 ? "text-green-300" : "text-red-500"} */
@@ -230,7 +230,7 @@ export default function PositionChallenge() {
 									amount={(BigInt(position.price) * amount * 2n) / 100n}
 									currency={TOKEN_SYMBOL}
 									digits={36}
-									address={ADDRESS[chainId].frankenCoin}
+									address={ADDRESS[chainId].decentralizedEURO}
 									className="mt-2"
 								/>
 							</AppBox>

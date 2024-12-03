@@ -9,7 +9,7 @@ import Button from "@components/Button";
 import { Address, zeroAddress } from "viem";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { PositionQuery } from "@deuro/api";
-import { PositionV2ABI } from "@frankencoin/zchf";
+import { PositionV2ABI } from "@deuro/eurocoin";
 
 interface Props {
 	position: PositionQuery;

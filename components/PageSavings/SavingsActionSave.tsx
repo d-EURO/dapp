@@ -7,7 +7,7 @@ import { renderErrorTxToast, TxToast } from "@components/TxToast";
 import { useAccount, useChainId } from "wagmi";
 import Button from "@components/Button";
 import { formatUnits } from "viem";
-import { ADDRESS, SavingsABI } from "@frankencoin/zchf";
+import { ADDRESS, SavingsABI } from "@deuro/eurocoin";
 
 interface Props {
 	amount: bigint;

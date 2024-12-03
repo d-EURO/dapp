@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
 import TokenInputSelect from "@components/Input/TokenInputSelect";
-import { ADDRESS, EquityABI } from "@frankencoin/zchf";
+import { ADDRESS, EquityABI } from "@deuro/eurocoin";
 
 interface Props {
 	tokenFromTo: { from: string; to: string };
@@ -46,7 +46,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 			setApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].frankenCoin,
+				address: ADDRESS[chainId].decentralizedEURO,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [ADDRESS[chainId].equity, amount],
@@ -270,7 +270,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 						className="mt-4"
 						amount={(poolStats.equityPrice * poolStats.equityBalance) / BigInt(1e18)}
 						currency={TOKEN_SYMBOL}
-						address={ADDRESS[chainId].frankenCoin}
+						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 				<AppBox>

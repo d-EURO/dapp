@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ADDRESS, FrankencoinABI, SavingsABI } from "@frankencoin/zchf";
+import { ADDRESS } from "@deuro/eurocoin";
 import { useChainId } from "wagmi";
 import { useContractUrl } from "@hooks";
 import { shortenAddress, TOKEN_SYMBOL } from "@utils";;

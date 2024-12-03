@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
 import TokenInputSelect from "@components/Input/TokenInputSelect";
-import { ADDRESS, EquityABI, FPSWrapperABI } from "@frankencoin/zchf";
+import { ADDRESS, EquityABI, DEPSWrapperABI } from "@deuro/eurocoin";
 
 interface Props {
 	tokenFromTo: { from: string; to: string };
@@ -49,15 +49,15 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 		const fetchAsync = async function () {
 			if (account != zeroAddress) {
 				const _wfpsAllowance = await readContract(WAGMI_CONFIG, {
-					address: ADDRESS[chainId].wFPS,
+					address: ADDRESS[chainId].DEPSwrapper,
 					abi: erc20Abi,
 					functionName: "allowance",
-					args: [account, ADDRESS[chainId].wFPS],
+					args: [account, ADDRESS[chainId].DEPSwrapper],
 				});
 				setWfpsAllowance(_wfpsAllowance);
 
 				const _wfpsBalance = await readContract(WAGMI_CONFIG, {
-					address: ADDRESS[chainId].wFPS,
+					address: ADDRESS[chainId].DEPSwrapper,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					args: [account],
@@ -69,7 +69,7 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 				address: ADDRESS[chainId].equity,
 				abi: EquityABI,
 				functionName: "holdingDuration",
-				args: [ADDRESS[chainId].wFPS],
+				args: [ADDRESS[chainId].DEPSwrapper],
 			});
 			setWfpsHolding(_wfpsHolding);
 		};
@@ -96,10 +96,10 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 			setApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].wFPS,
+				address: ADDRESS[chainId].DEPSwrapper,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].wFPS, amount],
+				args: [ADDRESS[chainId].DEPSwrapper, amount],
 			});
 
 			const toastContent = [
@@ -109,7 +109,7 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 				},
 				{
 					title: "Spender: ",
-					value: shortenAddress(ADDRESS[chainId].wFPS),
+					value: shortenAddress(ADDRESS[chainId].DEPSwrapper),
 				},
 				{
 					title: "Transaction:",
@@ -137,8 +137,8 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 			setRedeeming(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].wFPS,
-				abi: FPSWrapperABI,
+				address: ADDRESS[chainId].DEPSwrapper,
+				abi: DEPSWrapperABI,
 				functionName: "unwrapAndSell",
 				args: [amount],
 			});
@@ -246,7 +246,7 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 			<div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-2">
 				<AppBox>
 					<DisplayLabel label="Your Balance" />
-					<DisplayAmount className="mt-4" amount={wfpsBalance} currency={POOL_SHARE_TOKEN_SYMBOL} address={ADDRESS[chainId].wFPS} />
+					<DisplayAmount className="mt-4" amount={wfpsBalance} currency={POOL_SHARE_TOKEN_SYMBOL} address={ADDRESS[chainId].DEPSwrapper} />
 				</AppBox>
 				<AppBox>
 					<DisplayLabel label="Value at Current Price" />
@@ -254,7 +254,7 @@ export default function EquityInteractionWithWFPSRedeem({ tokenFromTo, setTokenF
 						className="mt-4"
 						amount={(poolStats.equityPrice * wfpsBalance) / BigInt(1e18)}
 						currency={TOKEN_SYMBOL}
-						address={ADDRESS[chainId].frankenCoin}
+						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 				<AppBox>

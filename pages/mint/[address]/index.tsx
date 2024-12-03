@@ -17,7 +17,7 @@ import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import Link from "next/link";
-import { ADDRESS, MintingHubV1ABI, MintingHubV2ABI } from "@frankencoin/zchf";
+import { ADDRESS, MintingHubV2ABI } from "@deuro/eurocoin";
 
 export default function PositionBorrow({}) {
 	const [amount, setAmount] = useState(0n);
@@ -179,7 +179,7 @@ export default function PositionBorrow({}) {
 				},
 				{
 					title: "Spender: ",
-					value: shortenAddress(ADDRESS[chainId].mintingHubV1),
+					value: shortenAddress(ADDRESS[chainId].mintingHubV2),
 				},
 				{
 					title: "Transaction:",

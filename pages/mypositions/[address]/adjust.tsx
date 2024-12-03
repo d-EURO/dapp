@@ -14,7 +14,7 @@ import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import { PositionQuery } from "@deuro/api";
-import { ADDRESS, PositionV1ABI, PositionV2ABI } from "@frankencoin/zchf";
+import { ADDRESS, PositionV2ABI } from "@deuro/eurocoin";
 
 export default function PositionAdjust() {
 	const [isApproving, setApproving] = useState(false);
@@ -44,13 +44,13 @@ export default function PositionAdjust() {
 	// ---------------------------------------------------------------------------
 	useEffect(() => {
 		const acc: Address | undefined = account.address;
-		const fc: Address = ADDRESS[WAGMI_CHAIN.id].frankenCoin;
+		const fc: Address = ADDRESS[WAGMI_CHAIN.id].decentralizedEURO;
 		if (!position || !position.collateral) return;
 
 		const fetchAsync = async function () {
 			if (acc !== undefined) {
 				const _balanceFrank = await readContract(WAGMI_CONFIG, {
-					address: ADDRESS[WAGMI_CHAIN.id].frankenCoin,
+					address: ADDRESS[WAGMI_CHAIN.id].decentralizedEURO,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					args: [acc],
@@ -209,7 +209,7 @@ export default function PositionAdjust() {
 			setAdjusting(true);
 			const adjustWriteHash = await writeContract(WAGMI_CONFIG, {
 				address: position.position,
-				abi: PositionV1ABI,
+				abi: PositionV2ABI,
 				functionName: "adjust",
 				args: [amount, collateralAmount, liqPrice],
 			});

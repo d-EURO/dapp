@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { Address } from "viem";
 import { useAccount } from "wagmi";
 import Button from "@components/Button";
-import { ADDRESS, MintingHubV2ABI } from "@frankencoin/zchf";
+import { ADDRESS, MintingHubV2ABI } from "@deuro/eurocoin";
 
 interface Props {
 	challenge: ChallengesQueryItem;

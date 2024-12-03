@@ -15,7 +15,7 @@ import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../app.config";
 import Link from "next/link";
 import AppCard from "@components/AppCard";
-import { ADDRESS, StablecoinBridgeABI } from "@frankencoin/zchf";
+import { ADDRESS, StablecoinBridgeABI } from "@deuro/eurocoin";
 
 export default function Swap() {
 	const [amount, setAmount] = useState(0n);
@@ -27,16 +27,16 @@ export default function Swap() {
 
 	const chainId = useChainId();
 	const swapStats = useSwapStats();
-	const xchfUrl = useContractUrl(ADDRESS[chainId].xchf);
+	const eurtUrl = useContractUrl(ADDRESS[chainId].eurt);
 
 	const handleApprove = async () => {
 		try {
 			setApproving(true);
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].xchf,
+				address: ADDRESS[chainId].eurt,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].bridge, maxUint256],
+				args: [ADDRESS[chainId].bridgeEURT, maxUint256],
 			});
 
 			const toastContent = [
@@ -46,7 +46,7 @@ export default function Swap() {
 				},
 				{
 					title: "Spender: ",
-					value: shortenAddress(ADDRESS[chainId].bridge),
+					value: shortenAddress(ADDRESS[chainId].bridgeEURT),
 				},
 				{
 					title: "Transaction:",
@@ -56,10 +56,10 @@ export default function Swap() {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title="Approving XCHF" rows={toastContent} />,
+					render: <TxToast title="Approving EURT" rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title="Successfully Approved XCHF" rows={toastContent} />,
+					render: <TxToast title="Successfully Approved EURT" rows={toastContent} />,
 				},
 			});
 		} catch (error) {
@@ -72,7 +72,7 @@ export default function Swap() {
 		try {
 			setMinting(true);
 			const mintWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].bridge,
+				address: ADDRESS[chainId].bridgeEURT,
 				abi: StablecoinBridgeABI,
 				functionName: "mint",
 				args: [amount],
@@ -112,7 +112,7 @@ export default function Swap() {
 			setBurning(true);
 
 			const burnWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].bridge,
+				address: ADDRESS[chainId].bridgeEURT,
 				abi: StablecoinBridgeABI,
 				functionName: "burn",
 				args: [amount],
@@ -179,9 +179,9 @@ export default function Swap() {
 
 			<div className="md:mt-8">
 				<AppCard>
-					<Link href={xchfUrl} target="_blank">
+					<Link href={eurtUrl} target="_blank">
 						<div className="mt-4 text-lg font-bold underline text-center">
-							Swap XCHF and ZCHF
+							Swap EURT and dEURO
 							<FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 ml-2" />
 						</div>
 					</Link>

@@ -2,7 +2,7 @@ import { useAccount, useReadContracts } from "wagmi";
 import { decodeBigIntCall } from "@utils";
 import { erc20Abi } from "viem";
 import { WAGMI_CHAIN } from "../app.config";
-import { ADDRESS, StablecoinBridgeABI } from "@frankencoin/zchf";
+import { ADDRESS, StablecoinBridgeABI } from "@deuro/eurocoin";
 
 export const useSwapStats = () => {
 	const chainId = WAGMI_CHAIN.id as number;
@@ -14,56 +14,56 @@ export const useSwapStats = () => {
 			// XCHF Calls
 			{
 				chainId,
-				address: ADDRESS[chainId].xchf,
+				address: ADDRESS[chainId].eurt,
 				abi: erc20Abi,
 				functionName: "balanceOf",
 				args: [account],
 			},
 			{
 				chainId,
-				address: ADDRESS[chainId].xchf,
+				address: ADDRESS[chainId].eurt,
 				abi: erc20Abi,
 				functionName: "symbol",
 			},
 			{
 				chainId,
-				address: ADDRESS[chainId].xchf,
+				address: ADDRESS[chainId].eurt,
 				abi: erc20Abi,
 				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridge],
+				args: [account, ADDRESS[chainId].bridgeEURT],
 			},
 			{
 				chainId,
-				address: ADDRESS[chainId].xchf,
+				address: ADDRESS[chainId].eurt,
 				abi: erc20Abi,
 				functionName: "balanceOf",
-				args: [ADDRESS[chainId].bridge],
+				args: [ADDRESS[chainId].bridgeEURT],
 			},
 			// Frankencoin Calls
 			{
 				chainId,
-				address: ADDRESS[chainId].frankenCoin,
+				address: ADDRESS[chainId].decentralizedEURO,
 				abi: erc20Abi,
 				functionName: "balanceOf",
 				args: [account],
 			},
 			{
 				chainId,
-				address: ADDRESS[chainId].frankenCoin,
+				address: ADDRESS[chainId].decentralizedEURO,
 				abi: erc20Abi,
 				functionName: "symbol",
 			},
 			{
 				chainId,
-				address: ADDRESS[chainId].frankenCoin,
+				address: ADDRESS[chainId].decentralizedEURO,
 				abi: erc20Abi,
 				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridge],
+				args: [account, ADDRESS[chainId].bridgeEURT],
 			},
 			// Bridge Calls
 			{
 				chainId,
-				address: ADDRESS[chainId].bridge,
+				address: ADDRESS[chainId].bridgeEURT,
 				abi: StablecoinBridgeABI,
 				functionName: "limit",
 			},

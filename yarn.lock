@@ -686,14 +686,6 @@
   dependencies:
     prop-types "^15.8.1"
 
-"@frankencoin/zchf@^0.2.15":
-  version "0.2.15"
-  resolved "https://registry.yarnpkg.com/@frankencoin/zchf/-/zchf-0.2.15.tgz#24a0fa4965ee214b45aa0f346e6c20803c517ed5"
-  integrity sha512-ISkn5dNfjaVGfQMBRtvVVEOc7zNgFhTkl3UewSFtxMKPDTR+aaTDnR7Ht4/qiRhG7I0C8lAUNAIRP9aEswDOIA==
-  dependencies:
-    ts-node "^10.9.1"
-    typescript "^5.2.2"
-
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.2.0.tgz#5f3d96ec6b2354ad6d8a28bf216a1d97b5426861"
