@@ -7,6 +7,7 @@ node_modules/
 .npmignore
 .prettierignore
 
+.env
 .env.example
 
 .eslintrc.json
