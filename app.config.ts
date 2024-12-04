@@ -39,8 +39,8 @@ export const PONDER_CLIENT = new ApolloClient({
 	cache: new InMemoryCache(),
 });
 
-// FRANKENCOIN API CLIENT
-export const FRANKENCOIN_API_CLIENT = axios.create({
+// DEURO API CLIENT
+export const DEURO_API_CLIENT = axios.create({
 	baseURL: CONFIG.api,
 });
 

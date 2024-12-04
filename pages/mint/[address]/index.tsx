@@ -17,7 +17,7 @@ import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import Link from "next/link";
-import { ADDRESS, MintingHubV1ABI, MintingHubV2ABI } from "@frankencoin/zchf";
+import { ADDRESS, MintingHubV2ABI } from "@deuro/eurocoin";
 
 export default function PositionBorrow({}) {
 	const [amount, setAmount] = useState(0n);
@@ -75,7 +75,7 @@ export default function PositionBorrow({}) {
 				address: position.collateral,
 				abi: erc20Abi,
 				functionName: "allowance",
-				args: [acc, position.version == 1 ? ADDRESS[WAGMI_CHAIN.id].mintingHubV1 : ADDRESS[WAGMI_CHAIN.id].mintingHubV2],
+				args: [acc, ADDRESS[WAGMI_CHAIN.id].mintingHubV2],
 			});
 			setUserAllowance(_allowance);
 		};
@@ -88,10 +88,10 @@ export default function PositionBorrow({}) {
 	if (!position) return null;
 
 	const price: number = parseFloat(formatUnits(BigInt(position.price), 36 - position.collateralDecimals));
-	const collateralPriceZchf: number = prices[position.collateral.toLowerCase() as Address].price.chf || 1;
+	const collateralPriceDeuro: number = prices[position.collateral.toLowerCase() as Address].price.eur || 1;
 	const interest: number = position.annualInterestPPM / 10 ** 6;
 	const reserve: number = position.reserveContribution / 10 ** 6;
-	const effectiveLTV: number = (price * (1 - reserve)) / collateralPriceZchf;
+	const effectiveLTV: number = (price * (1 - reserve)) / collateralPriceDeuro;
 	const effectiveInterest: number = interest / (1 - reserve);
 
 	const requiredColl =
@@ -169,7 +169,7 @@ export default function PositionBorrow({}) {
 				address: position.collateral as Address,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [position.version == 1 ? ADDRESS[chainId].mintingHubV1 : ADDRESS[chainId].mintingHubV2, maxUint256],
+				args: [ADDRESS[chainId].mintingHubV2, maxUint256],
 			});
 
 			const toastContent = [
@@ -179,7 +179,7 @@ export default function PositionBorrow({}) {
 				},
 				{
 					title: "Spender: ",
-					value: shortenAddress(ADDRESS[chainId].mintingHubV1),
+					value: shortenAddress(ADDRESS[chainId].mintingHubV2),
 				},
 				{
 					title: "Transaction:",
@@ -208,21 +208,12 @@ export default function PositionBorrow({}) {
 			const expirationTime = toTimestamp(expirationDate);
 			let cloneWriteHash: Hash = zeroHash;
 
-			if (position.version == 1) {
-				cloneWriteHash = await writeContract(WAGMI_CONFIG, {
-					address: ADDRESS[chainId].mintingHubV1,
-					abi: MintingHubV1ABI,
-					functionName: "clone",
-					args: [position.position, requiredColl, amount, BigInt(expirationTime)],
-				});
-			} else if (position.version == 2) {
-				cloneWriteHash = await writeContract(WAGMI_CONFIG, {
-					address: ADDRESS[chainId].mintingHubV2,
-					abi: MintingHubV2ABI,
-					functionName: "clone",
-					args: [position.position, requiredColl, amount, expirationTime],
-				});
-			}
+			cloneWriteHash = await writeContract(WAGMI_CONFIG, {
+				address: ADDRESS[chainId].mintingHubV2,
+				abi: MintingHubV2ABI,
+				functionName: "clone",
+				args: [position.position, requiredColl, amount, expirationTime],
+			});
 
 			const toastContent = [
 				{
@@ -374,7 +365,7 @@ export default function PositionBorrow({}) {
 
 								<div className="mt-2 flex">
 									<div className="flex-1">Market Price</div>
-									<div className="">{formatCurrency(collateralPriceZchf)} {TOKEN_SYMBOL}</div>
+									<div className="">{formatCurrency(collateralPriceDeuro)} {TOKEN_SYMBOL}</div>
 								</div>
 
 								<div className="mt-2 flex">

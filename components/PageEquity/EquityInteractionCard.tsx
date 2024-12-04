@@ -8,7 +8,7 @@ import Link from "next/link";
 import EquityInteractionWithZCHFFPS from "./EquityInteractionWithZCHFFPS";
 import EquityInteractionWithFPSWFPS from "./EquityInteractionWithFPSWFPS";
 import EquityInteractionWithWFPSRedeem from "./EquityInteractionWithWFPSRedeem";
-import { ADDRESS } from "@frankencoin/zchf";
+import { ADDRESS } from "@deuro/eurocoin";
 
 export const EquityTokenSelectorMapping: { [key: string]: string[] } = {
 	[TOKEN_SYMBOL]: [NATIVE_POOL_SHARE_TOKEN_SYMBOL],

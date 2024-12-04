@@ -1,6 +1,6 @@
 import AppCard from "@components/AppCard";
 import TokenInput from "@components/Input/TokenInput";
-import { ADDRESS, FrankencoinABI, SavingsABI } from "@frankencoin/zchf";
+import { ADDRESS, DecentralizedEUROABI, SavingsABI } from "@deuro/eurocoin";
 import { useContractUrl } from "@hooks";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
@@ -49,8 +49,8 @@ export default function SavingsInteractionCard() {
 
 		const fetchAsync = async function () {
 			const _balance = await readContract(WAGMI_CONFIG, {
-				address: ADDR.frankenCoin,
-				abi: FrankencoinABI,
+				address: ADDR.decentralizedEURO,
+				abi: DecentralizedEUROABI,
 				functionName: "balanceOf",
 				args: [account],
 			});

@@ -4,14 +4,14 @@ import DisplayLabel from "@components/DisplayLabel";
 import { useFPSQuery, usePoolStats, useTradeQuery } from "@hooks";
 import { useChainId } from "wagmi";
 import dynamic from "next/dynamic";
-import { ADDRESS } from "@frankencoin/zchf";
+import { ADDRESS } from "@deuro/eurocoin";
 import { POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export default function EquityFPSDetailsCard() {
 	const chainId = useChainId();
 	const poolStats = usePoolStats();
-	const { profit, loss } = useFPSQuery(ADDRESS[chainId].frankenCoin);
+	const { profit, loss } = useFPSQuery(ADDRESS[chainId].decentralizedEURO);
 	const { trades } = useTradeQuery();
 
 	return (
@@ -109,7 +109,7 @@ export default function EquityFPSDetailsCard() {
 						className="mt-4"
 						amount={poolStats.frankenTotalReserve}
 						currency={TOKEN_SYMBOL}
-						address={ADDRESS[chainId].frankenCoin}
+						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 				<AppBox>
@@ -118,7 +118,7 @@ export default function EquityFPSDetailsCard() {
 						className="mt-4"
 						amount={poolStats.frankenEquity}
 						currency={TOKEN_SYMBOL}
-						address={ADDRESS[chainId].frankenCoin}
+						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 				<AppBox>
@@ -127,7 +127,7 @@ export default function EquityFPSDetailsCard() {
 						className="mt-4"
 						amount={poolStats.frankenMinterReserve}
 						currency={TOKEN_SYMBOL}
-						address={ADDRESS[chainId].frankenCoin}
+						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 				<AppBox>
@@ -136,7 +136,7 @@ export default function EquityFPSDetailsCard() {
 						className="mt-4 text-text-success"
 						amount={profit}
 						currency={TOKEN_SYMBOL}
-						address={ADDRESS[chainId].frankenCoin}
+						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 				<AppBox>
@@ -145,7 +145,7 @@ export default function EquityFPSDetailsCard() {
 						className="mt-4 text-text-warning"
 						amount={loss}
 						currency={TOKEN_SYMBOL}
-						address={ADDRESS[chainId].frankenCoin}
+						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 			</div>

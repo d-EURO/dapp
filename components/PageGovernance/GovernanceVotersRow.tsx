@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { readContract } from "wagmi/actions";
 import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../app.config";
 import { useAccount } from "wagmi";
-import { ADDRESS, EquityABI } from "@frankencoin/zchf";
+import { ADDRESS, EquityABI } from "@deuro/eurocoin";
 import { NATIVE_POOL_SHARE_TOKEN_SYMBOL } from "../../utils/constant";
 
 interface Props {

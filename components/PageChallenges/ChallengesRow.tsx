@@ -1,6 +1,6 @@
 import { Address, formatUnits, parseEther, zeroAddress } from "viem";
 import TableRow from "../Table/TableRow";
-import { ChallengesId, ChallengesQueryItem } from "@frankencoin/api";
+import { ChallengesId, ChallengesQueryItem } from "@deuro/api";
 import { RootState } from "../../redux/redux.store";
 import { useSelector } from "react-redux";
 import TokenLogo from "@components/TokenLogo";
@@ -28,8 +28,8 @@ export default function ChallengesRow({ headers, challenge }: Props) {
 	if (!position) return null;
 
 	const collTokenPrice = prices[position.collateral.toLowerCase() as Address]?.price?.usd;
-	const zchfPrice = prices[position.zchf.toLowerCase() as Address]?.price?.usd;
-	if (!collTokenPrice || !zchfPrice) return null;
+	const deuroPrice = prices[position.deuro.toLowerCase() as Address]?.price?.usd;
+	if (!collTokenPrice || !deuroPrice) return null;
 
 	const challengePriceSearch: string | undefined = challengesPrices.map[challenge.id as ChallengesId];
 	const challengePrice: string = formatUnits(BigInt(challengePriceSearch ?? "0"), 36 - position.collateralDecimals);

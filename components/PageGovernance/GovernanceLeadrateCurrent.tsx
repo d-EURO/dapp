@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { CONFIG, WAGMI_CONFIG } from "../../app.config";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { ADDRESS, SavingsABI } from "@frankencoin/zchf";
+import { ADDRESS, SavingsABI } from "@deuro/eurocoin";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 

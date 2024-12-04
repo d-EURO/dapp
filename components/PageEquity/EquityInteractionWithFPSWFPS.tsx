@@ -14,7 +14,7 @@ import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
 import TokenInputSelect from "@components/Input/TokenInputSelect";
-import { ADDRESS, EquityABI, FPSWrapperABI } from "@frankencoin/zchf";
+import { ADDRESS, EquityABI, DEPSWrapperABI } from "@deuro/eurocoin";
 
 interface Props {
 	tokenFromTo: { from: string; to: string };
@@ -51,7 +51,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 					address: ADDRESS[chainId].equity,
 					abi: erc20Abi,
 					functionName: "allowance",
-					args: [account, ADDRESS[chainId].wFPS],
+					args: [account, ADDRESS[chainId].DEPSwrapper],
 				});
 				setFpsAllowance(_fpsAllowance);
 
@@ -72,7 +72,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 				setFpsHolding(_fpsHolding);
 
 				const _wfpsBalance = await readContract(WAGMI_CONFIG, {
-					address: ADDRESS[chainId].wFPS,
+					address: ADDRESS[chainId].DEPSwrapper,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					args: [account],
@@ -84,7 +84,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 				address: ADDRESS[chainId].equity,
 				abi: EquityABI,
 				functionName: "holdingDuration",
-				args: [ADDRESS[chainId].wFPS],
+				args: [ADDRESS[chainId].DEPSwrapper],
 			});
 			setWfpsHolding(_wfpsHolding);
 		};
@@ -100,7 +100,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 				address: ADDRESS[chainId].equity,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].wFPS, amount],
+				args: [ADDRESS[chainId].DEPSwrapper, amount],
 			});
 
 			const toastContent = [
@@ -110,7 +110,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 				},
 				{
 					title: "Spender: ",
-					value: shortenAddress(ADDRESS[chainId].wFPS),
+					value: shortenAddress(ADDRESS[chainId].DEPSwrapper),
 				},
 				{
 					title: "Transaction:",
@@ -137,8 +137,8 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 			setWrapping(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].wFPS,
-				abi: FPSWrapperABI,
+				address: ADDRESS[chainId].DEPSwrapper,
+				abi: DEPSWrapperABI,
 				functionName: "depositFor",
 				args: [account, amount],
 			});
@@ -178,8 +178,8 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 			setUnwrapping(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].wFPS,
-				abi: FPSWrapperABI,
+				address: ADDRESS[chainId].DEPSwrapper,
+				abi: DEPSWrapperABI,
 				functionName: "withdrawTo",
 				args: [account, amount],
 			});
@@ -293,7 +293,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 				</AppBox>
 				<AppBox>
 					<DisplayLabel label="Your Balance" />
-					<DisplayAmount className="mt-4" amount={wfpsBalance} currency={POOL_SHARE_TOKEN_SYMBOL} address={ADDRESS[chainId].wFPS} />
+					<DisplayAmount className="mt-4" amount={wfpsBalance} currency={POOL_SHARE_TOKEN_SYMBOL} address={ADDRESS[chainId].DEPSwrapper} />
 				</AppBox>
 				<AppBox>
 					<DisplayLabel label={`Holding Duration ${POOL_SHARE_TOKEN_SYMBOL}`} />

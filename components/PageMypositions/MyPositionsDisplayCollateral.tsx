@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { useContractUrl } from "../../hooks/useContractUrl";
 import { Address, formatUnits, zeroAddress } from "viem";
 import Link from "next/link";
-import { PositionQuery } from "@frankencoin/api";
+import { PositionQuery } from "@deuro/api";
 const TokenLogo = dynamic(() => import("../TokenLogo"), { ssr: false });
 
 interface Props {

@@ -1,6 +1,6 @@
 import { Address, formatUnits, zeroAddress } from "viem";
 import TableRow from "../Table/TableRow";
-import { PositionQuery, PriceQueryObjectArray } from "@frankencoin/api";
+import { PositionQuery, PriceQueryObjectArray } from "@deuro/api";
 import { formatCurrency, FormatType, shortenAddress } from "../../utils/format";
 import { useContractUrl } from "@hooks";
 import GovernancePositionsAction from "./GovernancePositionsAction";

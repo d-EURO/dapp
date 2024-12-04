@@ -24,9 +24,13 @@ export function NavItems() {
 			<li>
 				<NavButton to="/challenges" name="Auctions" />
 			</li>
-			<li>
-				<NavButton to="/savings" name="Savings" />
-			</li>
+			{
+				/* TODO: Reactivate when API is ready
+				<li>
+					<NavButton to="/savings" name="Savings" />
+				</li>
+				*/
+			}
 			<li>
 				<NavButton to="/equity" name="Equity" />
 			</li>

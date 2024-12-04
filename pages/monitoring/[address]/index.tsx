@@ -14,10 +14,10 @@ import { RootState } from "../../../redux/redux.store";
 import { CONFIG, WAGMI_CONFIG } from "../../../app.config";
 import { useEffect, useState } from "react";
 import { readContract } from "wagmi/actions";
-import { ChallengesQueryItem, PositionQuery } from "@frankencoin/api";
+import { ChallengesQueryItem, PositionQuery } from "@deuro/api";
 import { useRouter as useNavigation } from "next/navigation";
 import Button from "@components/Button";
-import { ADDRESS, FrankencoinABI } from "@frankencoin/zchf";
+import { ADDRESS, DecentralizedEUROABI } from "@deuro/eurocoin";
 
 export default function PositionDetail() {
 	const [reserve, setReserve] = useState<bigint>(0n);
@@ -40,8 +40,8 @@ export default function PositionDetail() {
 
 		const fetchAsync = async function () {
 			const data = await readContract(WAGMI_CONFIG, {
-				address: position.zchf,
-				abi: FrankencoinABI,
+				address: position.deuro,
+				abi: DecentralizedEUROABI,
 				functionName: "calculateAssignedReserve",
 				args: [BigInt(position.minted), position.reserveContribution],
 			});
@@ -80,7 +80,7 @@ export default function PositionDetail() {
 								<DisplayAmount
 									amount={BigInt(position.minted)}
 									currency={TOKEN_SYMBOL}
-									address={ADDRESS[chainId].frankenCoin}
+									address={ADDRESS[chainId].decentralizedEURO}
 									className="mt-2"
 								/>
 							</AppBox>
@@ -100,20 +100,20 @@ export default function PositionDetail() {
 									amount={BigInt(position.price)}
 									currency={TOKEN_SYMBOL}
 									digits={36 - position.collateralDecimals}
-									address={ADDRESS[chainId].frankenCoin}
+									address={ADDRESS[chainId].decentralizedEURO}
 									className="mt-2"
 								/>
 							</AppBox>
 							<AppBox>
 								<DisplayLabel label="Retained Reserve" />
-								<DisplayAmount amount={reserve} currency={TOKEN_SYMBOL} address={ADDRESS[chainId].frankenCoin} className="mt-2" />
+								<DisplayAmount amount={reserve} currency={TOKEN_SYMBOL} address={ADDRESS[chainId].decentralizedEURO} className="mt-2" />
 							</AppBox>
 							<AppBox>
 								<DisplayLabel label="Limit" />
 								<DisplayAmount
 									amount={BigInt(position.limitForClones)}
 									currency={TOKEN_SYMBOL}
-									address={ADDRESS[chainId].frankenCoin}
+									address={ADDRESS[chainId].decentralizedEURO}
 									className="mt-2"
 								/>
 							</AppBox>
