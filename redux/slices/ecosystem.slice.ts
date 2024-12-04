@@ -123,8 +123,10 @@ export const fetchEcosystem =
 		const response3 = await DEURO_API_CLIENT.get("/ecosystem/deps/info");
 		dispatch(slice.actions.setDepsInfo(response3.data as ApiEcosystemDepsInfo));
 
+		/* TODO: Reactivate when API is ready
 		const response4 = await DEURO_API_CLIENT.get("/ecosystem/stablecoin/info");
 		dispatch(slice.actions.setStablecoinInfo(response4.data as ApiEcosystemStablecoinInfo));
+		*/
 
 		const response5 = await DEURO_API_CLIENT.get("/ecosystem/stablecoin/minter/list");
 		dispatch(slice.actions.setStablecoinMinters(response5.data as ApiMinterListing));
