@@ -14,7 +14,8 @@
 		"lint:check": "prettier --check .",
 		"lint:fix": "prettier --write .",
 		"prettier-watch": "onchange \"**/*\" -- prettier --write --ignore-unknown {{changed}}",
-		"deploy": "gh-pages -d build"
+		"deploy": "gh-pages -d build",
+		"docker": "next build && next start"
 	},
 	"dependencies": {
 		"@apollo/client": "^3.8.0",

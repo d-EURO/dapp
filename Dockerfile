@@ -14,4 +14,4 @@ COPY --chown=node . .
 RUN yarn install --frozen-lockfile
 
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["yarn", "start"]
+CMD ["yarn", "docker"]
