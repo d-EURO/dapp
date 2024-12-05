@@ -1,7 +1,7 @@
 import { ChallengesQueryItem, PositionQuery, PositionsQueryObjectArray } from "@deuro/api";
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { CONFIG, WAGMI_CONFIG } from "../../app.config";
+import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { formatBigInt, TOKEN_SYMBOL } from "@utils";
 import { renderErrorToast, renderErrorTxToast, TxToast } from "@components/TxToast";
@@ -21,7 +21,7 @@ export default function MyPositionsChallengesCancel({ challenge, hidden }: Props
 	const [isCancelling, setCancelling] = useState<boolean>(false);
 	const positions: PositionsQueryObjectArray = useSelector((state: RootState) => state.positions.mapping.map);
 	const account = useAccount();
-	const chainId = CONFIG.chain.id;
+	const chainId = CONFIG_CHAIN().id;
 	const [isHidden, setHidden] = useState<boolean>(
 		hidden == true || challenge.status !== "Active" || account.address !== challenge.challenger
 	);

@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
-import { CONFIG, WAGMI_CONFIG } from "../../../app.config";
+import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../../app.config";
 import { useEffect, useState } from "react";
 import { readContract } from "wagmi/actions";
 import { ChallengesQueryItem, PositionQuery } from "@deuro/api";
@@ -24,7 +24,7 @@ export default function PositionDetail() {
 
 	const router = useRouter();
 	const address = router.query.address as Address;
-	const chainId = CONFIG.chain.id;
+	const chainId = CONFIG_CHAIN().id;
 
 	const positions = useSelector((state: RootState) => state.positions.list.list);
 	const challengesPositions = useSelector((state: RootState) => state.challenges.positions);

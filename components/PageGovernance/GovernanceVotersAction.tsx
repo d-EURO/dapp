@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { CONFIG, WAGMI_CONFIG } from "../../app.config";
+import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { shortenAddress } from "@utils";
 import { renderErrorToast, renderErrorTxToast, TxToast } from "@components/TxToast";
@@ -19,7 +19,7 @@ interface Props {
 export default function GovernanceVotersAction({ voter, disabled, connectedWallet }: Props) {
 	const [isDelegating, setDelegating] = useState<boolean>(false);
 	const account = useAccount();
-	const chainId = CONFIG.chain.id;
+	const chainId = CONFIG_CHAIN().id;
 	const [isHidden, setHidden] = useState<boolean>(false);
 
 	const handleOnClick = async function (e: any) {
