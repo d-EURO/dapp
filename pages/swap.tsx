@@ -138,7 +138,7 @@ export default function Swap() {
 		} else {
 			setError("");
 		}
-	}, [amount, fromSymbol, toSymbol]);
+	}, [amount, fromSymbol, toSymbol, getTokenMetaBySymbol]);
 
 	const handleApprove = async () => {
 		try {
