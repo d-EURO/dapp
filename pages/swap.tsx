@@ -30,6 +30,15 @@ const noTokenMeta = {
 	contractAddress: "0x0",
 };
 
+const rebaseDecimals = (amount: bigint, fromDecimals: bigint, toDecimals: bigint) => {
+	return amount * 10n ** toDecimals / 10n ** fromDecimals;
+};
+
+const getAmountWithLeastPrecision = (amount: bigint, fromDecimals: bigint, toDecimals: bigint) => {
+	const potentialAmount = rebaseDecimals(rebaseDecimals(amount, fromDecimals, toDecimals), toDecimals, fromDecimals);
+	return potentialAmount > amount ? amount : potentialAmount;
+};
+
 export default function Swap() {
 	const [fromSymbol, setFromSymbol] = useState(TOKEN_SYMBOL);
 	const [fromOptions, setFromOptions] = useState([TOKEN_SYMBOL]);
@@ -78,6 +87,17 @@ export default function Swap() {
 		[swapStats, getSelectedStablecoinSymbol]
 	);
 
+	const onChangeAmount = useCallback(
+		(value: string) => {
+			const valueBigInt = BigInt(value);
+			const fromTokenDecimals = getTokenMetaBySymbol(fromSymbol).decimals;
+			const toTokenDecimals = getTokenMetaBySymbol(toSymbol).decimals;
+			const newAmount = getAmountWithLeastPrecision(valueBigInt, fromTokenDecimals, toTokenDecimals);
+			setAmount(newAmount);
+		},
+		[fromSymbol, toSymbol, getTokenMetaBySymbol]
+	);
+
 	const onChangeDirection = () => {
 		// swap symbols
 		const prevFromSymbol = fromSymbol;
@@ -91,12 +111,10 @@ export default function Swap() {
 		setFromOptions(prevToOptions);
 		setToOptions(prevFromOptions);
 
-		// swap amounts, technically it's the same amount in both sides,
-		// but in practice the numbers may be different because of the decimal differences between the two token contracts
 		if (amount > 0n) {
 			const fromTokenData = getTokenMetaBySymbol(fromSymbol);
 			const toTokenData = getTokenMetaBySymbol(toSymbol);
-			const newAmount = amount * 10n ** toTokenData.decimals / 10n ** fromTokenData.decimals;
+			const newAmount = rebaseDecimals(amount, fromTokenData.decimals, toTokenData.decimals);
 			setAmount(newAmount);
 		}
 	};
@@ -105,15 +123,20 @@ export default function Swap() {
 		if (amount > 0n) {
 			const newToken = getTokenMetaBySymbol(symbol);
 			const oldToken = getTokenMetaBySymbol(fromSymbol);
-			const newAmount = amount * 10n ** newToken.decimals / 10n ** oldToken.decimals;
+			const newAmount = rebaseDecimals(amount, oldToken.decimals, newToken.decimals);
 			setAmount(newAmount);
 		}
 		setFromSymbol(symbol);
 	};
 
-	const onChangeAmount = (value: string) => {
-		const valueBigInt = BigInt(value);
-		setAmount(valueBigInt);
+	const onSetToSymbol = (symbol: string) => {
+		if (amount > 0n) {
+			const fromTokenDecimals = getTokenMetaBySymbol(fromSymbol).decimals;
+			const newTokenDecimals = getTokenMetaBySymbol(symbol).decimals;
+			const newAmount = getAmountWithLeastPrecision(amount, fromTokenDecimals, newTokenDecimals);
+			setAmount(newAmount);
+		}
+		setToSymbol(symbol);
 	};
 
 	// Only for triggering errors when the amount or the symbol is changed
@@ -285,6 +308,8 @@ export default function Swap() {
 	const stablecoinMeta = getTokenMetaBySymbol(getSelectedStablecoinSymbol());
 	const limit = fromSymbol === TOKEN_SYMBOL ? stablecoinMeta.bridgeBal : stablecoinMeta.remaining;
 
+	const outputAmount = formatUnits(rebaseDecimals(amount, fromTokenMeta.decimals, toTokenMeta.decimals), Number(toTokenMeta.decimals));
+
 	return (
 		<>
 			<Head>
@@ -323,8 +348,8 @@ export default function Swap() {
 						max={toTokenMeta.userBal}
 						symbol={toTokenMeta.symbol}
 						symbolOptions={toOptions}
-						symbolOnChange={(o) => setToSymbol(o.value)}
-						output={formatUnits(amount, Number(fromTokenMeta.decimals))} // As amount is defined in decimals of fromToken
+						symbolOnChange={(o) => onSetToSymbol(o.value)}
+						output={outputAmount}
 						note={`1 ${fromSymbol} = 1 ${toSymbol}`}
 						label="Receive"
 					/>
