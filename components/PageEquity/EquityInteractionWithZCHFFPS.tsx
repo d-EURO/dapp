@@ -15,7 +15,9 @@ import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
 import TokenInputSelect from "@components/Input/TokenInputSelect";
-import { ADDRESS, EquityABI } from "@deuro/eurocoin";
+import { ADDRESS, EquityABI, FrontendGatewayABI } from "@deuro/eurocoin";
+import { useFrontendCode } from "../../hooks/useFrontendCode";
+import { useFrontendGatewayStats } from "../../hooks/useFrontendGatewayStats";
 
 interface Props {
 	tokenFromTo: { from: string; to: string };
@@ -30,6 +32,8 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 	const [isInversting, setInversting] = useState(false);
 	const [isRedeeming, setRedeeming] = useState(false);
 
+	const { frontendGatewayAllowance } = useFrontendGatewayStats();
+	const { frontendCode } = useFrontendCode();
 	const { address } = useAccount();
 	const chainId = useChainId();
 	const poolStats = usePoolStats();
@@ -49,7 +53,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 				address: ADDRESS[chainId].decentralizedEURO,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].equity, amount],
+				args: [ADDRESS[chainId].frontendGateway, amount],
 			});
 
 			const toastContent = [
@@ -84,10 +88,10 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 	const handleInvest = async () => {
 		try {
 			const investWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].equity,
-				abi: EquityABI,
+				address: ADDRESS[chainId].frontendGateway,
+				abi: FrontendGatewayABI,
 				functionName: "invest",
-				args: [amount, result],
+				args: [amount, result, frontendCode],
 			});
 
 			const toastContent = [
@@ -237,7 +241,7 @@ export default function EquityInteractionWithZCHFFPS({ tokenFromTo, setTokenFrom
 				<div className="mx-auto mt-8 w-72 max-w-full flex-col">
 					<GuardToAllowedChainBtn label={direction ? "Mint" : "Redeem"}>
 						{direction ? (
-							amount > poolStats.frankenAllowance ? (
+							amount > frontendGatewayAllowance ? (
 								<Button isLoading={isApproving} disabled={amount == 0n || !!error} onClick={() => handleApprove()}>
 									Approve
 								</Button>
