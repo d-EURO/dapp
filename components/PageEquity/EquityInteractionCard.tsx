@@ -22,6 +22,16 @@ export default function EquityInteractionCard() {
 		to: NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 	});
 
+	const onTokenFromToChange = (newSelection: { from: string; to: string }) => {
+		const toTokenOptions = EquityTokenSelectorMapping[newSelection.from];
+		const isToTokenAvailable = toTokenOptions.includes(newSelection.to);
+		const adjustedSelection = {
+			from: newSelection.from,
+			to: isToTokenAvailable ? newSelection.to : toTokenOptions[0],
+		}		
+		setTokenFromTo(adjustedSelection);
+	};
+
 	const chainId = useChainId();
 	const equityUrl = useContractUrl(ADDRESS[chainId].equity);
 
@@ -39,7 +49,7 @@ export default function EquityInteractionCard() {
 			(tokenFromTo.from === NATIVE_POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === TOKEN_SYMBOL) ? (
 				<EquityInteractionWithZCHFFPS
 					tokenFromTo={tokenFromTo}
-					setTokenFromTo={setTokenFromTo}
+					setTokenFromTo={onTokenFromToChange}
 					selectorMapping={EquityTokenSelectorMapping}
 				/>
 			) : null}
@@ -48,7 +58,7 @@ export default function EquityInteractionCard() {
 			(tokenFromTo.from === POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === NATIVE_POOL_SHARE_TOKEN_SYMBOL) ? (
 				<EquityInteractionWithFPSWFPS
 					tokenFromTo={tokenFromTo}
-					setTokenFromTo={setTokenFromTo}
+					setTokenFromTo={onTokenFromToChange}
 					selectorMapping={EquityTokenSelectorMapping}
 				/>
 			) : null}
@@ -56,7 +66,7 @@ export default function EquityInteractionCard() {
 			{tokenFromTo.from === POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === TOKEN_SYMBOL ? (
 				<EquityInteractionWithWFPSRedeem
 					tokenFromTo={tokenFromTo}
-					setTokenFromTo={setTokenFromTo}
+					setTokenFromTo={onTokenFromToChange}
 					selectorMapping={EquityTokenSelectorMapping}
 				/>
 			) : null}
