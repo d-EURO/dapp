@@ -10,8 +10,18 @@ export const SOCIAL = {
 	Partner_DfxSwiss: "https://exchange.dfx.swiss/",
 };
 
+// Symbols for the tokens of the protocol
 export const TOKEN_SYMBOL = "dEURO";
 
 export const POOL_SHARE_TOKEN_SYMBOL = "DEPS";
 
 export const NATIVE_POOL_SHARE_TOKEN_SYMBOL = "nDEPS";
+
+// For managing frontend codes
+export const MARKETING_PARAM_NAME = "ref";
+
+export const DEFAULT_FRONTEND_CODE = "0xc155a9c8a3ce42a8268fb22f801479e378d5e70dbcc83db8604b296c6d1d3e10";
+
+export const FRONTEND_CODES: { [key: string]: string } = {
+	dEuro: '0xc155a9c8a3ce42a8268fb22f801479e378d5e70dbcc83db8604b296c6d1d3e10',
+}
