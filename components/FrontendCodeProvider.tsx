@@ -4,14 +4,14 @@ import { useRouter } from 'next/router';
 
 interface FrontendCodeContextType {
     marketingCode: string;
-    frontendCode: string;
+    frontendCode: `0x${string}`;
 }
 
 export const FrontendCodeContext = createContext<FrontendCodeContextType | undefined>(undefined);
 
 export const FrontendCodeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [marketingCode, setMarketingCode] = useState('');
-    const [frontendCode, setFrontendCode] = useState('');
+    const [frontendCode, setFrontendCode] = useState<`0x${string}`>(DEFAULT_FRONTEND_CODE);
     const router = useRouter();
 
     useEffect(() => {
