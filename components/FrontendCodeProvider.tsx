@@ -25,8 +25,10 @@ export const FrontendCodeProvider: React.FC<{ children: React.ReactNode }> = ({ 
             );
         }
 
-        setMarketingCode(marketingParam as string ?? '');
-        setFrontendCode(FRONTEND_CODES[marketingParam as string ?? ''] ?? DEFAULT_FRONTEND_CODE);
+        if (FRONTEND_CODES[marketingParam as string ?? '']) {
+            setMarketingCode(marketingParam as string ?? '');
+            setFrontendCode(FRONTEND_CODES[marketingParam as string] ?? DEFAULT_FRONTEND_CODE);
+        }
     }, [router.isReady]);
 
     return (
