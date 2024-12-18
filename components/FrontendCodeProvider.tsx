@@ -15,15 +15,7 @@ export const FrontendCodeProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const router = useRouter();
 
     useEffect(() => {
-        const { [MARKETING_PARAM_NAME]: marketingParam, ...otherParams } = router.query;
-        
-        if (marketingParam) {
-            router.replace(
-                { pathname: router.pathname, query: otherParams },
-                undefined,
-                { shallow: true }
-            );
-        }
+        const { [MARKETING_PARAM_NAME]: marketingParam } = router.query;
 
         if (FRONTEND_CODES[marketingParam as string ?? '']) {
             setMarketingCode(marketingParam as string ?? '');
