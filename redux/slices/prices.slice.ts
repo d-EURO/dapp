@@ -13,14 +13,14 @@ export const initialState: PricesState = {
 	coingecko: {},
 	mint: {
 		address: zeroAddress,
-		name: "Frankencoin",
-		symbol: "ZCHF",
+		name: "dEURO",
+		symbol: "dEURO",
 		decimals: 18,
 	},
 	fps: {
 		address: zeroAddress,
-		name: "Frankencoin Pool Share",
-		symbol: "FPS",
+		name: "dEURO Pool Share",
+		symbol: "DEPS",
 		decimals: 18,
 	},
 	collateral: {},

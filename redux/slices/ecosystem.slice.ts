@@ -4,8 +4,8 @@ import {
 	DispatchApiEcosystemCollateralPositions,
 	DispatchApiEcosystemCollateralStats,
 	DispatchApiEcosystemFpsInfo,
-	DispatchApiEcosystemFrankencoinInfo,
-	DispatchApiEcosystemFrankencoinMinters,
+	DispatchApiEcosystemStablecoinInfo,
+	DispatchApiEcosystemStablecoinMinters,
 	DispatchBoolean,
 	EcosystemState,
 } from "./ecosystem.types";
@@ -81,12 +81,12 @@ export const slice = createSlice({
 			state.depsInfo = action.payload;
 		},
 
-		// SET Frankencoin Info
+		// SET Product token Info
 		setStablecoinInfo: (state, action: { payload: ApiEcosystemStablecoinInfo }) => {
 			state.stablecoinInfo = action.payload;
 		},
 
-		// SET Frankencoin Minters
+		// SET Product token Minters
 		setStablecoinMinters: (state, action: { payload: ApiMinterListing }) => {
 			state.stablecoinMinters = action.payload;
 		},
@@ -105,8 +105,8 @@ export const fetchEcosystem =
 			| DispatchApiEcosystemCollateralPositions
 			| DispatchApiEcosystemCollateralStats
 			| DispatchApiEcosystemFpsInfo
-			| DispatchApiEcosystemFrankencoinInfo
-			| DispatchApiEcosystemFrankencoinMinters
+			| DispatchApiEcosystemStablecoinInfo
+			| DispatchApiEcosystemStablecoinMinters
 		>
 	) => {
 		// ---------------------------------------------------------------

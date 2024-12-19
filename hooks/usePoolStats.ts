@@ -53,7 +53,6 @@ export const usePoolStats = () => {
 				functionName: "holdingDuration",
 				args: [account],
 			},
-			// Frankencoin Calls
 			{
 				...frankenContract,
 				functionName: "minterReserve",

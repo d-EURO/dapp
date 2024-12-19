@@ -39,12 +39,12 @@ export type DispatchApiEcosystemFpsInfo = {
 	payload: ApiEcosystemDepsInfo;
 };
 
-export type DispatchApiEcosystemFrankencoinInfo = {
+export type DispatchApiEcosystemStablecoinInfo = {
 	type: string;
 	payload: ApiEcosystemStablecoinInfo;
 };
 
-export type DispatchApiEcosystemFrankencoinMinters = {
+export type DispatchApiEcosystemStablecoinMinters = {
 	type: string;
 	payload: ApiMinterListing;
 };
