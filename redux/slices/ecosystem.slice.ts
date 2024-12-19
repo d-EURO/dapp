@@ -27,7 +27,7 @@ export const initialState: EcosystemState = {
 	collateralPositions: {},
 	collateralStats: { num: 0, addresses: [], totalValueLocked: { usd: 0, eur: 0 }, map: {} },
 	depsInfo: {	
-		values: { depsMarketCapInChf: 0, price: 0, totalSupply: 0 },
+		values: { depsMarketCapInChf: 0, price: 0, totalSupply: 0 }, //@dev: require update in the api package
 		earnings: { profit: 0, loss: 0 },
 		reserve: { balance: 0, equity: 0, minter: 0 },
 	},
@@ -42,7 +42,7 @@ export const initialState: EcosystemState = {
 		deps: {
 			price: 0,
 			totalSupply: 0,
-			depsMarketCapInChf: 0,
+			depsMarketCapInChf: 0, //@dev: require update in the api package
 		},
 		tvl: { usd: 0, eur: 0 },
 	},
