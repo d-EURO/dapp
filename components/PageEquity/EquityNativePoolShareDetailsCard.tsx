@@ -107,7 +107,7 @@ export default function EquityNativePoolShareDetailsCard() {
 					<DisplayLabel label="Total Reserve" />
 					<DisplayAmount
 						className="mt-4"
-						amount={poolStats.frankenTotalReserve}
+						amount={poolStats.deuroTotalReserve}
 						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].decentralizedEURO}
 					/>
@@ -116,7 +116,7 @@ export default function EquityNativePoolShareDetailsCard() {
 					<DisplayLabel label="Equity Capital" />
 					<DisplayAmount
 						className="mt-4"
-						amount={poolStats.frankenEquity}
+						amount={poolStats.deuroEquity}
 						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].decentralizedEURO}
 					/>
@@ -125,7 +125,7 @@ export default function EquityNativePoolShareDetailsCard() {
 					<DisplayLabel label="Minter Reserve" />
 					<DisplayAmount
 						className="mt-4"
-						amount={poolStats.frankenMinterReserve}
+						amount={poolStats.deuroMinterReserve}
 						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].decentralizedEURO}
 					/>

@@ -173,15 +173,15 @@ export default function InteractionStablecoinAndNativePS({ tokenFromTo, setToken
 		args: [amount],
 	});
 
-	const { data: frankenResult, isLoading: proceedLoading } = useReadContract({
+	const { data: deuroResult, isLoading: proceedLoading } = useReadContract({
 		address: ADDRESS[chainId].equity,
 		abi: EquityABI,
 		functionName: "calculateProceeds",
 		args: [amount],
 	});
 
-	const fromBalance = direction ? poolStats.frankenBalance : poolStats.equityBalance;
-	const result = (direction ? nativePSResult : frankenResult) || 0n;
+	const fromBalance = direction ? poolStats.deuroBalance : poolStats.equityBalance;
+	const result = (direction ? nativePSResult : deuroResult) || 0n;
 	const fromSymbol = direction ? TOKEN_SYMBOL : NATIVE_POOL_SHARE_TOKEN_SYMBOL;
 	const toSymbol = !direction ? TOKEN_SYMBOL : NATIVE_POOL_SHARE_TOKEN_SYMBOL;
 	const unlocked =

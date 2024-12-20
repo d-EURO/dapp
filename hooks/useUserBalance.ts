@@ -34,11 +34,11 @@ export const useUserBalance = () => {
 		],
 	});
 
-	const frankenBalance: bigint = data ? decodeBigIntCall(data[0]) : BigInt(0);
+	const deuroBalance: bigint = data ? decodeBigIntCall(data[0]) : BigInt(0);
 	const equityBalance: bigint = data ? decodeBigIntCall(data[1]) : BigInt(0);
 
 	return {
-		frankenBalance,
+		deuroBalance,
 		equityBalance,
 	};
 };
