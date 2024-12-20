@@ -17,7 +17,7 @@ export const initialState: PricesState = {
 		symbol: "dEURO",
 		decimals: 18,
 	},
-	fps: {
+	nativePS: {
 		address: zeroAddress,
 		name: "dEURO Pool Share",
 		symbol: "DEPS",
@@ -55,9 +55,9 @@ export const slice = createSlice({
 		},
 
 		// -------------------------------------
-		// SET FPS ERC20Info
-		setFpsERC20Info: (state, action: { payload: ApiPriceERC20 }) => {
-			state.fps = action.payload;
+		// SET Native Pool Share ERC20Info
+		setNativePSERC20Info: (state, action: { payload: ApiPriceERC20 }) => {
+			state.nativePS = action.payload;
 		},
 
 		// SET COLLATERAL ERC20Info
@@ -88,7 +88,7 @@ export const fetchPricesList =
 		dispatch(slice.actions.setCollateralERC20Info(response3.data as ApiPriceERC20Mapping));
 
 		const response4 = await DEURO_API_CLIENT.get("/prices/erc20/deps");
-		dispatch(slice.actions.setFpsERC20Info(response4.data as ApiPriceERC20));
+		dispatch(slice.actions.setNativePSERC20Info(response4.data as ApiPriceERC20));
 
 		// ---------------------------------------------------------------
 		// Finalizing, loaded set to ture

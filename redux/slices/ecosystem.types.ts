@@ -34,7 +34,7 @@ export type DispatchApiEcosystemCollateralStats = {
 	payload: ApiEcosystemCollateralStats;
 };
 
-export type DispatchApiEcosystemFpsInfo = {
+export type DispatchApiEcosystemNativePoolShareInfo = {
 	type: string;
 	payload: ApiEcosystemDepsInfo;
 };

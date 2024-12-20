@@ -3,7 +3,7 @@ import { DEURO_API_CLIENT } from "../../app.config";
 import {
 	DispatchApiEcosystemCollateralPositions,
 	DispatchApiEcosystemCollateralStats,
-	DispatchApiEcosystemFpsInfo,
+	DispatchApiEcosystemNativePoolShareInfo,
 	DispatchApiEcosystemStablecoinInfo,
 	DispatchApiEcosystemStablecoinMinters,
 	DispatchBoolean,
@@ -104,7 +104,7 @@ export const fetchEcosystem =
 			| DispatchBoolean
 			| DispatchApiEcosystemCollateralPositions
 			| DispatchApiEcosystemCollateralStats
-			| DispatchApiEcosystemFpsInfo
+			| DispatchApiEcosystemNativePoolShareInfo
 			| DispatchApiEcosystemStablecoinInfo
 			| DispatchApiEcosystemStablecoinMinters
 		>
