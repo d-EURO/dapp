@@ -65,7 +65,9 @@ module.exports = {
 					success: "#22c55e",
 					icon: "#adb2c1",
 					muted:"#8b91a7",
-					error: "#e02523"
+					error: "#e02523",
+					label: "#5c637b",
+					title: "#43495c",
 				},
 				input: {
 					border: "#adb2c1",
