@@ -19,6 +19,7 @@ import { RootState } from "../../redux/redux.store";
 
 // TODO: remove fake data
 import { LIST, TOKEN_OPTIONS, PRICES, MAX_LIQUIDATION_PRICE_DECREASE } from "./LIST";
+import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 
 type LoanDetails = {
 	loanAmount: bigint;
@@ -282,15 +283,17 @@ export default function PositionCreate({}) {
 					</div>
 					<DetailsExpandablePanel loanDetails={loanDetails} />
 				</div>
-				<Button
-					className="!p-4 text-lg font-extrabold leading-none"
-					onClick={() => setIsOpenBorrowingDEUROModal(true)}
-					disabled={!selectedPosition || !selectedCollateral || isLiquidationPriceTooHigh}
-				>
-					{isLiquidationPriceTooHigh
-						? "Your liquidation price is too high!"
-						: `Receive ${formatCurrency(formatUnits(BigInt(borrowedAmount), 18))} dEURO`}
-				</Button>
+				<GuardToAllowedChainBtn label="Borrow dEURO">
+					<Button
+						className="!p-4 text-lg font-extrabold leading-none"
+						onClick={() => setIsOpenBorrowingDEUROModal(true)}
+						disabled={!selectedPosition || !selectedCollateral || isLiquidationPriceTooHigh}
+					>
+						{isLiquidationPriceTooHigh
+							? "Your liquidation price is too high!"
+							: `Receive ${formatCurrency(formatUnits(BigInt(borrowedAmount), 18))} dEURO`}
+					</Button>
+				</GuardToAllowedChainBtn>
 				<BorrowingDEUROModal
 					isOpen={isOpenBorrowingDEUROModal}
 					setIsOpen={setIsOpenBorrowingDEUROModal}

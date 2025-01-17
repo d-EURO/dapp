@@ -221,6 +221,7 @@ export default function InteractionPoolShareTokenRedeem({ tokenFromTo, setTokenF
 
 				<div className="mx-auto mt-8 w-72 max-w-full flex-col">
 					<GuardToAllowedChainBtn label="Unwrap and Redeem">
+						<div className="flex flex-col gap-2"></div>
 						{amount > psTokenAllowance ? (
 							<Button isLoading={isApproving} disabled={amount == 0n || !!error || !unlocked} onClick={() => handleApprove()}>
 								Approve

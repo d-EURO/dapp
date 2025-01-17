@@ -34,7 +34,7 @@ const getMappedResponseByAddress = (query: QueryItem[], response: any[]) => {
         const { address, functionName, args } = queryItem;
         const valueResponse = response[i]?.result;
         
-        if(mappedResponse[address] === undefined) mappedResponse[address] = { address, symbol: "", name: "", decimals: 0, balance: BigInt(0) };
+        if(mappedResponse[address] === undefined) mappedResponse[address] = { address, symbol: "", name: "", decimals: 0, balanceOf: BigInt(0) };
 
         if(functionName === "allowance") {
             mappedResponse[address].allowance = mappedResponse[address].allowance ?? {};
@@ -52,7 +52,7 @@ const getMappedResponseByAddress = (query: QueryItem[], response: any[]) => {
 
 export function useWalletERC20Balances(intialTokenList: TokenDescriptor[]) {
 	const [tokenList, setTokenList] = useState<TokenDescriptor[]>(intialTokenList);
-	const { address } = useAccount();
+	const { address = '0x0000000000000000000000000000000000000000' } = useAccount(); // TODO: remove this
     const chainId = WAGMI_CHAIN.id as number;
 
     const query = tokenList.map((token) => ([
