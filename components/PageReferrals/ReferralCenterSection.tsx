@@ -54,7 +54,7 @@ export const ReferralCenterSection = () => {
 	};
 
 	return (
-		<div className="flex-col justify-start items-center gap-12 inline-flex shadow-[0px_0px_16px_0px_rgba(0,0,0,0.08)] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.03)]">
+		<div className="flex-col rounded-xl justify-start items-center gap-12 inline-flex shadow-card">
 			<div className="bg-white rounded-xl flex-col justify-start items-start flex overflow-hidden">
 				<div className="self-stretch p-8 border-b border-borders-primary inline-flex">
 					<div className="self-stretch w-1/2 flex-col justify-center items-start gap-5 inline-flex">
