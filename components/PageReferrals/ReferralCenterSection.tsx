@@ -135,12 +135,19 @@ export const ReferralCenterSection = () => {
 				</div>
 				<div className="relative bg-text-primary overflow-hidden">
 					<div className="absolute h-full w-[50%] px-16 flex-col justify-center items-start gap-4 inline-flex">
-						<div className="self-stretch text-text-muted text-5xl font-black leading-tight">
+						<div className="self-stretch text-text-muted text-5xl font-black leading-tight text-transparent bg-clip-text bg-gradient-to-b from-[#8B92A8] to-[#5D647B]">
 							Earn 1% on investments, loans and savings!
 						</div>
 					</div>
 					<div className="pl-0.5 justify-end items-center inline-flex overflow-hidden">
-						<Image src="/assets/Ref_teaser_image@2x.webp" alt="Referral Center Teaser" width={3.8 * 319} height={319} />
+						<Image 
+							src="/assets/Ref_teaser_image@2x.png" 
+							alt="Referral Center Teaser" 
+							width={1212}
+							height={319}
+							quality={100}
+							priority
+						/>
 					</div>
 				</div>
 				<div className="self-stretch justify-start items-start inline-flex">
