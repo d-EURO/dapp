@@ -29,11 +29,11 @@ export default function TableRow({
 		<div
 			className={`${
 				className ?? "bg-table-row-primary"
-			} cursor-default px-5 py-5 sm:px-8 sm:py-4 border-t border-table-row-hover sm:first:rounded-t-none last:rounded-b-lg duration-300`}
+			} cursor-default px-5 py-5 ${actionCol ? "sm:pr-12" : ""} sm:px-8 sm:py-4 border-t border-table-row-hover sm:first:rounded-t-none last:rounded-b-lg duration-300`}
 		>
 			<div className="flex flex-col justify-between gap-y-5 md:flex-row">
 				{/* @dev: this is desktop view */}
-				<div className={`max-md:hidden text-right grid flex-grow grid-cols-${colSpan || children.length} items-center`}>
+				<div className={`max-md:hidden text-right grid font-medium flex-grow grid-cols-${colSpan || children.length} items-center`}>
 					{children}
 				</div>
 

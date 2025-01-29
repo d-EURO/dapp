@@ -45,7 +45,6 @@ export default function BorrowRow({ headers, position, tab }: Props) {
 				</Button>
 			}
 			tab={tab}
-			className="bg-table-row-primary sm:pr-12"
 			showFirstHeader={true}
 		>
 			<div className="flex flex-col max-md:mb-5">
