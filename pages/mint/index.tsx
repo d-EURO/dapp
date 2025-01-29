@@ -22,7 +22,8 @@ export default function Borrow() {
 
 			{expertMode ? (
 				<>
-					<div className="mt-8">
+					<div className="mt-4">
+						<h1 className="sm:hidden text-3xl font-black leading-9 tracking-tight mb-2">Borrow</h1>
 						<BorrowTable />
 					</div>
 

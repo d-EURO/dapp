@@ -10,19 +10,20 @@ interface Props {
 	tab?: string;
 	reverse?: boolean;
 	tabOnChange?: Function;
+	headerClassNames?: string[];
 }
 
-export default function TableHeader({ headers, subHeaders, actionCol, colSpan, tab = "", reverse = false, tabOnChange }: Props) {
+export default function TableHeader({ headers, subHeaders, actionCol, colSpan, tab = "", reverse = false, tabOnChange, headerClassNames }: Props) {
 	const handleOnClick = function (active: string) {
 		if (typeof tabOnChange === "function") tabOnChange(active);
 	};
 
 	return (
-		<div className="items-center justify-between rounded-t-lg bg-table-header-primary py-3 px-5 pr-3 sm:px-8 md:flex xl:px-8">
+		<div className={`items-center justify-between rounded-t-lg bg-table-header-primary py-3 px-5 pr-3 sm:py-5 sm:pr-8 sm:px-8 md:flex ${actionCol ? 'sm:pr-12' : ''}`}>
 			<div className={`max-md:hidden flex-grow grid-cols-2 md:grid md:grid-cols-${colSpan || headers.length}`}>
 				{headers.map((header, i) => (
 					<div
-						className={`text-text-header ${i > 0 ? "text-right" : ""}`}
+						className={`text-text-header ${i > 0 ? "text-right" : ""} ${headerClassNames?.[i] ?? ""}`}
 						key={`table-header-${i}`}
 						onClick={(e) => handleOnClick(header)}
 					>
