@@ -2,15 +2,18 @@ import { Popover } from "flowbite-react";
 import { ExpertModeToogle } from "./ExpertModeToogle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 
 export const GlobalPreferences = () => {
+	const { t } = useTranslation();
+
 	return (
 		<Popover
 			aria-labelledby="default-popover"
 			content={
 				<div className="flex flex-col gap-2 p-3 min-w-[200px] sm:min-w-[250px] md:min-w-[300px]">
 					<div className="pb-1 mb-3 border-b border-gray-100">
-						<span className="font-bold text-md">Global Preferences</span>
+						<span className="font-bold text-md">{t("common.navbar.global_preferences")}</span>
 					</div>
 					<ExpertModeToogle />
 				</div>

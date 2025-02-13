@@ -1,0 +1,35 @@
+{
+    "common": {
+        "receive": "Empfangen",
+        "send": "Senden",
+        "approve": "Genehmigen",
+        "choose_value": "Wert auswählen",
+        "balance_label": "Kontostand",
+        "input_placeholder": "Eingabebetrag"
+    },
+    "swap": {
+        "title": "Tausche {{symbol}} gegen andere Stablecoins",
+        "limit_label": "Tauschlimit",
+        "placeholder": "Tauschmenge",
+        "swap": "Tauschen",
+        "error": {
+            "insufficient_balance": "Nicht genug {{symbol}} in Ihrer Wallet.",
+            "insufficient_bridge": "Nicht genug {{symbol}} zum Tauschen verfügbar.",
+            "exceeds_limit": "Betrag überschreitet das Tauschlimit."
+        },
+        "approve": {
+            "amount": "Betrag:",
+            "spender": "Empfänger:",
+            "transaction": "Transaktion:",
+            "title": "Genehmige {{symbol}}",
+            "success": "{{symbol}} erfolgreich genehmigt"
+        },
+        "swap_tx": {
+            "amount_from": "{{symbol}} Betrag:",
+            "amount_to": "{{symbol}} Betrag:",
+            "transaction": "Transaktion:",
+            "title": "Tausche {{fromSymbol}} zu {{toSymbol}}",
+            "success": "{{fromSymbol}} erfolgreich zu {{toSymbol}} getauscht"
+        }
+    }
+}
