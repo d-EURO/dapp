@@ -3,6 +3,7 @@ import { ExpertModeToogle } from "./ExpertModeToogle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 export const GlobalPreferences = () => {
 	const { t } = useTranslation();
@@ -15,7 +16,10 @@ export const GlobalPreferences = () => {
 					<div className="pb-1 mb-3 border-b border-gray-100">
 						<span className="font-bold text-md">{t("common.navbar.global_preferences")}</span>
 					</div>
-					<ExpertModeToogle />
+					<div className="flex flex-col gap-4">
+						<ExpertModeToogle />
+						<LanguageSelector />
+					</div>
 				</div>
 			}
 		>

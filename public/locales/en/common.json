@@ -44,7 +44,8 @@
             "governance": "Governance",
             "not_live": "This website is not yet live. This is just a test system",
             "expert_mode": "Expert Mode",
-            "global_preferences": "Global Preferences"
+            "global_preferences": "Global Preferences",
+            "language": "Language"
         },
         "txs": {
             "amount": "Amount:",
