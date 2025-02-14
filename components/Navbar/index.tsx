@@ -8,7 +8,7 @@ import { CONFIG } from "../../app.config";
 import { GlobalPreferences } from "./GlobalPreferences";
 import { RootState } from "../../redux/redux.store";
 import { ExpertModeToogle } from "./ExpertModeToogle";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 export function NavItems() {
 	const isMainet = useIsMainnet();

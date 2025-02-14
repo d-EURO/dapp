@@ -2,15 +2,24 @@ import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "next-i18next";
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 const LanguageSelector = () => {
 	const { t, i18n } = useTranslation();
+	const router = useRouter();
 	const options = [
 		{ value: "en", label: "English" },
 		{ value: "es", label: "Español" },
 		{ value: "de", label: "Deutsch" },
 	];
 	const [isOpen, setIsOpen] = useState(false);
+
+	const handleLanguageChange = (locale: string) => {
+		const { pathname, asPath, query } = router;
+		router.push({ pathname, query }, asPath, { locale });
+		i18n.changeLanguage(locale);
+		setIsOpen(false);
+	};
 
 	return (
 		<div>
@@ -32,7 +41,7 @@ const LanguageSelector = () => {
 								i18n.language === option.value ? 'bg-menu-active-bg' : ''
 							}`} 
 							key={option.value} 
-							onClick={() => i18n.changeLanguage(option.value)}
+							onClick={() => handleLanguageChange(option.value)}
 						>
 							{option.label}
 						</button>

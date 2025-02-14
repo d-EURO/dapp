@@ -2,7 +2,7 @@ import { Popover } from "flowbite-react";
 import { ExpertModeToogle } from "./ExpertModeToogle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe } from "@fortawesome/free-solid-svg-icons";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import LanguageSelector from "./LanguageSelector";
 
 export const GlobalPreferences = () => {

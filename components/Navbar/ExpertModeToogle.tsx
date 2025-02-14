@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { RootState, store } from "../../redux/redux.store";
 import { toggleExpertMode } from "../../redux/slices/globalPreferences.slice";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 export const ExpertModeToogle = () => {
 	const { t } = useTranslation();
