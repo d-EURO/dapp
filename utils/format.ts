@@ -10,6 +10,11 @@ export const toTimestamp = (value: Date) => {
 	return Math.floor(value.getTime() / 1000);
 };
 
+export function toDate(time: bigint | number | string) {
+	const v: bigint = BigInt(time);
+	return new Date(Number(v) * 1000);	
+}
+
 export enum FormatType {
 	"us",
 	"tiny",
@@ -130,7 +135,7 @@ export const formatDateDuration = (timestamp: number | bigint): string => {
 };
 
 export const formatDuration = (time: number | bigint): string => {
-	const duration = dayjs.duration(Number(time), "seconds").humanize(false);
+	const duration = dayjs.duration(Number(time), "seconds").humanize(false); // TODO: add translation
 
 	return time > 0 ? duration : "-";
 };

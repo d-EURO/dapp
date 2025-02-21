@@ -9,14 +9,17 @@ import DisplayCollateralBorrowTable from "./DisplayCollateralBorrowTable";
 import Button from "@components/Button";
 import AppBox from "@components/AppBox";
 import { TOKEN_SYMBOL } from "@utils";
+import { useTranslation } from "next-i18next";
 
 interface Props {
 	headers: string[];
 	position: PositionQuery;
+	tab: string;
 }
 
-export default function BorrowRow({ headers, position }: Props) {
+export default function BorrowRow({ headers, position, tab }: Props) {
 	const navigate = useNavigation();
+	const { t } = useTranslation();
 
 	const prices = useSelector((state: RootState) => state.prices.coingecko);
 	const collTokenPrice = prices[position.collateral.toLowerCase() as Address]?.price?.usd;
@@ -40,20 +43,14 @@ export default function BorrowRow({ headers, position }: Props) {
 			headers={headers}
 			actionCol={
 				<Button className="h-10" onClick={() => navigate.push(`/mint/${position.position}`)}>
-					Mint
+					{t('mint.mint')}
 				</Button>
 			}
+			tab={tab}
+			showFirstHeader={true}
 		>
 			<div className="flex flex-col max-md:mb-5">
-				<AppBox className="md:hidden">
-					<DisplayCollateralBorrowTable
-						symbol={position.collateralSymbol}
-						symbolTiny={`v${position.version}`}
-						name={position.collateralName}
-						address={position.collateral}
-					/>
-				</AppBox>
-				<div className="max-md:hidden">
+				<div>
 					<DisplayCollateralBorrowTable
 						symbol={position.collateralSymbol}
 						symbolTiny={`v${position.version}`}
@@ -63,19 +60,21 @@ export default function BorrowRow({ headers, position }: Props) {
 				</div>
 			</div>
 
-			<div className="flex flex-col gap-2 text-text-header">
+			<div className="flex flex-col gap-2 text-base sm:font-medium leading-tight">
 				<div className="col-span-2 text-md">{formatCurrency(effectiveLTV, 2, 2)}%</div>
 			</div>
 
-			<div className="flex flex-col gap-2 text-text-header">
+			<div className="flex flex-col gap-2 text-base sm:font-medium leading-tight">
 				<div className="col-span-2 text-md">{formatCurrency(effectiveInterest, 2, 2)}%</div>
 			</div>
 
-			<div className="flex flex-col gap-2 text-text-header">
-				<div className="col-span-2 text-md">{formatCurrency(available, 2, 2)} {TOKEN_SYMBOL}</div>
+			<div className="flex flex-col gap-2 text-base sm:font-medium leading-tight">
+				<div className="col-span-2 text-md">
+					{formatCurrency(available, 2, 2)} {TOKEN_SYMBOL}
+				</div>
 			</div>
 
-			<div className="flex flex-col gap-2 text-text-header">
+			<div className="flex flex-col gap-2 text-base sm:font-medium leading-tight">
 				<div className="col-span-2 text-md">{expirationString}</div>
 			</div>
 		</TableRow>

@@ -29,12 +29,12 @@ export default function GovernanceLeadrateTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} />
+			<TableHeader className={sorted.length == 0 ? "!hidden" : ""} headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} headerClassNames={['text-center']} />
 			<TableBody>
 				{sorted.length == 0 ? (
-					<TableRowEmpty>{"There are no savings yet."}</TableRowEmpty>
+					<TableRowEmpty className={sorted.length == 0 ? "!rounded-t-lg" : ""}>{"There are no savings yet."}</TableRowEmpty>
 				) : (
-					sorted.map((r, idx) => <SavingsSavedRow headers={headers} key={r.id} item={r} />)
+					sorted.map((r, idx) => <SavingsSavedRow headers={headers} key={r.id} item={r} tab={tab} />)
 				)}
 			</TableBody>
 		</Table>

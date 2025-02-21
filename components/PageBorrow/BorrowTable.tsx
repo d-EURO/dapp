@@ -9,9 +9,11 @@ import { ChallengesQueryItem, PositionQuery, PriceQueryObjectArray } from "@deur
 import { Address, formatUnits } from "viem";
 import { useState } from "react";
 import { POSITION_NOT_BLACKLISTED } from "../../app.config";
+import { useTranslation } from "next-i18next";
 
 export default function BorrowTable() {
-	const headers: string[] = ["Collateral", "Loan-to-Value", "Interest", "Available", "Maturity"];
+	const { t } = useTranslation();
+	const headers: string[] = [t('mint.collateral'), t('mint.loan_to_value'), t('mint.interest'), t('mint.available'), t('mint.maturity')];
 	const [tab, setTab] = useState<string>(headers[3]);
 	const [reverse, setReverse] = useState<boolean>(false);
 
@@ -49,12 +51,12 @@ export default function BorrowTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol />
+			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol headerClassNames={["text-center"]} />
 			<TableBody>
 				{sorted.length == 0 ? (
-					<TableRowEmpty>{"There are no other positions yet."}</TableRowEmpty>
+					<TableRowEmpty>{t('mint.no_positions')}</TableRowEmpty>
 				) : (
-					sorted.map((pos) => <PositionRow headers={headers} position={pos} key={pos.position} />)
+					sorted.map((pos) => <PositionRow headers={headers} position={pos} key={pos.position} tab={tab} />)
 				)}
 			</TableBody>
 		</Table>

@@ -8,13 +8,14 @@ import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/ac
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
 import Button from "@components/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
+import { faArrowDown, faArrowDown19, faArrowDownLong, faArrowDownUpLock } from "@fortawesome/free-solid-svg-icons";
 import { TxToast, renderErrorToast, renderErrorTxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
 import TokenInputSelect from "@components/Input/TokenInputSelect";
 import { ADDRESS, EquityABI, DEPSWrapperABI } from "@deuro/eurocoin";
+import { useTranslation } from "next-i18next";
 
 interface Props {
 	tokenFromTo: { from: string; to: string };
@@ -22,18 +23,18 @@ interface Props {
 	selectorMapping: { [key: string]: string[] };
 }
 
-export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFromTo, selectorMapping }: Props) {
+export default function InteractionNativePSAndPoolShareToken({ tokenFromTo, setTokenFromTo, selectorMapping }: Props) {
 	const [amount, setAmount] = useState(0n);
 	const [error, setError] = useState("");
 	const [isApproving, setApproving] = useState(false);
 	const [isWrapping, setWrapping] = useState(false);
 	const [isUnwrapping, setUnwrapping] = useState(false);
-	const [fpsAllowance, setFpsAllowance] = useState<bigint>(0n);
-	const [fpsBalance, setFpsBalance] = useState<bigint>(0n);
-	const [wfpsBalance, setWfpsBalance] = useState<bigint>(0n);
-	const [fpsHolding, setFpsHolding] = useState<bigint>(0n);
-	const [wfpsHolding, setWfpsHolding] = useState<bigint>(0n);
-
+	const [nativePSAllowance, setNativePSAllowance] = useState<bigint>(0n);
+	const [nativePSBalance, setNativePSBalance] = useState<bigint>(0n);
+	const [nativePSHolding, setNativePSHolding] = useState<bigint>(0n);
+	const [psTokenBalance, setPsTokenBalance] = useState<bigint>(0n);
+	const [psTokenHolding, setPsTokenHolding] = useState<bigint>(0n);
+	const { t } = useTranslation();
 	const { data } = useBlockNumber({ watch: true });
 	const { address } = useAccount();
 	const chainId = useChainId();
@@ -47,46 +48,46 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 	useEffect(() => {
 		const fetchAsync = async function () {
 			if (account != zeroAddress) {
-				const _fpsAllowance = await readContract(WAGMI_CONFIG, {
+				const _nativePSAllowance = await readContract(WAGMI_CONFIG, {
 					address: ADDRESS[chainId].equity,
 					abi: erc20Abi,
 					functionName: "allowance",
 					args: [account, ADDRESS[chainId].DEPSwrapper],
 				});
-				setFpsAllowance(_fpsAllowance);
+				setNativePSAllowance(_nativePSAllowance);
 
-				const _fpsBalance = await readContract(WAGMI_CONFIG, {
+				const _nativePSBalance = await readContract(WAGMI_CONFIG, {
 					address: ADDRESS[chainId].equity,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					args: [account],
 				});
-				setFpsBalance(_fpsBalance);
+				setNativePSBalance(_nativePSBalance);
 
-				const _fpsHolding = await readContract(WAGMI_CONFIG, {
+				const _nativePSHolding = await readContract(WAGMI_CONFIG, {
 					address: ADDRESS[chainId].equity,
 					abi: EquityABI,
 					functionName: "holdingDuration",
 					args: [account],
 				});
-				setFpsHolding(_fpsHolding);
+				setNativePSHolding(_nativePSHolding);
 
-				const _wfpsBalance = await readContract(WAGMI_CONFIG, {
+				const _psTokenBalance = await readContract(WAGMI_CONFIG, {
 					address: ADDRESS[chainId].DEPSwrapper,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					args: [account],
 				});
-				setWfpsBalance(_wfpsBalance);
+				setPsTokenBalance(_psTokenBalance);
 			}
 
-			const _wfpsHolding = await readContract(WAGMI_CONFIG, {
+			const _psTokenHolding = await readContract(WAGMI_CONFIG, {
 				address: ADDRESS[chainId].equity,
 				abi: EquityABI,
 				functionName: "holdingDuration",
 				args: [ADDRESS[chainId].DEPSwrapper],
 			});
-			setWfpsHolding(_wfpsHolding);
+			setPsTokenHolding(_psTokenHolding);
 		};
 
 		fetchAsync();
@@ -105,29 +106,29 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 
 			const toastContent = [
 				{
-					title: "Amount:",
+					title: t("common.txs.amount"),
 					value: formatBigInt(amount) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
-					title: "Spender: ",
+					title: t("common.txs.spender"),
 					value: shortenAddress(ADDRESS[chainId].DEPSwrapper),
 				},
 				{
-					title: "Transaction:",
+					title: t("common.txs.transaction"),
 					hash: writeHash,
 				},
 			];
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: writeHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Approving ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
+					render: <TxToast title={t("common.txs.title", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title={`Successfully Approved ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
+					render: <TxToast title={t("common.txs.success", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 			});
 		} catch (error) {
-			toast.error(renderErrorTxToast(error));
+			toast.error(renderErrorTxToast(error)); // TODO: add error translation
 		} finally {
 			setApproving(false);
 		}
@@ -145,29 +146,29 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 
 			const toastContent = [
 				{
-					title: "Amount:",
+					title: t("common.txs.amount"),
 					value: formatBigInt(amount) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
-					title: "Receive: ",
+					title: t("common.txs.receive"),
 					value: formatBigInt(amount) + " " + POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
-					title: "Transaction: ",
+					title: t("common.txs.transaction"),
 					hash: writeHash,
 				},
 			];
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: writeHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Wrapping ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
+					render: <TxToast title={t("equity.txs.wrapping", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title={`Successfully Wrapped ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
+					render: <TxToast title={t("equity.txs.success_wrapping", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 			});
 		} catch (error) {
-			toast.error(renderErrorTxToast(error));
+			toast.error(renderErrorTxToast(error)); // TODO: add error translation
 		} finally {
 			setAmount(0n);
 			setWrapping(false);
@@ -186,36 +187,36 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 
 			const toastContent = [
 				{
-					title: "Amount:",
+					title: t("common.txs.amount"),
 					value: formatBigInt(amount) + " " + POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
-					title: "Receive: ",
+					title: t("common.txs.receive"),
 					value: formatBigInt(amount) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
-					title: "Transaction: ",
+					title: t("common.txs.transaction"),
 					hash: writeHash,
 				},
 			];
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: writeHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`Unwrapping ${POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
+					render: <TxToast title={t("equity.txs.unwrapping", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title={`Successfully Unwrapped ${POOL_SHARE_TOKEN_SYMBOL}`} rows={toastContent} />,
+					render: <TxToast title={t("equity.txs.success_unwrapping", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 			});
 		} catch (error) {
-			toast.error(renderErrorTxToast(error));
+			toast.error(renderErrorTxToast(error)); // TODO: add error translation
 		} finally {
 			setAmount(0n);
 			setUnwrapping(false);
 		}
 	};
 
-	const fromBalance = direction ? fpsBalance : wfpsBalance;
+	const fromBalance = direction ? nativePSBalance : psTokenBalance;
 	const fromSymbol = direction ? NATIVE_POOL_SHARE_TOKEN_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
 	const toSymbol = !direction ? NATIVE_POOL_SHARE_TOKEN_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
 
@@ -223,7 +224,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 		const valueBigInt = BigInt(value);
 		setAmount(valueBigInt);
 		if (valueBigInt > fromBalance) {
-			setError(`Not enough ${fromSymbol} in your wallet.`);
+			setError(t("common.error.insufficient_balance", { symbol: fromSymbol }));
 		} else {
 			setError("");
 		}
@@ -231,7 +232,7 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 
 	return (
 		<>
-			<div className="mt-8">
+			<div className="mb-4">
 				<TokenInputSelect
 					max={fromBalance}
 					symbol={fromSymbol}
@@ -240,12 +241,14 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 					onChange={onChangeAmount}
 					value={amount.toString()}
 					error={error}
-					placeholder={fromSymbol + " Amount"}
+					placeholder={t("common.symbol_amount", { symbol: fromSymbol })}
 				/>
 
-				<div className="py-4 text-center z-0">
-					<Button className={`h-10 rounded-full`} width="w-10" onClick={() => setTokenFromTo({ from: toSymbol, to: fromSymbol })}>
-						<FontAwesomeIcon icon={faArrowDown} className="w-6 h-6" />
+				<div className="py-2 text-center z-0">
+					<Button className={`h-10 rounded-full mt-4 !p-2.5`} width="w-10" onClick={() => setTokenFromTo({ from: toSymbol, to: fromSymbol })}>
+						<span className="flex items-center justify-center flex-1">
+							<FontAwesomeIcon icon={faArrowDownLong} className="w-5 h-5" />
+						</span>
 					</Button>
 				</div>
 
@@ -255,49 +258,58 @@ export default function EquityInteractionWithFPSWFPS({ tokenFromTo, setTokenFrom
 					symbolOnChange={(o) => setTokenFromTo({ from: tokenFromTo.from, to: o.label })}
 					hideMaxLabel
 					output={Math.round(parseFloat(formatUnits(amount, 18)) * 10000) / 10000}
-					label="Receive"
+					label={t("common.receive")}
 				/>
-				<div className={`mt-2 px-1 transition-opacity`}>
-					1 {fromSymbol} = 1 {toSymbol}
-				</div>
 
 				<div className="mx-auto mt-8 w-72 max-w-full flex-col">
-					<GuardToAllowedChainBtn label={direction ? "Wrap" : "Unwrap"}>
+					<GuardToAllowedChainBtn label={direction ? t("equity.wrap") : t("equity.unwrap")}>
 						{direction ? (
-							amount > fpsAllowance ? (
+							amount > nativePSAllowance ? (
 								<Button isLoading={isApproving} disabled={amount == 0n || !!error} onClick={() => handleApprove()}>
-									Approve
+									{t("common.approve")}
 								</Button>
 							) : (
 								<Button disabled={amount == 0n || !!error} isLoading={isWrapping} onClick={() => handleWrapping()}>
-									Wrap
+									{t("equity.wrap")}
 								</Button>
 							)
 						) : (
 							<Button isLoading={isUnwrapping} disabled={amount == 0n || !!error} onClick={() => handleUnwrapping()}>
-								Unwrap
+								{t("equity.unwrap")}
 							</Button>
 						)}
 					</GuardToAllowedChainBtn>
 				</div>
 			</div>
 
-			<div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-2">
+			<div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-2">
 				<AppBox>
-					<DisplayLabel label="Your Balance" />
-					<DisplayAmount className="mt-4" amount={fpsBalance} currency={NATIVE_POOL_SHARE_TOKEN_SYMBOL} address={ADDRESS[chainId].equity} />
+					<DisplayLabel label={t("equity.your_balance")} />
+					<DisplayAmount
+						bold
+						className="mt-2"
+						amount={nativePSBalance}
+						currency={NATIVE_POOL_SHARE_TOKEN_SYMBOL}
+						address={ADDRESS[chainId].equity}
+					/>
 				</AppBox>
 				<AppBox>
-					<DisplayLabel label={`Holding Duration ${NATIVE_POOL_SHARE_TOKEN_SYMBOL}`} />
-					{fpsHolding > 0 && fpsHolding < 86_400 * 365 * 10 ? formatDuration(fpsHolding) : "-"}
+					<DisplayLabel label={t("equity.holding_duration_symbol", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })} />
+					<div className="mt-2 font-bold">{nativePSHolding > 0 && nativePSHolding < 86_400 * 365 * 10 ? formatDuration(nativePSHolding) : "--"}</div>
 				</AppBox>
 				<AppBox>
-					<DisplayLabel label="Your Balance" />
-					<DisplayAmount className="mt-4" amount={wfpsBalance} currency={POOL_SHARE_TOKEN_SYMBOL} address={ADDRESS[chainId].DEPSwrapper} />
+					<DisplayLabel label={t("equity.your_balance")} />
+					<DisplayAmount
+						bold
+						className="mt-2"
+						amount={psTokenBalance}
+						currency={POOL_SHARE_TOKEN_SYMBOL}
+						address={ADDRESS[chainId].DEPSwrapper}
+					/>
 				</AppBox>
 				<AppBox>
-					<DisplayLabel label={`Holding Duration ${POOL_SHARE_TOKEN_SYMBOL}`} />
-					{wfpsHolding > 0 && wfpsHolding < 86_400 * 365 * 10 ? formatDuration(wfpsHolding) : "-"}
+					<DisplayLabel label={t("equity.holding_duration_symbol", { symbol: POOL_SHARE_TOKEN_SYMBOL })} />
+					<div className="mt-2 font-bold">{psTokenHolding > 0 && psTokenHolding < 86_400 * 365 * 10 ? formatDuration(psTokenHolding) : "--"}</div>
 				</AppBox>
 			</div>
 		</>

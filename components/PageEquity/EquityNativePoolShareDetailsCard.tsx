@@ -1,30 +1,32 @@
 import AppBox from "@components/AppBox";
 import DisplayAmount from "@components/DisplayAmount";
 import DisplayLabel from "@components/DisplayLabel";
-import { useFPSQuery, usePoolStats, useTradeQuery } from "@hooks";
+import { useNativePSQuery, usePoolStats, useTradeQuery } from "@hooks";
 import { useChainId } from "wagmi";
 import dynamic from "next/dynamic";
 import { ADDRESS } from "@deuro/eurocoin";
 import { POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
+import { useTranslation } from "next-i18next";
 
-export default function EquityFPSDetailsCard() {
+export default function EquityNativePoolShareDetailsCard() {
 	const chainId = useChainId();
 	const poolStats = usePoolStats();
-	const { profit, loss } = useFPSQuery(ADDRESS[chainId].decentralizedEURO);
+	const { profit, loss } = useNativePSQuery(ADDRESS[chainId].decentralizedEURO);
 	const { trades } = useTradeQuery();
+	const { t } = useTranslation();
 
 	return (
-		<div className="bg-card-body-primary shadow-lg rounded-xl p-4 grid grid-cols-1 gap-2">
+		<div className="bg-card-body-primary shadow-card rounded-xl p-4 grid grid-cols-1 gap-2">
 			<div id="chart-timeline">
 				<div className="flex justify-between">
 					<div>
-						<DisplayLabel label={`${POOL_SHARE_TOKEN_SYMBOL} Price`} />
-						<DisplayAmount className="mt-4" amount={poolStats.equityPrice} currency={TOKEN_SYMBOL} />
+						<DisplayLabel label={t("equity.symbol_price", { symbol: POOL_SHARE_TOKEN_SYMBOL })} />
+						<DisplayAmount className="mt-4" bold amount={poolStats.equityPrice} currency={TOKEN_SYMBOL} />
 					</div>
 					<div className="text-right">
-						<DisplayLabel label="Supply" />
-						<DisplayAmount className="mt-4" amount={poolStats.equitySupply} currency={POOL_SHARE_TOKEN_SYMBOL} />
+						<DisplayLabel label={t("equity.supply")} />
+						<DisplayAmount className="mt-4" bold amount={poolStats.equitySupply} currency={POOL_SHARE_TOKEN_SYMBOL} />
 					</div>
 				</div>
 				<ApexChart
@@ -96,53 +98,59 @@ export default function EquityFPSDetailsCard() {
 			</div>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
 				<AppBox>
-					<DisplayLabel label="Market Cap" />
+					<DisplayLabel label={t("equity.market_cap")} />
 					<DisplayAmount
-						className="mt-4"
+						className="mt-2"
+						bold
 						amount={(poolStats.equitySupply * poolStats.equityPrice) / BigInt(1e18)}
-						currency={TOKEN_SYMBOL}
+						currency={TOKEN_SYMBOL}	
 					/>
 				</AppBox>
 				<AppBox>
-					<DisplayLabel label="Total Reserve" />
+					<DisplayLabel label={t("equity.total_reserve")} />
 					<DisplayAmount
-						className="mt-4"
-						amount={poolStats.frankenTotalReserve}
-						currency={TOKEN_SYMBOL}
-						address={ADDRESS[chainId].decentralizedEURO}
-					/>
-				</AppBox>
-				<AppBox>
-					<DisplayLabel label="Equity Capital" />
-					<DisplayAmount
-						className="mt-4"
-						amount={poolStats.frankenEquity}
+						className="mt-2"
+						bold
+						amount={poolStats.deuroTotalReserve}
 						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 				<AppBox>
-					<DisplayLabel label="Minter Reserve" />
+					<DisplayLabel label={t("equity.equity_capital")} />
 					<DisplayAmount
-						className="mt-4"
-						amount={poolStats.frankenMinterReserve}
+						className="mt-2"
+						bold
+						amount={poolStats.deuroEquity}
 						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 				<AppBox>
-					<DisplayLabel label="Total Income" />
+					<DisplayLabel label={t("equity.minter_reserve")} />
 					<DisplayAmount
-						className="mt-4 text-text-success"
+						className="mt-2"
+						bold
+						amount={poolStats.deuroMinterReserve}
+						currency={TOKEN_SYMBOL}
+						address={ADDRESS[chainId].decentralizedEURO}
+					/>
+				</AppBox>
+				<AppBox>
+					<DisplayLabel label={t("equity.total_income")} />
+					<DisplayAmount
+						className="mt-2 text-text-success"
+						bold
 						amount={profit}
 						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].decentralizedEURO}
 					/>
 				</AppBox>
 				<AppBox>
-					<DisplayLabel label="Total Losses" />
+					<DisplayLabel label={t("equity.total_losses")} />
 					<DisplayAmount
-						className="mt-4 text-text-warning"
+						className="mt-2 text-text-warning"
+						bold
 						amount={loss}
 						currency={TOKEN_SYMBOL}
 						address={ADDRESS[chainId].decentralizedEURO}

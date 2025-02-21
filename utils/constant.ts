@@ -1,7 +1,9 @@
 export const SOCIAL = {
+	Github_organization: "https://github.com/d-EURO",
 	Github_contract: "https://github.com/d-EURO/smartContracts",
 	Github_dapp: "https://github.com/d-EURO/dapp",
 	Github_dapp_new_issue: "https://github.com/d-EURO/dapp/issues/new/choose",
+	Github_contract_discussion: "https://github.com/orgs/d-EURO/discussions",
 	Telegram: "https://t.me/dEURO_DecentralizedEuro",
 	TelegramApiBot: "https://t.me/dEuro_bot",
 	Twitter: "https://x.com/dEURO_com",
