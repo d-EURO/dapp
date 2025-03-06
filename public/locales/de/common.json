@@ -102,7 +102,7 @@
         "input_placeholder": "Gesamtbetrag zum Prägen",
         "required_collateral": "Gesamtbetrag zum Prägen",
         "liquidation": "Liquidation",
-        "select_collateral": "Wähle dein Sicherheitenasset",
+        "select_collateral": "Wähle deine Sicherheit",
         "select_liquidation_price": "Wähle deinen Liquidationspreis",
         "liquidation_price_too_high": "Dein Liquidationspreis ist zu hoch! Ändere den Liquidationspreis oder den erhaltenen Betrag.",
         "set_expiration_date": "Fälligkeitsdatum festlegen",
