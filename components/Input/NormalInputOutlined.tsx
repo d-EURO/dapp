@@ -5,17 +5,20 @@ interface NormalInputOutlinedProps {
 	value: string;
 	onChange: (value: string) => void;
 	decimals: number;
+	showTokenLogo?: boolean;
+	adornamentRow?: React.ReactNode;
+	unit?: string;
 }
 
-export function NormalInputOutlined({ value, onChange, decimals }: NormalInputOutlinedProps) {
+export function NormalInputOutlined({ value, onChange, decimals, showTokenLogo = true, adornamentRow, unit }: NormalInputOutlinedProps) {
 	const [isFocused, setIsFocused] = useState(false);
 
 	return (
-		<div className={`self-stretch p-2 rounded-xl border-2 border-transparent relative flex-row justify-between items-start gap-2 flex before:absolute before:inset-0 before:rounded-xl before:border before:pointer-events-none ${
+		<div className={`self-stretch p-2 rounded-xl border-2 border-transparent relative flex flex-col flex before:absolute before:inset-0 before:rounded-xl before:border before:pointer-events-none ${
 			isFocused ? "before:border-2 before:border-input-borderFocus" : "before:border-input-border"
 		}`}>
 			<div className="w-full max-w-full self-stretch p-1.5 justify-start items-center gap-1.5 inline-flex overflow-hidden">
-				<TokenLogo currency="deuro" size={6} />
+				{showTokenLogo && <TokenLogo currency="deuro" size={6} />}
 				<BigNumberInput
 					className="p-0 grow text-input-primary placeholder:text-input-placeholder text-2xl font-medium leading-tight"
 					placeholder="0"
@@ -25,7 +28,11 @@ export function NormalInputOutlined({ value, onChange, decimals }: NormalInputOu
 					onFocus={() => setIsFocused(true)}
 					onBlur={() => setIsFocused(false)}
 				/>
+				{unit && <div className="ml-3 text-lg font-medium leading-snug">
+					{unit}
+				</div>}
 			</div>
+			{adornamentRow}
 		</div>
 	);
 }
