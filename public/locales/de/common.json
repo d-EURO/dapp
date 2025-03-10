@@ -179,13 +179,19 @@
             "buffer_too_low": "Der Puffer sollte mindestens {{amount}}% betragen.",
             "duration_too_short": "Die Dauer sollte mindestens {{hours}} Stunden betragen.",
             "minting_limit_exceeded": "Es können nicht mehr als {{amount}} {{symbol}} geprägt werden.",
-            "expiration_date_out_of_range": "Das Ablaufdatum sollte zwischen Jetzt und dem Limit liegen."
+            "expiration_date_out_of_range": "Das Ablaufdatum sollte zwischen Jetzt und dem Limit liegen.",
+            "amount_greater_than_position_balance": "Der Betrag ist größer als der Saldo der Position.",
+            "amount_greater_than_max_to_remove": "Der Betrag ist größer als der maximale Betrag, der unter Berücksichtigung der aktuellen Schuld abgezogen werden kann."
         },
         "txs": {
             "creating_position": "Erstellung einer neuen Position",
             "position_created": "Position erfolgreich erstellt.",
             "minting": "Prägung von {{symbol}}",
-            "minting_success": "{{symbol}} erfolgreich geprägt."
+            "minting_success": "{{symbol}} erfolgreich geprägt.",
+            "adding_collateral": "Besicherung hinzufügen",
+            "adding_collateral_success": "Besicherung erfolgreich hinzugefügt",
+            "removing_collateral": "Besicherung entfernen",
+            "removing_collateral_success": "Besicherung erfolgreich entfernt"
         }
     },
     "my_positions": {

@@ -8,9 +8,10 @@ interface NormalInputOutlinedProps {
 	showTokenLogo?: boolean;
 	adornamentRow?: React.ReactNode;
 	unit?: string;
+	isError?: boolean;
 }
 
-export function NormalInputOutlined({ value, onChange, decimals, showTokenLogo = true, adornamentRow, unit }: NormalInputOutlinedProps) {
+export function NormalInputOutlined({ value, onChange, decimals, showTokenLogo = true, adornamentRow, unit, isError }: NormalInputOutlinedProps) {
 	const [isFocused, setIsFocused] = useState(false);
 
 	return (
@@ -20,7 +21,9 @@ export function NormalInputOutlined({ value, onChange, decimals, showTokenLogo =
 			<div className="w-full max-w-full self-stretch p-1.5 justify-start items-center gap-1.5 inline-flex overflow-hidden">
 				{showTokenLogo && <TokenLogo currency="deuro" size={6} />}
 				<BigNumberInput
-					className="p-0 grow text-input-primary placeholder:text-input-placeholder text-2xl font-medium leading-tight"
+					className={`p-0 grow text-input-primary placeholder:text-input-placeholder text-2xl font-medium leading-tight ${
+						isError ? "!text-text-warning" : ""
+					}`}
 					placeholder="0"
 					value={value}
 					onChange={onChange}

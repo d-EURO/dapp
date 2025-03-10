@@ -179,13 +179,19 @@
             "buffer_too_low": "Buffer should be at least {{amount}}%",
             "duration_too_short": "Duration should be at least {{hours}} hours.",
             "minting_limit_exceeded": "Can not mint more than {{amount}} {{symbol}}.",
-            "expiration_date_out_of_range": "Expiration Date should be between Now and Limit"
+            "expiration_date_out_of_range": "Expiration Date should be between Now and Limit",
+            "amount_greater_than_position_balance": "Amount is greater than the position's balance",
+            "amount_greater_than_max_to_remove": "Amount is greater than the max allowed given the current debt"
         },
         "txs": {
             "creating_position": "Creating a new position",
             "position_created": "Successfully created a position",
             "minting": "Minting {{symbol}}",
-            "minting_success": "Successfully Minted {{symbol}}"
+            "minting_success": "Successfully Minted {{symbol}}",
+            "adding_collateral": "Adding collateral",
+            "adding_collateral_success": "Successfully added collateral",
+            "removing_collateral": "Removing collateral",
+            "removing_collateral_success": "Successfully removed collateral"
         }
     },
     "my_positions": {
