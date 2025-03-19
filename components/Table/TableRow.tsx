@@ -10,6 +10,7 @@ interface Props {
 	headers?: string[];
 	subHeaders?: string[];
 	tab: string;
+	isMobile?: boolean;
 	showFirstHeader?: boolean;
 }
 
@@ -24,6 +25,7 @@ export default function TableRow({
 	classNameMobile = "",
 	tab,
 	showFirstHeader = false,
+	isMobile = false,
 }: Props) {
 	return (
 		<div
@@ -38,9 +40,11 @@ export default function TableRow({
 				</div>
 
 				{/* @dev: this is mobile view */}
-				<TableRowMobile headers={headers} subHeaders={subHeaders} className={classNameMobile} tab={tab} showFirstHeader={showFirstHeader}>
-					{children}
-				</TableRowMobile>
+				{isMobile && (
+					<TableRowMobile headers={headers} subHeaders={subHeaders} className={classNameMobile} tab={tab} showFirstHeader={showFirstHeader}>
+						{children}
+					</TableRowMobile>
+				)}
 
 				{/* @dev: this is desktop/mobile action view */}
 				{actionCol && <div className="flex-shrink-0 md:w-[8rem] md:ml-[2rem] max-md:w-full my-2">{actionCol}</div>}
