@@ -48,18 +48,24 @@ export function TransactionHistoryPanel() {
 
 	return (
 		<ExpandablePanel title={t("savings.transaction_history")}>
-			<TableHeader
-				className="!py-2 !px-0 bg-transparent"
-				headers={headers}
-				tab={tab}
-				reverse={reverse}
-				tabOnChange={handleTabOnChange}
-			/>
-			<div className="w-full grid grid-cols-4 gap-y-2">
-				{sorted.map((r) => (
-					<HystoryRow key={r.id} item={r} />
-				))}
-			</div>
+			{sorted.length > 0 ? (
+				<>
+					<TableHeader
+						className="!py-2 !px-0 bg-transparent"
+						headers={headers}
+						tab={tab}
+						reverse={reverse}
+						tabOnChange={handleTabOnChange}
+					/>
+					<div className="w-full grid grid-cols-4 gap-y-2">
+						{sorted.map((r) => (
+							<HystoryRow key={r.id} item={r} />
+						))}
+					</div>
+				</>
+			) : (
+				<div className="mt-2 font-medium text-base/5 text-text-muted">{t("savings.no_savings_yet")}</div>
+			)}
 		</ExpandablePanel>
 	);
 }
