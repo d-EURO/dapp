@@ -61,6 +61,7 @@ export default function PositionCreate({}) {
 		const blockTimestamp = latestBlock?.timestamp || new Date().getTime() / 1000;
 		return positions
 			.filter((p) => BigInt(p.availableForClones) > 0n)
+			.filter((p) => !p.closed)
 			.filter((p) => blockTimestamp > toTimestamp(toDate(p.cooldown)))
 			.filter((p) => blockTimestamp < toTimestamp(toDate(p.expiration)))
 			.filter((p) => !challengedPositions.includes(p.position));
