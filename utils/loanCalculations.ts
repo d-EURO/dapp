@@ -80,6 +80,38 @@ export const getLoanDetailsByCollateralAndLiqPrice = (
 	};
 };
 
+export const getLoanDetailsByCollateralAndStartingLiqPrice = (position: PositionQuery, collateralAmount: bigint, startingLiquidationPrice: bigint): LoanDetails => {
+	const { reserveContribution, collateralDecimals, original, annualInterestPPM } = position;
+
+	const requiredCollateral = collateralAmount;
+	const decimalsAdjustment = collateralDecimals === 0 ? BigInt(1e36) : BigInt(1e18);
+	const loanAmountStartOfPeriod = (collateralAmount * startingLiquidationPrice) / decimalsAdjustment;
+
+	const borrowersReserveContribution = (BigInt(reserveContribution) * loanAmountStartOfPeriod) / 1_000_000n;
+	const amountToSendToWallet = loanAmountStartOfPeriod - borrowersReserveContribution;
+
+	const { effectiveInterest, apr, interestUntilExpiration } = getMiscelaneousLoanDetails(
+		position,
+		loanAmountStartOfPeriod,
+		collateralAmount,
+	);
+
+	const liquidationPriceAtEndOfPeriod = collateralAmount === 0n ? BigInt(0) : ((loanAmountStartOfPeriod + interestUntilExpiration) * decimalsAdjustment) / collateralAmount;
+
+	return {
+		loanAmount: loanAmountStartOfPeriod,
+		apr,
+		borrowersReserveContribution,
+		interestUntilExpiration,
+		requiredCollateral,
+		amountToSendToWallet: amountToSendToWallet < 0n ? 0n : amountToSendToWallet,
+		originalPosition: original,
+		effectiveInterest,
+		liquidationPrice: liquidationPriceAtEndOfPeriod,
+		startingLiquidationPrice,
+	};
+}
+
 export const getLoanDetailsByCollateralAndYouGetAmount = (position: PositionQuery, collateralAmount: bigint, youGet: bigint): LoanDetails => {
 	const { reserveContribution, collateralDecimals, original, annualInterestPPM } = position;
 
