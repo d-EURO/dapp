@@ -74,6 +74,8 @@ export default function YourReferralsTable() {
 		}
 	});
 
+	const sortedData = sortReferralVolume({ referralVolume: [...data], headers, tab, reverse });
+
 	return (
 		<div className="flex flex-col gap-2 sm:gap-0">
 			<SectionTitle>{t("referrals.your_referrals")}</SectionTitle>
@@ -81,10 +83,10 @@ export default function YourReferralsTable() {
 				<TableHeader headers={headers} subHeaders={subHeaders} tab={tab} tabOnChange={handleTabOnChange} reverse={reverse} />
 				<TableBody>
 					<>
-						{data.length === 0 ? (
+						{sortedData.length === 0 ? (
 							<TableRowEmpty>{t("referrals.no_referrals_yet")}</TableRowEmpty>
 						) : (
-							data.slice(0, isShowMore ? data.length : 3).map((row, i) => (
+							sortedData.slice(0, isShowMore ? sortedData.length : 3).map((row, i) => (
 								<TableRow key={i} headers={headers} tab={tab}>
 									<div className="text-base sm:font-medium leading-tight text-left">{formatCurrency(formatUnits(BigInt(row.volume), 18))}</div>
 									<div className="text-base sm:font-medium leading-tight">{row.date}</div>
@@ -100,7 +102,7 @@ export default function YourReferralsTable() {
 								</TableRow>
 							))
 						)}
-						{data.length > 3 && (
+						{sortedData.length > 3 && (
 							<TableShowMoreRow onShowMoreClick={() => setIsShowMore(!isShowMore)}>
 								<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
 									{isShowMore ? t("referrals.show_less") : t("referrals.show_more")}
@@ -115,4 +117,19 @@ export default function YourReferralsTable() {
 			</Table>
 		</div>
 	);
+}
+
+
+function sortReferralVolume(params: { referralVolume: ReferralData[], headers: string[], tab: string, reverse: boolean }): ReferralData[] {
+	const { referralVolume, headers, tab, reverse } = params;
+
+	if (tab === headers[0]) { // volume
+		referralVolume.sort((a, b) => Number(b.volume) - Number(a.volume));
+	} else if (tab === headers[1]) { // date
+		referralVolume.sort((a, b) => a.date.localeCompare(b.date));
+	} else if (tab === headers[2]) { // address
+		referralVolume.sort((a, b) => a.address.localeCompare(b.address));
+	}
+
+	return reverse ? referralVolume.reverse() : referralVolume;
 }

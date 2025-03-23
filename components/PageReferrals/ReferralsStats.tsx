@@ -67,10 +67,10 @@ export const ReferralsStats = () => {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: tx, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("savings.txs.claiming_referral_bonus")} rows={toastContent} />,
+					render: <TxToast title={t("referrals.txs.claiming_referral_bonus")} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title={t("savings.txs.successfully_claimed_referral_bonus")} rows={toastContent} />,
+					render: <TxToast title={t("referrals.txs.successfully_claimed_referral_bonus")} rows={toastContent} />,
 				},
 			});
 			await fetchReferralsStats();
