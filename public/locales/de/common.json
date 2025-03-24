@@ -71,7 +71,7 @@
         }
     },
     "swap": {
-        "title": "Tausche {{symbol}} gegen andere Stablecoins",
+        "title": "Tausche andere Stablecoins gegen {{symbol}}",
         "limit_label": "Tauschlimit",
         "placeholder": "Tauschbetrag",
         "swap": "Tauschen",
