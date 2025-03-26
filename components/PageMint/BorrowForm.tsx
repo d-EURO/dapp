@@ -112,7 +112,7 @@ export default function PositionCreate({}) {
 				selectedPosition?.collateralSymbol
 			})`;
 			setCollateralError(notTheMinimum);
-		} else if (BigInt(collateralAmount) > BigInt(balanceInWallet.balanceOf)) {
+		} else if (BigInt(collateralAmount) > BigInt(balanceInWallet?.balanceOf || 0n)) {
 			const notEnoughBalance = t("common.error.insufficient_balance", { symbol: selectedPosition?.collateralSymbol });
 			setCollateralError(notEnoughBalance);
 		} else {
