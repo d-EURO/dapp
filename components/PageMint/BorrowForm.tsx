@@ -119,7 +119,7 @@ export default function PositionCreate({}) {
 		} else {
 			setCollateralError("");
 		}
-	}, [collateralAmount]);
+	}, [collateralAmount, balancesByAddress]);
 
 	const prices = useSelector((state: RootState) => state.prices.coingecko);
 	const collateralPriceDeuro = prices[selectedPosition?.collateral.toLowerCase() as Address]?.price?.usd || 0; // TODO: change to eur?
