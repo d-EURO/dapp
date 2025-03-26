@@ -77,6 +77,7 @@ export default function PositionCreate({}) {
 				address: p.collateral,
 				name: p.collateralName,
 				allowance: [ADDRESS[chainId].mintingHubGateway],
+				decimals: p.collateralDecimals,
 			});
 		});
 		return Array.from(uniqueTokens.values());
