@@ -2,9 +2,7 @@ import { useState } from "react";
 import { BigNumberInput } from "./BigNumberInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
-import { MaxButton } from "./MaxButton";
 import TokenLogo from "@components/TokenLogo";
-import { formatUnits } from "viem";
 import { useTranslation } from "next-i18next";
 
 interface TokenDescriptor {
@@ -21,10 +19,9 @@ interface TokenInputSelectOutlinedProps {
 	value: string;
 	onChange: (value: string) => void;
 	disabled?: boolean;
-	usdValue?: string | number | null | undefined;
-	eurValue?: string | number | null | undefined;
 	isError?: boolean;
 	errorMessage?: string;
+	adornamentRow?: React.ReactNode;
 }
 
 export function TokenInputSelectOutlined({
@@ -33,10 +30,9 @@ export function TokenInputSelectOutlined({
 	disabled,
 	selectedToken,
 	onSelectTokenClick,
-	usdValue,
-	eurValue,
 	isError,
 	errorMessage,
+	adornamentRow,
 }: TokenInputSelectOutlinedProps) {
 	const [isFocused, setIsFocused] = useState(false);
 	const { t } = useTranslation();
@@ -88,23 +84,7 @@ export function TokenInputSelectOutlined({
 						<FontAwesomeIcon icon={faChevronDown} className="w-4.5 h-4.5 relative overflow-hidden" />
 					</button>
 				</div>
-				<div className="self-stretch justify-start items-center inline-flex">
-					<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
-						<div className="text-input-label text-xs font-medium leading-none">€{eurValue}</div>
-						<div className="h-4 w-0.5 border-l border-input-placeholder"></div>
-						<div className="text-input-label text-xs font-medium leading-none">${usdValue}</div>
-					</div>
-					<div className="h-7 justify-end items-center gap-2.5 flex">
-						{selectedToken && (
-							<>
-								<div className="text-input-label text-xs font-medium leading-none">
-									{formatUnits(selectedToken.balanceOf || 0n, selectedToken.decimals || 18)} {selectedToken.symbol}
-								</div>
-								<MaxButton onClick={() => onChange(selectedToken?.balanceOf?.toString() || "0")} />
-							</>
-						)}
-					</div>
-				</div>
+				{adornamentRow}
 			</div>
 			{isError && errorMessage && (
 				<div className="absolute mt-1.5 text-text-warning text-xs font-medium leading-none">{errorMessage}</div>

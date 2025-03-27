@@ -102,6 +102,8 @@ module.exports = {
 						bg: "#e4f0fb",
 						text: "#092f62",
 						hover: "#CCE4FF",
+						disabledBg: "#E9EBF0",
+						disabledText: "#ADB2C2",
 					},
 					primary: {
 						disabled: {
