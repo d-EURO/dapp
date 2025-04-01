@@ -289,7 +289,7 @@ export default function InteractionNativePSAndPoolShareToken({
 					}
 				/>
 
-				<div className="py-2 text-center z-0">
+				<div className="pt-2 text-center z-0">
 					<Button className={`h-10 rounded-full mt-4 !p-2.5`} width="w-10" onClick={reverseSelection}>
 						<span className="flex items-center justify-center flex-1">
 							<FontAwesomeIcon icon={faArrowDownLong} className="w-5 h-5" />
@@ -334,7 +334,7 @@ export default function InteractionNativePSAndPoolShareToken({
 					}
 				/>
 
-				<div className="my-8 max-w-full flex-col">
+				<div className="my-12 max-w-full flex-col">
 					<GuardToAllowedChainBtn label={direction ? t("equity.wrap") : t("equity.unwrap")}>
 						{direction ? (
 							amount > nativePSAllowance ? (
