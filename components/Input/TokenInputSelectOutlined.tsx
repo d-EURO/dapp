@@ -22,6 +22,7 @@ interface TokenInputSelectOutlinedProps {
 	isError?: boolean;
 	errorMessage?: string;
 	adornamentRow?: React.ReactNode;
+	notEditable?: boolean;
 }
 
 export function TokenInputSelectOutlined({
@@ -33,6 +34,7 @@ export function TokenInputSelectOutlined({
 	isError,
 	errorMessage,
 	adornamentRow,
+	notEditable = false,
 }: TokenInputSelectOutlinedProps) {
 	const [isFocused, setIsFocused] = useState(false);
 	const { t } = useTranslation();
@@ -45,30 +47,36 @@ export function TokenInputSelectOutlined({
 		setIsFocused(false);
 	};
 
+	const focusClasses = isFocused && !notEditable
+		? "before:border-2 before:border-input-borderFocus"
+		: "before:border-input-border hover:before:border-input-borderHover";
+
+	const notEditableClasses = notEditable
+		? "bg-input-bgNotEditable"
+		: "border-2 border-transparent before:inset-0 before:rounded-xl before:border before:pointer-events-none before:transition-colors before:duration-200";
+
 	return (
 		<div className="w-full self-stretch relative">
 			<div
-				className={`self-stretch p-2 rounded-xl border-2 border-transparent relative flex-col justify-center items-start gap-2 flex before:absolute before:inset-0 before:rounded-xl before:border before:pointer-events-none before:transition-colors before:duration-200 ${
-					isFocused ? "before:border-2 before:border-input-borderFocus" : "before:border-input-border hover:before:border-input-borderHover"
-				}`}
+				className={`self-stretch p-2 rounded-xl relative flex-col justify-center items-start gap-2 flex before:absolute  ${notEditableClasses} ${focusClasses}`}
 			>
 				<div className="self-stretch justify-start items-center gap-3 inline-flex">
-					<div className="grow h-11 px-2 py-3 bg-white rounded-lg justify-start items-center flex min-w-0">
+					<div className="grow h-11 px-2 py-3 bg-transparent rounded-lg justify-start items-center flex min-w-0">
 						<BigNumberInput
-							className={`w-full pl-0 text-input-primary placeholder:text-input-placeholder text-2xl font-medium leading-tight ${
-								isError ? "!text-text-warning" : ""
+							className={`w-full pl-0 ${notEditable ? "placeholder:text-text-muted2" : "placeholder:text-input-placeholder"} text-2xl font-medium leading-tight bg-transparent ${
+								isError ? "!text-text-warning" : "!text-input-primary"
 							}`}
 							placeholder="0"
 							value={value}
 							onChange={onChange}
 							decimals={selectedToken?.decimals || 18}
-							disabled={disabled}
+							disabled={disabled || notEditable}
 							onFocus={handleOnFocus}
 							onBlur={handleOnBlur}
 						/>
 					</div>
 					<button
-						className="min-w-40 h-11 px-3 py-2.5 bg-input-bg rounded-lg justify-between items-center flex shrink-0 gap-1"
+						className={`min-w-40 h-11 px-3 py-2.5 bg-input-bg rounded-lg justify-between items-center flex shrink-0 gap-1 hover:bg-button-secondary-hover-bg transition-colors duration-200 ${notEditable ? "border border-borders-dividerLight" : ""}`}
 						onClick={onSelectTokenClick}
 					>
 						{selectedToken ? (

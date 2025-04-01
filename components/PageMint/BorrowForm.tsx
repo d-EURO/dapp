@@ -10,7 +10,7 @@ import { SliderInputOutlined } from "@components/Input/SliderInputOutlined";
 import { DetailsExpandablePanel } from "@components/PageMint/DetailsExpandablePanel";
 import { NormalInputOutlined } from "@components/Input/NormalInputOutlined";
 import { PositionQuery } from "@deuro/api";
-import { TokenSelectModal } from "@components/TokenSelectModal";
+import { SelectCollateralModal } from "./SelectCollateralModal";
 import { BorrowingDEUROModal } from "@components/PageMint/BorrowingDEUROModal";
 import { InputTitle } from "@components/Input/InputTitle";
 import { formatBigInt, formatCurrency, shortenAddress, toDate, TOKEN_SYMBOL, toTimestamp, WHITELISTED_POSITIONS } from "@utils";
@@ -155,7 +155,7 @@ export default function PositionCreate({}) {
 		const currentQuery = { ...router.query, collateral: token.symbol };
 		router.replace({
 			pathname: router.pathname,
-			query: currentQuery
+			query: currentQuery,
 		});
 
 		const selectedPosition = elegiblePositions.find((p) => p.collateral.toLowerCase() == token.address.toLowerCase());
@@ -392,7 +392,7 @@ export default function PositionCreate({}) {
 								</div>
 							}
 						/>
-						<TokenSelectModal
+						<SelectCollateralModal
 							title={t("mint.token_select_modal_title")}
 							isOpen={isOpenTokenSelector}
 							setIsOpen={setIsOpenTokenSelector}

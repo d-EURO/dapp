@@ -96,6 +96,7 @@ module.exports = {
 					bg: "#f5f6f9",
 					borderFocus: "#3d89f4",
 					borderHover: "#5D647B",
+					bgNotEditable: "#F5F6F9",
 				},
 				button: {
 					max: {
