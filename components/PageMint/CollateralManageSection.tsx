@@ -271,7 +271,7 @@ export const CollateralManageSection = () => {
 						<TokenLogo currency={position.collateralSymbol} />
 						<div className="flex flex-col">
 							<span className="text-base font-extrabold leading-tight">
-								<span className="">{formatUnits(balanceOf, position.collateralDecimals)}</span> {position.collateralSymbol}
+								<span className="">{formatCurrency(formatUnits(balanceOf, position.collateralDecimals), 0, 5)}</span> {position.collateralSymbol}
 							</span>
 							<span className="text-xs font-medium text-text-muted2 leading-[1rem]">
 								{formatCurrency(collateralValuation)} dEURO
