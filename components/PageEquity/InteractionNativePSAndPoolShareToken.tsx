@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import AppBox from "@components/AppBox";
 import DisplayLabel from "@components/DisplayLabel";
 import DisplayAmount from "@components/DisplayAmount";
-import { formatBigInt, formatDuration, NATIVE_POOL_SHARE_TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL, shortenAddress } from "@utils";
-import { useAccount, useBlockNumber, useChainId } from "wagmi";
+import { formatBigInt, formatCurrency, formatDuration, NATIVE_POOL_SHARE_TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL, shortenAddress } from "@utils";
+import { useAccount, useBlockNumber, useChainId, useReadContract } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
 import Button from "@components/Button";
@@ -19,9 +19,9 @@ import { TokenBalance } from "../../hooks/useWalletBalances";
 import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutlined";
 import { MaxButton } from "@components/Input/MaxButton";
 import { InputTitle } from "@components/Input/InputTitle";
-
+import { TokenInteractionSide } from "./EquityInteractionCard";
 interface Props {
-	openSelector: () => void;
+	openSelector: (tokenInteractionSide: TokenInteractionSide) => void;
 	selectedFromToken: TokenBalance;
 	selectedToToken: TokenBalance;
 	refetchBalances: () => void;
@@ -51,6 +51,13 @@ export default function InteractionNativePSAndPoolShareToken({
 	const chainId = useChainId();
 	const account = address || zeroAddress;
 	const direction: boolean = selectedFromToken.symbol === NATIVE_POOL_SHARE_TOKEN_SYMBOL;
+
+	const { data: collateralEurValue = 0n } = useReadContract({
+		address: ADDRESS[chainId].equity,
+		abi: EquityABI,
+		functionName: "calculateProceeds",
+		args: [amount],
+	});
 
 	useEffect(() => {
 		setError("");
@@ -236,7 +243,6 @@ export default function InteractionNativePSAndPoolShareToken({
 
 	const fromBalance = direction ? nativePSBalance : psTokenBalance;
 	const fromSymbol = direction ? NATIVE_POOL_SHARE_TOKEN_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
-	const toSymbol = !direction ? NATIVE_POOL_SHARE_TOKEN_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
 
 	const onChangeAmount = (value: string) => {
 		const valueBigInt = BigInt(value);
@@ -254,7 +260,7 @@ export default function InteractionNativePSAndPoolShareToken({
 				<InputTitle>{t("common.send")}</InputTitle>
 				<TokenInputSelectOutlined
 					selectedToken={selectedFromToken}
-					onSelectTokenClick={openSelector}
+					onSelectTokenClick={() => openSelector(TokenInteractionSide.INPUT)}
 					value={amount.toString()}
 					onChange={onChangeAmount}
 					isError={Boolean(error)}
@@ -262,8 +268,8 @@ export default function InteractionNativePSAndPoolShareToken({
 					adornamentRow={
 						<div className="self-stretch justify-start items-center inline-flex">
 							<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
+								<div className="text-text-muted3 text-xs font-medium leading-none">€{formatCurrency(formatUnits(collateralEurValue, 18))}</div>
 								{/**
-								<div className="text-text-muted3 text-xs font-medium leading-none">€{collateralEurValue}</div>
 								 * 
 								 // TODO: make available when USD price is available from the backend
 								 <div className="h-4 w-0.5 border-l border-input-placeholder"></div>
@@ -301,14 +307,14 @@ export default function InteractionNativePSAndPoolShareToken({
 				<TokenInputSelectOutlined
 					notEditable
 					selectedToken={selectedToToken}
-					onSelectTokenClick={openSelector}
+					onSelectTokenClick={() => openSelector(TokenInteractionSide.OUTPUT)}
 					value={amount.toString()}
 					onChange={() => {}}
 					adornamentRow={
 						<div className="self-stretch justify-start items-center inline-flex">
 							<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
+							<div className="text-text-muted3 text-xs font-medium leading-none">€{formatCurrency(formatUnits(collateralEurValue, 18))}</div>
 								{/**
-								<div className="text-text-muted3 text-xs font-medium leading-none">€{collateralEurValue}</div>
 								 * 
 								 // TODO: make available when USD price is available from the backend
 								 <div className="h-4 w-0.5 border-l border-input-placeholder"></div>

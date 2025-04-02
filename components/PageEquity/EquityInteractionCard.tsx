@@ -9,6 +9,11 @@ import { useTranslation } from "next-i18next";
 import { useWalletERC20Balances, TokenBalance } from "../../hooks/useWalletBalances";
 import { SelectAssetModal } from "./SelectAssetModal";
 
+export enum TokenInteractionSide {
+	INPUT = "input",
+	OUTPUT = "output",
+}
+
 export const EquityTokenSelectorMapping: { [key: string]: string[] } = {
 	[TOKEN_SYMBOL]: [NATIVE_POOL_SHARE_TOKEN_SYMBOL],
 	[NATIVE_POOL_SHARE_TOKEN_SYMBOL]: [TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL],
@@ -21,6 +26,8 @@ export default function EquityInteractionCard() {
 		to: NATIVE_POOL_SHARE_TOKEN_SYMBOL,
 	});
 	const [isOpenTokenSelector, setIsOpenTokenSelector] = useState(false);
+	const [tokenInteractionSide, setTokenInteractionSide] = useState<TokenInteractionSide | undefined>(undefined);
+
 	const chainId = useChainId();
 	const { t } = useTranslation();
 
@@ -53,7 +60,21 @@ export default function EquityInteractionCard() {
 	};
 
 	const onTokenSelect = (symbol: string) => {
-		onTokenFromToChange({ from: symbol, to: tokenFromTo.to });
+		if (tokenInteractionSide === TokenInteractionSide.INPUT) {
+			onTokenFromToChange({ from: symbol, to: tokenFromTo.to });
+		} else {
+			onTokenFromToChange({ from: tokenFromTo.from, to: symbol });
+		}
+	};
+
+	const handleOpenTokenSelector = (tokenInteractionSide: TokenInteractionSide) => {
+		setTokenInteractionSide(tokenInteractionSide);
+		setIsOpenTokenSelector(true);
+	};
+
+	const handleCloseTokenSelector = () => {
+		setIsOpenTokenSelector(false);
+		setTokenInteractionSide(undefined);
 	};
 
 	const handleReverseSelection = () => {
@@ -78,7 +99,7 @@ export default function EquityInteractionCard() {
 					<InteractionStablecoinAndNativePS
 						selectedFromToken={selectedFromToken}
 						selectedToToken={selectedToToken}
-						openSelector={() => setIsOpenTokenSelector(true)}
+						openSelector={handleOpenTokenSelector}
 						reverseSelection={handleReverseSelection}
 						refetchBalances={refetchBalances}
 					/>
@@ -87,7 +108,7 @@ export default function EquityInteractionCard() {
 				{(tokenFromTo.from === NATIVE_POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === POOL_SHARE_TOKEN_SYMBOL) ||
 				(tokenFromTo.from === POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === NATIVE_POOL_SHARE_TOKEN_SYMBOL) ? (
 					<InteractionNativePSAndPoolShareToken
-						openSelector={() => setIsOpenTokenSelector(true)}
+						openSelector={handleOpenTokenSelector}
 						selectedFromToken={selectedFromToken}
 						selectedToToken={selectedToToken}
 						refetchBalances={refetchBalances}
@@ -97,7 +118,7 @@ export default function EquityInteractionCard() {
 
 				{tokenFromTo.from === POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === TOKEN_SYMBOL ? (
 					<InteractionPoolShareTokenRedeem
-						openSelector={() => setIsOpenTokenSelector(true)}
+						openSelector={handleOpenTokenSelector}
 						selectedFromToken={selectedFromToken}
 						selectedToToken={selectedToToken}
 						refetchBalances={refetchBalances}
@@ -108,7 +129,7 @@ export default function EquityInteractionCard() {
 			<SelectAssetModal
 				title={"Select Asset"}
 				isOpen={isOpenTokenSelector}
-				setIsOpen={setIsOpenTokenSelector}
+				setIsOpen={handleCloseTokenSelector}
 				balances={balances}
 				onTokenSelect={onTokenSelect}
 			/>

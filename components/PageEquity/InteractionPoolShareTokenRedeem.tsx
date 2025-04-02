@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from "react";
-import AppBox from "@components/AppBox";
-import DisplayLabel from "@components/DisplayLabel";
-import DisplayAmount from "@components/DisplayAmount";
 import { usePoolStats } from "@hooks";
-import { formatBigInt, formatDuration, POOL_SHARE_TOKEN_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
-import { useAccount, useBlockNumber, useChainId } from "wagmi";
+import { formatBigInt, formatCurrency, formatDuration, POOL_SHARE_TOKEN_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
+import { useAccount, useBlockNumber, useChainId, useReadContract } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
 import Button from "@components/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowDown, faArrowDown19, faArrowDownLong } from "@fortawesome/free-solid-svg-icons";
-import { TxToast, renderErrorToast, renderErrorTxToast } from "@components/TxToast";
+import { faArrowDownLong } from "@fortawesome/free-solid-svg-icons";
+import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
-import TokenInputSelect from "@components/Input/TokenInputSelect";
 import { ADDRESS, EquityABI, DEPSWrapperABI, FrontendGatewayABI } from "@deuro/eurocoin";
 import { useTranslation } from "next-i18next";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
@@ -22,9 +18,9 @@ import { TokenBalance } from "../../hooks/useWalletBalances";
 import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutlined";
 import { MaxButton } from "@components/Input/MaxButton";
 import { InputTitle } from "@components/Input/InputTitle";
-
+import { TokenInteractionSide } from "./EquityInteractionCard";
 interface Props {
-	openSelector: () => void;
+	openSelector: (tokenInteractionSide: TokenInteractionSide) => void;
 	selectedFromToken: TokenBalance;
 	selectedToToken: TokenBalance;
 	refetchBalances: () => void;
@@ -54,7 +50,6 @@ export default function InteractionPoolShareTokenRedeem({
 	const poolStats = usePoolStats();
 	const chainId = useChainId();
 	const account = address || zeroAddress;
-	const direction: boolean = true;
 
 	useEffect(() => {
 		setAmount(0n);
@@ -216,7 +211,7 @@ export default function InteractionPoolShareTokenRedeem({
 				<InputTitle>{t("common.send")}</InputTitle>
 				<TokenInputSelectOutlined
 					selectedToken={selectedFromToken}
-					onSelectTokenClick={openSelector}
+					onSelectTokenClick={() => openSelector(TokenInteractionSide.INPUT)}
 					value={amount.toString()}
 					onChange={onChangeAmount}
 					isError={Boolean(error)}
@@ -224,8 +219,10 @@ export default function InteractionPoolShareTokenRedeem({
 					adornamentRow={
 						<div className="self-stretch justify-start items-center inline-flex">
 							<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
+								<div className="text-text-muted3 text-xs font-medium leading-none">
+									€{formatCurrency(formatUnits(calculateProceeds, 18))}
+								</div>
 								{/**
-								<div className="text-text-muted3 text-xs font-medium leading-none">€{collateralEurValue}</div>
 								 * 
 								 // TODO: make available when USD price is available from the backend
 								 <div className="h-4 w-0.5 border-l border-input-placeholder"></div>
@@ -263,14 +260,16 @@ export default function InteractionPoolShareTokenRedeem({
 				<TokenInputSelectOutlined
 					notEditable
 					selectedToken={selectedToToken}
-					onSelectTokenClick={openSelector}
+					onSelectTokenClick={() => openSelector(TokenInteractionSide.OUTPUT)}
 					value={calculateProceeds.toString()}
 					onChange={() => {}}
 					adornamentRow={
 						<div className="self-stretch justify-start items-center inline-flex">
 							<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
+								<div className="text-text-muted3 text-xs font-medium leading-none">
+									€{formatCurrency(formatUnits(calculateProceeds, 18))}
+								</div>
 								{/**
-								<div className="text-text-muted3 text-xs font-medium leading-none">€{collateralEurValue}</div>
 								 * 
 								 // TODO: make available when USD price is available from the backend
 								 <div className="h-4 w-0.5 border-l border-input-placeholder"></div>

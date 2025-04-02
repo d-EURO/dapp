@@ -20,8 +20,9 @@ import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutl
 import { InputTitle } from "@components/Input/InputTitle";
 import { MaxButton } from "@components/Input/MaxButton";
 import { TokenBalance } from "../../hooks/useWalletBalances";
+import { TokenInteractionSide } from "./EquityInteractionCard";
 interface Props {
-	openSelector: () => void;
+	openSelector: (tokenInteractionSide: TokenInteractionSide) => void;	
 	selectedFromToken: TokenBalance;
 	selectedToToken: TokenBalance;
 	refetchBalances: () => void;
@@ -171,7 +172,7 @@ export default function InteractionStablecoinAndNativePS({ openSelector, selecte
 		poolStats.equityUserVotes > 86_400 * 90 && poolStats.equityUserVotes < 86_400 * 365 * 30 && poolStats.equityUserVotes > 0n;
 	const redeemLeft = 86400n * 90n - (poolStats.equityBalance ? poolStats.equityUserVotes / poolStats.equityBalance / 2n ** 20n : 0n);
 
-	const collateralEurValue = formatBigInt(amount);
+	const collateralEurValue = formatBigInt(deuroResult);
 
 	const onChangeAmount = (value: string) => {
 		const valueBigInt = BigInt(value);
@@ -284,7 +285,7 @@ export default function InteractionStablecoinAndNativePS({ openSelector, selecte
 				<InputTitle>{t("common.send")}</InputTitle>
 				<TokenInputSelectOutlined
 					selectedToken={selectedFromToken}
-					onSelectTokenClick={openSelector}
+					onSelectTokenClick={() => openSelector(TokenInteractionSide.INPUT)}
 					value={amount.toString()}
 					onChange={onChangeAmount}
 					isError={Boolean(error)}
@@ -334,7 +335,7 @@ export default function InteractionStablecoinAndNativePS({ openSelector, selecte
 				<TokenInputSelectOutlined
 					notEditable
 					selectedToken={selectedToToken}
-					onSelectTokenClick={openSelector}
+					onSelectTokenClick={() => openSelector(TokenInteractionSide.OUTPUT)}
 					value={result.toString()}
 					onChange={()=>{}}
 					adornamentRow={

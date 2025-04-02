@@ -47,6 +47,7 @@ export function TokenSelectModal({ title, isOpen, setIsOpen, children }: TokenSe
 	return (
 		<Modal
 			show={isOpen}
+			dismissible
 			onClose={() => setIsOpen(false)}
 			size="md"
 			theme={{
