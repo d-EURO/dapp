@@ -165,7 +165,7 @@ export const MyBorrow = () => {
 			collateralization: collateralizationPercentage.toString(),
 			loanDueIn: formatCurrency(Math.round((position.expiration * 1000 - Date.now()) / 1000 / 60 / 60 / 24)) as string,
 			amountBorrowed,
-			liquidationPrice: formatCurrency(formatUnits(BigInt(position.virtualPrice || position.price), 36 - collateralDecimals) as string) as string,
+			liquidationPrice: formatCurrency(formatUnits(BigInt(position.virtualPrice || position.price), 36 - collateralDecimals) as string, 2, 2) as string,
 		};
 	});
 
