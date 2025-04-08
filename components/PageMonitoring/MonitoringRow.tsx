@@ -48,7 +48,9 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 	const challengesRatioPct: number = Math.round((positionChallengesActiveCollateral / collateralBalanceNumber) * 100);
 
 	const liquidationPrice = formatCurrency(
-		Math.round((parseInt(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100
+		Math.round((parseInt(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100, 
+		2,
+		2
 	);
 
 	const openExplorer = (e: any) => {
