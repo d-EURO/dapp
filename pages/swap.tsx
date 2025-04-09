@@ -332,16 +332,11 @@ export default function Swap() {
 		setInteractionSide(undefined);
 	};
 
-	const handleSelectToken = (symbol: string) => {
-		const prevSelection = interactionSide === TokenInteractionSide.INPUT ? fromSymbol : toSymbol;
-		const isChangingToStablecoin = prevSelection === TOKEN_SYMBOL;
-		const changeToken = interactionSide === TokenInteractionSide.INPUT ? onSetFromSymbol : onSetToSymbol;
-
-		if (isChangingToStablecoin) {
-			changeToken(symbol);
-			onChangeDirection();
+	const handleSelectToken = (symbol: string) => {		
+		if(interactionSide === TokenInteractionSide.INPUT) {
+			onSetFromSymbol(symbol);
 		} else {
-			changeToken(symbol);
+			onSetToSymbol(symbol);
 		}
 
 		handleCloseModal();
