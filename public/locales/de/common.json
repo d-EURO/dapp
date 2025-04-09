@@ -77,6 +77,7 @@
         "limit_label": "Tauschlimit",
         "placeholder": "Tauschbetrag",
         "swap": "Tauschen",
+        "select_stablecoin": "Besicherungsasset auswählen",
         "error": {
             "insufficient_bridge": "Nicht genügend {{symbol}} zum Tauschen verfügbar.",
             "exceeds_limit": "Betrag überschreitet das Tauschlimit."
