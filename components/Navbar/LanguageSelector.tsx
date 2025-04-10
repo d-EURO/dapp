@@ -1,22 +1,9 @@
 import { useTranslation } from "next-i18next";
-import { useRouter } from "next/router";
 import Select, { components } from "react-select";
+import { useLanguageSelector } from "../../hooks/useLanguageSelector";
 
 type OptionType = { value: string; label: string };
 
-const useLanguageSelector = () => {
-	const { i18n } = useTranslation();
-	const router = useRouter();
-	const options = [{ value: "en" }, { value: "de" }, { value: "es" }, { value: "fr" }, { value: "it", disabled: true }];
-
-	const handleLanguageChange = (locale: string) => {
-		const { pathname, asPath, query } = router;
-		router.push({ pathname, query }, asPath, { locale, scroll: false });
-		i18n.changeLanguage(locale);
-	};
-
-	return { options, selectedLanguage: i18n.language, handleLanguageChange };
-};
 
 export const LanguageSelector = () => {
 	const { options, selectedLanguage, handleLanguageChange } = useLanguageSelector();
