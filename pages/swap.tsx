@@ -388,13 +388,15 @@ export default function Swap() {
 									<div className="self-stretch justify-start items-center inline-flex">
 										<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
 											<div className="text-text-muted3 text-xs font-medium leading-none">
-												€{formatCurrency(formatUnits(amount, Number(fromTokenMeta.decimals)))}
+												€{formatCurrency(formatUnits(amount, Number(fromTokenMeta.decimals)), 2, 2)}
 											</div>
 											<div className="h-4 w-0.5 border-l border-input-placeholder"></div>
 											<div className="text-text-muted3 text-xs font-medium leading-none">
 												$
 												{formatCurrency(
-													Number(formatUnits(amount, Number(fromTokenMeta.decimals))) * (eurPrice as number)
+													Number(formatUnits(amount, Number(fromTokenMeta.decimals))) * (eurPrice as number),
+													2,
+													2
 												)}
 											</div>
 										</div>
@@ -402,7 +404,9 @@ export default function Swap() {
 											<div className="text-text-muted3 text-xs font-medium leading-none">
 												{t("common.balance_label")} {": "}
 												{formatCurrency(
-													formatUnits(fromTokenMeta.userBal || 0n, Number(fromTokenMeta.decimals))
+													formatUnits(fromTokenMeta.userBal || 0n, Number(fromTokenMeta.decimals)),
+													2,
+													2
 												)}{" "}
 												{fromTokenMeta.symbol}
 											</div>
@@ -437,7 +441,7 @@ export default function Swap() {
 									<div className="self-stretch justify-start items-center inline-flex">
 										<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
 											<div className="text-text-muted3 text-xs font-medium leading-none">
-												€{formatCurrency(formatUnits(BigInt(rebasedOutputAmount), Number(toTokenMeta.decimals)))}
+												€{formatCurrency(formatUnits(BigInt(rebasedOutputAmount), Number(toTokenMeta.decimals)), 2, 2)}
 											</div>
 
 											<div className="h-4 w-0.5 border-l border-input-placeholder"></div>
@@ -452,7 +456,7 @@ export default function Swap() {
 										<div className="h-7 justify-end items-center gap-2.5 flex">
 											<div className="text-text-muted3 text-xs font-medium leading-none">
 												{t("common.balance_label")} {": "}
-												{formatCurrency(formatUnits(toTokenMeta.userBal || 0n, Number(toTokenMeta.decimals)))}{" "}
+												{formatCurrency(formatUnits(toTokenMeta.userBal || 0n, Number(toTokenMeta.decimals)), 2, 2)}{" "}
 												{toTokenMeta.symbol}
 											</div>
 											<MaxButton
@@ -497,7 +501,7 @@ export default function Swap() {
 					<TokenModalRowButton
 						currency="€"
 						symbol={swapStats.eurc.symbol}
-						price={formatCurrency(formatUnits(swapStats.eurc.userBal, Number(swapStats.eurc.decimals))) as string}
+						price={formatCurrency(formatUnits(swapStats.eurc.userBal, Number(swapStats.eurc.decimals)), 2, 2) as string}
 						balance={formatCurrency(formatUnits(swapStats.eurc.userBal, Number(swapStats.eurc.decimals))) as string}
 						name={swapStats.eurc.symbol}
 						onClick={() => handleSelectToken(swapStats.eurc.symbol)}
@@ -505,7 +509,7 @@ export default function Swap() {
 					<TokenModalRowButton
 						currency="€"
 						symbol={swapStats.veur.symbol}
-						price={formatCurrency(formatUnits(swapStats.veur.userBal, Number(swapStats.veur.decimals))) as string}
+						price={formatCurrency(formatUnits(swapStats.veur.userBal, Number(swapStats.veur.decimals)), 2, 2) as string}
 						balance={formatCurrency(formatUnits(swapStats.veur.userBal, Number(swapStats.veur.decimals))) as string}
 						name={swapStats.veur.symbol}
 						onClick={() => handleSelectToken(swapStats.veur.symbol)}
@@ -513,7 +517,7 @@ export default function Swap() {
 					<TokenModalRowButton
 						currency="€"
 						symbol={swapStats.eurs.symbol}
-						price={formatCurrency(formatUnits(swapStats.eurs.userBal, Number(swapStats.eurs.decimals))) as string}
+						price={formatCurrency(formatUnits(swapStats.eurs.userBal, Number(swapStats.eurs.decimals)), 2, 2) as string}
 						balance={formatCurrency(formatUnits(swapStats.eurs.userBal, Number(swapStats.eurs.decimals))) as string}
 						name={swapStats.eurs.symbol}
 						onClick={() => handleSelectToken(swapStats.eurs.symbol)}
