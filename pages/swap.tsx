@@ -191,13 +191,13 @@ export default function Swap() {
 				address: fromContractAddress as `0x${string}`,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [bridgeAddress, maxUint256],
+				args: [bridgeAddress, BigInt(amount)],
 			});
 
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: "infinite",
+					value: formatCurrency(formatUnits(BigInt(amount), Number(fromTokenData.decimals))) + " " + fromSymbol,
 				},
 				{
 					title: t("common.txs.spender"),
@@ -217,7 +217,7 @@ export default function Swap() {
 					render: <TxToast title={t("common.txs.success", { symbol: fromSymbol })} rows={toastContent} />,
 				},
 			});
-			swapStats.refetch();
+			await swapStats.refetch();
 		} catch (error) {
 			toast.error(renderErrorTxToast(error)); // TODO: need to translate
 		} finally {

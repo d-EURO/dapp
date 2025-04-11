@@ -328,13 +328,13 @@ export default function PositionCreate({}) {
 				address: selectedCollateral?.address as Address,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].mintingHubGateway, maxUint256],
+				args: [ADDRESS[chainId].mintingHubGateway, BigInt(collateralAmount)],
 			});
 
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: "infinite " + selectedCollateral?.symbol,
+					value: formatCurrency(formatUnits(BigInt(collateralAmount), selectedCollateral?.decimals || 18)) + " " + selectedCollateral?.symbol,
 				},
 				{
 					title: t("common.txs.spender"),
@@ -466,7 +466,7 @@ export default function PositionCreate({}) {
 							>
 								{t("common.receive") + " 0.00 " + TOKEN_SYMBOL}
 							</Button>
-						) : userAllowance > BigInt(collateralAmount) ? (
+						) : userAllowance >= BigInt(collateralAmount) ? (
 							<Button
 								className="!p-4 text-lg font-extrabold leading-none"
 								onClick={handleOnClonePosition}
