@@ -191,13 +191,13 @@ export default function Swap() {
 				address: fromContractAddress as `0x${string}`,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [bridgeAddress, BigInt(amount)],
+				args: [bridgeAddress, maxUint256],
 			});
 
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: formatCurrency(formatUnits(BigInt(amount), Number(fromTokenData.decimals))) + " " + fromSymbol,
+					value: "infinite",
 				},
 				{
 					title: t("common.txs.spender"),

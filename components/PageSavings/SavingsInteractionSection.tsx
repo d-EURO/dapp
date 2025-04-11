@@ -55,13 +55,13 @@ export default function SavingsInteractionSection() {
 				address: dEuroAddress,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].savingsGateway, BigInt(amount)],
+				args: [ADDRESS[chainId].savingsGateway, maxUint256],
 			});
 
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: formatCurrency(formatUnits(BigInt(amount), 18)) + " " + TOKEN_SYMBOL,
+					value: "infinite " + TOKEN_SYMBOL,
 				},
 				{
 					title: t("common.txs.spender"),
