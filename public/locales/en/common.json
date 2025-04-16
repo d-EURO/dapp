@@ -576,6 +576,8 @@
         "withdraw_to_my_wallet": "Withdraw to my wallet",
         "transaction_history": "Transaction history",
         "claimed_interest": "Claimed Interest",
+        "reinvested_interest": "Reinvest Interest",
+        "accrued_interest": "Interest paid",
         "error": {
             "insufficient_balance": "Insufficient balance",
             "greater_than_savings": "Amount is greater than savings"
