@@ -576,6 +576,8 @@
         "withdraw_to_my_wallet": "Auszahlen auf meine Wallet",
         "transaction_history": "Transaktionsverlauf",
         "claimed_interest": "Eingeforderte Zinsen",
+        "reinvested_interest": "Wiederveranlagte Zinsen",
+        "accrued_interest": "Zinsen ausgezahlt",
         "error": {
             "insufficient_balance": "Nicht genügend Guthaben",
             "greater_than_savings": "Betrag ist größer als Ersparnisse"

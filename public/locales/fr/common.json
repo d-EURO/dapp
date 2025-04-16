@@ -576,6 +576,8 @@
         "withdraw_to_my_wallet": "Retirer vers mon portefeuille",
         "transaction_history": "Historique des transactions",
         "claimed_interest": "Intérêts récoltés",
+        "reinvested_interest": "Intérêts réinvestis",
+        "accrued_interest": "Intérêts payés",
         "error": {
             "insufficient_balance": "Solde insuffisant",
             "greater_than_savings": "Montant est supérieur à l'épargne"

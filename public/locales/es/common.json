@@ -576,6 +576,8 @@
         "withdraw_to_my_wallet": "Retirar a mi monedero",
         "transaction_history": "Historial de transacciones",
         "claimed_interest": "Intereses reclamados",
+        "reinvested_interest": "Intereses reinvertido",
+        "accrued_interest": "Intereses acreditado",
         "error": {
             "insufficient_balance": "Fondos insuficientes",
             "greater_than_savings": "La cantidad es mayor que los ahorros"
