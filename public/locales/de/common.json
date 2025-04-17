@@ -560,6 +560,9 @@
         "rate": "Zinssatz",
         "balance": "Guthaben",
         "interest": "Zinsen",
+        "total_saved": "Gesamt eingezahlt",
+        "unrealized_interest": "Unrealisierte Zinsen",
+        "interest_received": "Erhaltene Zinsen",
         "no_savings_yet": "Es gibt noch keine Ersparnisse.",
         "no_interest_claims_yet": "Es gibt noch keine Zinsansprüche.",
         "no_withdrawals_yet": "Es gibt noch keine Abhebungen.",
@@ -578,6 +581,7 @@
         "claimed_interest": "Eingeforderte Zinsen",
         "reinvested_interest": "Wiederveranlagte Zinsen",
         "accrued_interest": "Zinsen ausgezahlt",
+        "savings_leaderboard": "Sparleistung",
         "error": {
             "insufficient_balance": "Nicht genügend Guthaben",
             "greater_than_savings": "Betrag ist größer als Ersparnisse"
