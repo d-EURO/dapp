@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { usePoolStats, useTradeQuery } from "@hooks";
 import dynamic from "next/dynamic";
 import { formatCurrency, NATIVE_POOL_SHARE_TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
@@ -43,11 +43,11 @@ export default function EquityNativePoolShareDetailsCard() {
 	const { t } = useTranslation();
 	const startTrades = getStartTimestampByTimeframe(timeframe);
 
-	const filteredTrades = trades.filter((trade) => {
+	const filteredTrades = useMemo(() => trades.filter((trade) => {
 		return parseFloat(trade.time) * 1000 > startTrades;
-	});
+	}), [trades, startTrades]);
 
-	const maxPrice = Math.max(...filteredTrades.map((trade) => Math.round(Number(trade.lastPrice) / 10 ** 16) / 100));
+	const maxPrice = useMemo(() => Math.max(...filteredTrades.map((trade) => Math.round(Number(trade.lastPrice) / 10 ** 16) / 100)), [filteredTrades]);
 
 	return (
 		<div className="bg-layout-primary border border-borders-dividerLight border-offset-1 rounded-xl grid grid-cols-1">
