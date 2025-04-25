@@ -146,7 +146,7 @@ export default function EquityNativePoolShareDetailsCard() {
 				<div className="flex flex-row justify-between">
 					<div className="text-sm font-medium leading-relaxed">{t("equity.supply")}</div>
 					<div className="text-sm font-medium leading-tight ">
-						{formatCurrency(formatUnits(poolStats.equitySupply, 18), 2, 2)} {TOKEN_SYMBOL}
+						{formatCurrency(formatUnits(poolStats.equitySupply, 18), 2, 2)} {NATIVE_POOL_SHARE_TOKEN_SYMBOL}
 					</div>
 				</div>
 				<div className="flex flex-row justify-between">
