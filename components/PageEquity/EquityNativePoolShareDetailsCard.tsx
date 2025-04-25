@@ -126,7 +126,7 @@ export default function EquityNativePoolShareDetailsCard() {
 						{
 							name: `${POOL_SHARE_TOKEN_SYMBOL} Price`,
 							data: filteredTrades.map((trade) => {
-								return [parseFloat(trade.time) * 1000, Math.round(Number(trade.lastPrice) / 10 ** 16) / 100];
+								return [parseFloat(trade.time) * 1000, Number(((Number(trade.lastPrice) / 10 ** 16) / 100).toFixed(4))];
 							}),
 						},
 					]}
