@@ -52,7 +52,7 @@ export default function EquityNativePoolShareDetailsCard() {
 	return (
 		<div className="bg-layout-primary border border-borders-dividerLight border-offset-1 rounded-xl grid grid-cols-1">
 			<div id="chart-timeline" className="relative">
-				<div className="absolute top-[20px] left-[20px] gap-2 flex flex-col items-start">
+				<div className="absolute top-[20px] left-[20px] z-10 gap-2 flex flex-col items-start">
 					<TokenLogo currency={NATIVE_POOL_SHARE_TOKEN_SYMBOL} size={7} />
 					<div>
 						<span className="text-base font-extrabold leading-tight">
