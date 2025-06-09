@@ -573,6 +573,7 @@
         "balance": "Saldo",
         "interest": "Intereses",
         "total_saved": "Total ahorrado",
+        "rank": "Rango",
         "unrealized_interest": "Intereses no realizados",
         "interest_received": "Intereses recibidos",
         "no_savings_yet": "Aún no hay ahorros.",

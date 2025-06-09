@@ -573,6 +573,7 @@
         "balance": "Balance",
         "interest": "Interest",
         "total_saved": "Total Saved",
+        "rank": "Rank",
         "unrealized_interest": "Unrealized Interest",
         "interest_received": "Interest Received",
         "no_savings_yet": "There are no savings yet.",

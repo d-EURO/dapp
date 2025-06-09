@@ -573,6 +573,7 @@
         "balance": "Solde",
         "interest": "Intérêts",
         "total_saved": "Total enregistré",
+        "rank": "Rang",
         "unrealized_interest": "Intérêts non réalisés",
         "interest_received": "Intérêts reçus",
         "no_savings_yet": "Aucun enregistrement d'épargne pour le moment.",
