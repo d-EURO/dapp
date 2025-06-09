@@ -520,6 +520,7 @@
         "current_investment": "Investissement actuel",
         "total_earned": "Total gagné",
         "interest_to_be_collected": "Intérêts à collecter",
+        "reinvest": "Réinvestir",
         "collect_interest": "Collecter les intérêts",
         "symbol_amount": "Montant en {{symbol}}",
         "total_invested": "Total investi",

@@ -520,6 +520,7 @@
         "current_investment": "Bereits eingezahlt",
         "total_earned": "Gesamtverdienst",
         "interest_to_be_collected": "Zinsen auszahlen",
+        "reinvest": "Wiederveranlage",
         "collect_interest": "Zinsen einziehen",
         "symbol_amount": "{{symbol}} Betrag",
         "total_invested": "Gesamt investiert",

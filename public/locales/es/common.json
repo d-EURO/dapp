@@ -520,6 +520,7 @@
         "current_investment": "Inversión actual",
         "total_earned": "Total ganado",
         "interest_to_be_collected": "Intereses por cobrar",
+        "reinvest": "Reinvertir",
         "collect_interest": "Cobrar intereses",
         "symbol_amount": "Importe {{symbol}}",
         "total_invested": "Total invertido",
