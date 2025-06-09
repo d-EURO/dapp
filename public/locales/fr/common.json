@@ -538,7 +538,12 @@
         "bought_through_bids": "Acheté via des offres",
         "no_borrowings_yet": "Vous n'avez pas encore d'emprunts.",
         "no_investments_yet": "Vous n'avez pas encore d'investissements.",
-        "no_savings_yet": "Vous n'avez pas encore d'épargnes."
+        "no_savings_yet": "Vous n'avez pas encore d'épargnes.",
+        "savings_overview": "Vue d'ensemble des épargnes",
+        "interest_rate_apr": "Taux d'intérêt (APR)",
+        "total_savings": "Épargne totale",
+        "total_interest_paid": "Intérêts payés",
+        "contract_address": "Adresse du contrat"
     },
     "savings": {
         "title": "Épargne",

@@ -538,7 +538,12 @@
         "bought_through_bids": "Über Gebote erworben",
         "no_borrowings_yet": "Du hast noch keine Leihen.",
         "no_investments_yet": "Du hast noch keine Investitionen.",
-        "no_savings_yet": "Du hast noch keine Ersparnisse."
+        "no_savings_yet": "Du hast noch keine Ersparnisse.",
+        "savings_overview": "Ersparnisübersicht",
+        "interest_rate_apr": "Zinssatz (APR)",
+        "total_savings": "Gesamtsparguthaben",
+        "total_interest_paid": "Gesamtbezahlte Zinsen",
+        "contract_address": "Vertragsadresse"
     },
     "savings": {
         "title": "Sparguthaben",

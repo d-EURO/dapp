@@ -538,7 +538,12 @@
         "bought_through_bids": "Bought through Bids",
         "no_borrowings_yet": "You do not have any loans yet.",
         "no_investments_yet": "You do not have any investments yet.",
-        "no_savings_yet": "You do not have any savings yet."
+        "no_savings_yet": "You do not have any savings yet.",
+        "savings_overview": "Savings Overview",
+        "interest_rate_apr": "Interest Rate (APR)",
+        "total_savings": "Total Savings",
+        "total_interest_paid": "Total Interest Paid",
+        "contract_address": "Contract Address"
     },
     "savings": {
         "title": "Savings",

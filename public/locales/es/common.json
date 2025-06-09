@@ -538,7 +538,12 @@
         "bought_through_bids": "Comprado mediante ofertas",
         "no_borrowings_yet": "Aún no tienes ningún préstamo.",
         "no_investments_yet": "Aún no tienes ninguna inversión.",
-        "no_savings_yet": "Aún no tienes ningún ahorro."
+        "no_savings_yet": "Aún no tienes ningún ahorro.",
+        "savings_overview": "Resumen de ahorros",
+        "interest_rate_apr": "Tasa de interés (APR)",
+        "total_savings": "Ahorros totales",
+        "total_interest_paid": "Intereses totales pagados",
+        "contract_address": "Dirección del contrato"
     },
     "savings": {
         "title": "Ahorros",
