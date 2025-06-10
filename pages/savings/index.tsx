@@ -5,6 +5,8 @@ import SavingsCollectInterest from "@components/PageSavings/SavingsCollectIntere
 import SavingsInteractionSection from "@components/PageSavings/SavingsInteractionSection";
 import AppCard from "@components/AppCard";
 import { TransactionHistoryPanel } from "@components/PageSavings/TransactionHistoryPanel";
+import SavingsHistoryCard from "@components/PageSavings/SavingsHistoryCard";
+
 export default function Savings() {
 	const { t } = useTranslation();
 
@@ -15,12 +17,13 @@ export default function Savings() {
 			</Head>
 
 			<div className="md:mt-8 flex justify-center">
-				<div className="max-w-lg w-[32rem]">
+				<div className="max-w-lg w-[32rem] flex flex-col gap-8">
 					<AppCard className="w-full p-4 flex flex-col gap-8">
 						<SavingsInteractionSection />
 						<SavingsCollectInterest />
 						<TransactionHistoryPanel />
 					</AppCard>
+					<SavingsHistoryCard />
 				</div>
 			</div>
 		</>
