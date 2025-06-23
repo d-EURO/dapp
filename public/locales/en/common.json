@@ -175,6 +175,9 @@
         "extend_roll_borrowing": "Extend/roll lending",
         "extend_roll_borrowing_description": "The position must either be repaid or extended before the expiry date.",
         "clone": "Clone",
+        "price": "Price",
+        "current_price": "Current Price",
+        "adjust_price": "Adjust Price",
         "error": {
             "could_not_obtain_token_data": "Could not obtain token data",
             "token_decimals_should_be_less_than_24": "Token decimals should be less than 24.",
@@ -190,7 +193,10 @@
             "expiration_date_out_of_range": "Expiration Date should be between Now and Limit",
             "amount_greater_than_position_balance": "Amount is greater than the position's balance",
             "amount_greater_than_max_to_remove": "Amount is greater than the max allowed given the current debt",
-            "amount_greater_than_debt": "Amount is greater than the debt"
+            "amount_greater_than_debt": "Amount is greater than the debt",
+            "price_too_high": "Price cannot exceed maximum allowed",
+            "price_too_low": "Price cannot be below minimum required for collateral",
+            "insufficient_collateral_for_requirements": "Insufficient collateral for price adjustment"
         },
         "txs": {
             "creating_position": "Creating a new position",
@@ -204,7 +210,9 @@
             "pay_back": "Pay back {{symbol}}",
             "pay_back_success": "Successfully payed back {{symbol}}",
             "extending": "Extending position",
-            "extending_success": "Successfully extended position"
+            "extending_success": "Successfully extended position",
+            "adjusting_price": "Adjusting position price...",
+            "adjusting_price_success": "Position price adjusted successfully"
         }
     },
     "my_positions": {
@@ -520,6 +528,7 @@
         "current_investment": "Current Invest",
         "total_earned": "Total Earned",
         "interest_to_be_collected": "Interest to be collected",
+        "reinvest": "Reinvest",
         "collect_interest": "Collect Interest",
         "symbol_amount": "{{symbol}} amount",
         "total_invested": "Total invested",
@@ -537,7 +546,12 @@
         "bought_through_bids": "Bought through Bids",
         "no_borrowings_yet": "You do not have any loans yet.",
         "no_investments_yet": "You do not have any investments yet.",
-        "no_savings_yet": "You do not have any savings yet."
+        "no_savings_yet": "You do not have any savings yet.",
+        "savings_overview": "Savings Overview",
+        "interest_rate_apr": "Interest Rate (APR)",
+        "total_savings": "Total Savings",
+        "total_interest_paid": "Total Interest Paid",
+        "contract_address": "Contract Address"
     },
     "savings": {
         "title": "Savings",
@@ -567,6 +581,7 @@
         "balance": "Balance",
         "interest": "Interest",
         "total_saved": "Total Saved",
+        "rank": "Rank",
         "unrealized_interest": "Unrealized Interest",
         "interest_received": "Interest Received",
         "no_savings_yet": "There are no savings yet.",
@@ -574,11 +589,16 @@
         "no_withdrawals_yet": "There are no withdrawals yet.",
         "earn_yield_on_your_d_euro": "Earn yield on your dEURO",
         "deposit": "Deposit",
-        "collect_interest": "Collect Interest",
+        "reinvest": "Reinvest",
+        "total_interest_paid": "Total Interest Paid",
+        "contract_address": "Contract Address",
+        "interest_rate_apr": "Interest Rate (APR)",
+        "total_savings_history": "dEURO Total Savings",
+        "collect_interest": "Collect",
         "savings_rate": "Savings rate",
         "available_to_deposit": "Available to deposit",
         "available_to_withdraw": "Available to withdraw",
-        "current_invest": "Current Invest",
+        "current_invest": "Your Current Invest",
         "enter_amount_to_add_savings": "Enter amount to add savings",
         "start_earning_interest": "Start earning {{rate}}% on your dEURO",
         "enter_withdraw_amount": "Enter withdraw amount",
