@@ -92,22 +92,32 @@ export const fetchBidsList =
 		// ---------------------------------------------------------------
 		console.log("Loading [REDUX]: BidsList");
 
-		// ---------------------------------------------------------------
-		// Query raw data from backend api
-		const response1 = await DEURO_API_CLIENT.get("/challenges/bids/list");
-		dispatch(slice.actions.setList(response1.data as ApiBidsListing));
+		try {
+			// ---------------------------------------------------------------
+			// Query raw data from backend api
+			const response1 = await DEURO_API_CLIENT.get("/challenges/bids/list");
+			dispatch(slice.actions.setList(response1.data as ApiBidsListing));
 
-		const responseMapping = await DEURO_API_CLIENT.get("/challenges/bids/mapping");
-		dispatch(slice.actions.setMapping(responseMapping.data as ApiBidsMapping));
+			const responseMapping = await DEURO_API_CLIENT.get("/challenges/bids/mapping");
+			dispatch(slice.actions.setMapping(responseMapping.data as ApiBidsMapping));
 
-		const response2 = await DEURO_API_CLIENT.get("/challenges/bids/bidders");
-		dispatch(slice.actions.setBidders(response2.data as ApiBidsBidders));
+			const response2 = await DEURO_API_CLIENT.get("/challenges/bids/bidders");
+			dispatch(slice.actions.setBidders(response2.data as ApiBidsBidders));
 
-		const response3 = await DEURO_API_CLIENT.get("/challenges/bids/challenges");
-		dispatch(slice.actions.setChallenges(response3.data as ApiBidsChallenges));
+			const response3 = await DEURO_API_CLIENT.get("/challenges/bids/challenges");
+			dispatch(slice.actions.setChallenges(response3.data as ApiBidsChallenges));
 
-		const response4 = await DEURO_API_CLIENT.get("/challenges/bids/positions");
-		dispatch(slice.actions.setPositions(response4.data as ApiBidsPositions));
+			const response4 = await DEURO_API_CLIENT.get("/challenges/bids/positions");
+			dispatch(slice.actions.setPositions(response4.data as ApiBidsPositions));
+		} catch (error) {
+			console.error("Failed to load bids data:", error);
+			// Set empty defaults to prevent app crash
+			dispatch(slice.actions.setList([]));
+			dispatch(slice.actions.setMapping({}));
+			dispatch(slice.actions.setBidders({}));
+			dispatch(slice.actions.setChallenges({}));
+			dispatch(slice.actions.setPositions({}));
+		}
 
 		// ---------------------------------------------------------------
 		// Finalizing, loaded set to ture

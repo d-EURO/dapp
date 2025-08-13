@@ -96,22 +96,32 @@ export const fetchChallengesList =
 		// ---------------------------------------------------------------
 		console.log("Loading [REDUX]: ChallengesList");
 
-		// ---------------------------------------------------------------
-		// Query raw data from backend api
-		const response1 = await DEURO_API_CLIENT.get("/challenges/list");
-		dispatch(slice.actions.setList(response1.data as ApiChallengesListing));
+		try {
+			// ---------------------------------------------------------------
+			// Query raw data from backend api
+			const response1 = await DEURO_API_CLIENT.get("/challenges/list");
+			dispatch(slice.actions.setList(response1.data as ApiChallengesListing));
 
-		const responseMapping = await DEURO_API_CLIENT.get("/challenges/mapping");
-		dispatch(slice.actions.setMapping(responseMapping.data as ApiChallengesMapping));
+			const responseMapping = await DEURO_API_CLIENT.get("/challenges/mapping");
+			dispatch(slice.actions.setMapping(responseMapping.data as ApiChallengesMapping));
 
-		const response2 = await DEURO_API_CLIENT.get("/challenges/challengers");
-		dispatch(slice.actions.setChallengers(response2.data as ApiChallengesChallengers));
+			const response2 = await DEURO_API_CLIENT.get("/challenges/challengers");
+			dispatch(slice.actions.setChallengers(response2.data as ApiChallengesChallengers));
 
-		const response3 = await DEURO_API_CLIENT.get("/challenges/positions");
-		dispatch(slice.actions.setPositions(response3.data as ApiChallengesPositions));
+			const response3 = await DEURO_API_CLIENT.get("/challenges/positions");
+			dispatch(slice.actions.setPositions(response3.data as ApiChallengesPositions));
 
-		const response4 = await DEURO_API_CLIENT.get("/challenges/prices");
-		dispatch(slice.actions.setPrices(response4.data as ApiChallengesPrices));
+			const response4 = await DEURO_API_CLIENT.get("/challenges/prices");
+			dispatch(slice.actions.setPrices(response4.data as ApiChallengesPrices));
+		} catch (error) {
+			console.error("Failed to load challenges data:", error);
+			// Set empty defaults to prevent app crash
+			dispatch(slice.actions.setList([]));
+			dispatch(slice.actions.setMapping({}));
+			dispatch(slice.actions.setChallengers({}));
+			dispatch(slice.actions.setPositions({}));
+			dispatch(slice.actions.setPrices({}));
+		}
 
 		// ---------------------------------------------------------------
 		// Finalizing, loaded set to ture

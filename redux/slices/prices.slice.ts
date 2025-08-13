@@ -82,22 +82,32 @@ export const fetchPricesList =
 		// ---------------------------------------------------------------
 		console.log("Loading [REDUX]: PricesList");
 
-		// ---------------------------------------------------------------
-		// Query raw data from backend api
-		const response1 = await DEURO_API_CLIENT.get("/prices/mapping");
-		dispatch(slice.actions.setListMapping(response1.data as ApiPriceMapping));
+		try {
+			// ---------------------------------------------------------------
+			// Query raw data from backend api
+			const response1 = await DEURO_API_CLIENT.get("/prices/mapping");
+			dispatch(slice.actions.setListMapping(response1.data as ApiPriceMapping));
 
-		const response2 = await DEURO_API_CLIENT.get("/prices/erc20/mint");
-		dispatch(slice.actions.setMintERC20Info(response2.data as ApiPriceERC20));
+			const response2 = await DEURO_API_CLIENT.get("/prices/erc20/mint");
+			dispatch(slice.actions.setMintERC20Info(response2.data as ApiPriceERC20));
 
-		const response3 = await DEURO_API_CLIENT.get("/prices/erc20/collateral");
-		dispatch(slice.actions.setCollateralERC20Info(response3.data as ApiPriceERC20Mapping));
+			const response3 = await DEURO_API_CLIENT.get("/prices/erc20/collateral");
+			dispatch(slice.actions.setCollateralERC20Info(response3.data as ApiPriceERC20Mapping));
 
-		const response4 = await DEURO_API_CLIENT.get("/prices/erc20/deps");
-		dispatch(slice.actions.setNativePSERC20Info(response4.data as ApiPriceERC20));
+			const response4 = await DEURO_API_CLIENT.get("/prices/erc20/deps");
+			dispatch(slice.actions.setNativePSERC20Info(response4.data as ApiPriceERC20));
 
-		const response5 = await DEURO_API_CLIENT.get("/prices/eur");
-		dispatch(slice.actions.setEurPrice(response5.data as PriceQueryCurrencies));
+			const response5 = await DEURO_API_CLIENT.get("/prices/eur");
+			dispatch(slice.actions.setEurPrice(response5.data as PriceQueryCurrencies));
+		} catch (error) {
+			console.error("Failed to load prices data:", error);
+			// Set default/fallback data to prevent app crash
+			dispatch(slice.actions.setListMapping({}));
+			dispatch(slice.actions.setMintERC20Info({ symbol: "dEURO", address: "", decimals: 18, price: { usd: 0 } }));
+			dispatch(slice.actions.setCollateralERC20Info({}));
+			dispatch(slice.actions.setNativePSERC20Info({ symbol: "nDEPS", address: "", decimals: 18, price: { usd: 0 } }));
+			dispatch(slice.actions.setEurPrice({ usd: 1.1 })); // Fallback EUR price
+		}
 
 		// ---------------------------------------------------------------
 		// Finalizing, loaded set to ture

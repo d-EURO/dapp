@@ -129,9 +129,10 @@ export const fetchSavings =
 		// ---------------------------------------------------------------
 		console.log("Loading [REDUX]: Savings");
 
-		// ---------------------------------------------------------------
-		// Query raw data from backend api
-		const response1 = await DEURO_API_CLIENT.get("/savings/leadrate/info");
+		try {
+			// ---------------------------------------------------------------
+			// Query raw data from backend api
+			const response1 = await DEURO_API_CLIENT.get("/savings/leadrate/info");
 		dispatch(slice.actions.setLeadrateInfo(response1.data as ApiLeadrateInfo));
 
 		const response2 = await DEURO_API_CLIENT.get("/savings/leadrate/proposals");
@@ -153,12 +154,29 @@ export const fetchSavings =
 			dispatch(slice.actions.setSavingsUserTable(response5.data as ApiSavingsUserTable));
 		}
 
+			const response7 = await DEURO_API_CLIENT.get("/savings/core/info/leaderboard");
+			dispatch(slice.actions.setSavingsLeaderboard(response7.data as ApiSavingsUserLeaderboard[]));
+		} catch (error) {
+			console.error("Failed to load savings data:", error);
+			// Set empty defaults to prevent app crash
+			dispatch(slice.actions.setLeadrateInfo({ rate: 0, timestamp: 0, block: 0 }));
+			dispatch(slice.actions.setLeadrateProposed([]));
+			dispatch(slice.actions.setLeadrateRate([]));
+			dispatch(slice.actions.setSavingsInfo({ 
+				totalSupply: "-", 
+				totalSaved: "-", 
+				savingsRate: 0, 
+				totalInterestPaid: "-",
+				contractAddress: ""
+			}));
+			dispatch(slice.actions.setSavingsAllUserTable(initialState.savingsAllUserTable));
+			dispatch(slice.actions.setSavingsUserTable(initialState.savingsUserTable));
+			dispatch(slice.actions.setSavingsLeaderboard([]));
+		}
+
 		// ---------------------------------------------------------------
 		// Finalizing, loaded set to ture
 		dispatch(slice.actions.setLoaded(true));
-
-		const response7 = await DEURO_API_CLIENT.get("/savings/core/info/leaderboard");
-		dispatch(slice.actions.setSavingsLeaderboard(response7.data as ApiSavingsUserLeaderboard[]));
 	};
 
 export const fetchSavingsCoreInfo = () => async (dispatch: Dispatch<DispatchApiSavingsInfo>) => {
