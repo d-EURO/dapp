@@ -51,9 +51,9 @@ export default function PositionCreate({}) {
 	const [isCloneLoading, setIsCloneLoading] = useState(false);
 	const [collateralError, setCollateralError] = useState("");
 
-	const positions = useSelector((state: RootState) => state.positions.list.list);
-	const challenges = useSelector((state: RootState) => state.challenges.list.list);
-	const challengedPositions = challenges.filter((c) => c.status === "Active").map((c) => c.position);
+	const positions = useSelector((state: RootState) => state.positions.list.list) || [];
+	const challenges = useSelector((state: RootState) => state.challenges.list.list) || [];
+	const challengedPositions = (challenges || []).filter((c) => c.status === "Active").map((c) => c.position);
 
 	const { data: latestBlock } = useBlock();
 	const chainId = useChainId();

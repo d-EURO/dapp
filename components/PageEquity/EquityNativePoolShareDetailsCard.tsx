@@ -38,12 +38,12 @@ const getStartTimestampByTimeframe = (timeframe: Timeframe) => {
 export default function EquityNativePoolShareDetailsCard() {
 	const [timeframe, setTimeframe] = useState<Timeframe>(Timeframe.ALL);
 	const poolStats = usePoolStats();
-	const { profit, loss, unrealizedProfit } = useSelector((state: RootState) => state.ecosystem.depsInfo.earnings);
+	const { profit = "-", loss = "-", unrealizedProfit = "-" } = useSelector((state: RootState) => state.ecosystem.depsInfo?.earnings || {});
 	const { trades } = useTradeQuery();
 	const { t } = useTranslation();
 	const startTrades = getStartTimestampByTimeframe(timeframe);
 
-	const filteredTrades = useMemo(() => trades.filter((trade) => {
+	const filteredTrades = useMemo(() => (trades || []).filter((trade) => {
 		return parseFloat(trade.time) * 1000 > startTrades;
 	}), [trades, startTrades]);
 

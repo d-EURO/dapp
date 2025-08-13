@@ -132,45 +132,63 @@ export const fetchPositionsList =
 		// ---------------------------------------------------------------
 		console.log("Loading [REDUX]: PositionsList");
 
-		// ---------------------------------------------------------------
-		// Query raw data from backend api;
-		const response1 = await DEURO_API_CLIENT.get("/positions/list");
-		const listArray = response1.data.list.map(patchWFPPositions) as PositionQuery[];
-		dispatch(slice.actions.setList({ ...response1.data, list: listArray }));
+		try {
+			// ---------------------------------------------------------------
+			// Query raw data from backend api;
+			const response1 = await DEURO_API_CLIENT.get("/positions/list");
+			const listArray = response1.data.list.map(patchWFPPositions) as PositionQuery[];
+			dispatch(slice.actions.setList({ ...response1.data, list: listArray }));
 
-		const responseMapping = await DEURO_API_CLIENT.get("/positions/mapping");
-		const positionsMapping = responseMapping.data as ApiPositionsMapping;
-		const patchedMapping = Object.fromEntries(Object.entries(positionsMapping.map).map(([key, position]) => [key, patchWFPPositions(position)]));
-		dispatch(slice.actions.setListMapping({ ...positionsMapping, map: patchedMapping }));
+			const responseMapping = await DEURO_API_CLIENT.get("/positions/mapping");
+			const positionsMapping = responseMapping.data as ApiPositionsMapping;
+			const patchedMapping = Object.fromEntries(Object.entries(positionsMapping.map).map(([key, position]) => [key, patchWFPPositions(position)]));
+			dispatch(slice.actions.setListMapping({ ...positionsMapping, map: patchedMapping }));
 
-		const response2 = await DEURO_API_CLIENT.get("/positions/owners");
-		const positionsByOwners = response2.data as ApiPositionsOwners;
-		const patchedOwners = Object.fromEntries(Object.entries(positionsByOwners.map).map(([key, positionArray]) => [key, positionArray.map(patchWFPPositions)]));
-		dispatch(slice.actions.setOwnersPositions({ ...positionsByOwners, map: patchedOwners }));
+			const response2 = await DEURO_API_CLIENT.get("/positions/owners");
+			const positionsByOwners = response2.data as ApiPositionsOwners;
+			const patchedOwners = Object.fromEntries(Object.entries(positionsByOwners.map).map(([key, positionArray]) => [key, positionArray.map(patchWFPPositions)]));
+			dispatch(slice.actions.setOwnersPositions({ ...positionsByOwners, map: patchedOwners }));
 
-		const response3 = await DEURO_API_CLIENT.get("/positions/requests");
-		const positionsRequests = response3.data as ApiPositionsMapping;
-		const patchedRequests = Object.fromEntries(Object.entries(positionsRequests.map).map(([key, position]) => [key, patchWFPPositions(position)]));
-		dispatch(slice.actions.setRequestsList({ ...positionsRequests, map: patchedRequests }));
+			const response3 = await DEURO_API_CLIENT.get("/positions/requests");
+			const positionsRequests = response3.data as ApiPositionsMapping;
+			const patchedRequests = Object.fromEntries(Object.entries(positionsRequests.map).map(([key, position]) => [key, patchWFPPositions(position)]));
+			dispatch(slice.actions.setRequestsList({ ...positionsRequests, map: patchedRequests }));
 
-		// ---------------------------------------------------------------
-		// filter positions and dispatch
-		const openPositions = listArray.filter((position) => !position.denied && !position.closed);
-		const collateralAddresses = openPositions.map((position) => position.collateral).filter(uniqueValues);
+			// ---------------------------------------------------------------
+			// filter positions and dispatch
+			const openPositions = listArray.filter((position) => !position.denied && !position.closed);
+			const collateralAddresses = openPositions.map((position) => position.collateral).filter(uniqueValues);
 
-		// const requestedPositions = collateralAddresses.map((con) => listArray.filter((position) => position.collateral == con));
-		const closedPositioins = listArray.filter((position) => position.closed);
-		const deniedPositioins = listArray.filter((position) => position.denied);
-		const originalPositions = openPositions.filter((position) => position.isOriginal);
-		const openPositionsByOriginal = originalPositions.map((o) => openPositions.filter((p) => p.original == o.original));
-		const openPositionsByCollateral = collateralAddresses.map((con) => openPositions.filter((position) => position.collateral == con));
+			// const requestedPositions = collateralAddresses.map((con) => listArray.filter((position) => position.collateral == con));
+			const closedPositioins = listArray.filter((position) => position.closed);
+			const deniedPositioins = listArray.filter((position) => position.denied);
+			const originalPositions = openPositions.filter((position) => position.isOriginal);
+			const openPositionsByOriginal = originalPositions.map((o) => openPositions.filter((p) => p.original == o.original));
+			const openPositionsByCollateral = collateralAddresses.map((con) => openPositions.filter((position) => position.collateral == con));
 
-		dispatch(slice.actions.setOpenPositions(openPositions));
-		dispatch(slice.actions.setClosedPositions(closedPositioins));
-		dispatch(slice.actions.setDeniedPositions(deniedPositioins));
-		dispatch(slice.actions.setOriginalPositions(originalPositions));
-		dispatch(slice.actions.setOpenPositionsByOriginal(openPositionsByOriginal));
-		dispatch(slice.actions.setOpenPositionsByCollateral(openPositionsByCollateral));
+			dispatch(slice.actions.setOpenPositions(openPositions));
+			dispatch(slice.actions.setClosedPositions(closedPositioins));
+			dispatch(slice.actions.setDeniedPositions(deniedPositioins));
+			dispatch(slice.actions.setOriginalPositions(originalPositions));
+			dispatch(slice.actions.setOpenPositionsByOriginal(openPositionsByOriginal));
+			dispatch(slice.actions.setOpenPositionsByCollateral(openPositionsByCollateral));
+		} catch (error) {
+			console.error("Failed to load positions data:", error);
+			// Set empty defaults to prevent app crash
+			const emptyList = { list: [], total: 0 };
+			const emptyMapping = { map: {} };
+			
+			dispatch(slice.actions.setList(emptyList));
+			dispatch(slice.actions.setListMapping(emptyMapping));
+			dispatch(slice.actions.setOwnersPositions(emptyMapping));
+			dispatch(slice.actions.setRequestsList(emptyMapping));
+			dispatch(slice.actions.setOpenPositions([]));
+			dispatch(slice.actions.setClosedPositions([]));
+			dispatch(slice.actions.setDeniedPositions([]));
+			dispatch(slice.actions.setOriginalPositions([]));
+			dispatch(slice.actions.setOpenPositionsByOriginal([]));
+			dispatch(slice.actions.setOpenPositionsByCollateral([]));
+		}
 
 		// ---------------------------------------------------------------
 		// Finalizing, loaded set to true
