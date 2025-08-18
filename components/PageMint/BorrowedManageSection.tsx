@@ -365,7 +365,7 @@ export const BorrowedManageSection = () => {
 					className="text-lg leading-snug !font-extrabold"
 					onClick={isBorrowMore ? handleBorrowMore : handlePayBack}
 					isLoading={isTxOnGoing}
-					disabled={!amount}
+					disabled={!amount || Boolean(error)}
 				>
 					{t(
 						isBorrowMore
