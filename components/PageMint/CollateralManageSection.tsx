@@ -357,7 +357,7 @@ export const CollateralManageSection = () => {
 					className="text-lg leading-snug !font-extrabold"
 					onClick={handleRemove}
 					isLoading={isTxOnGoing}
-					disabled={Boolean(error) || !Boolean(amount)}
+					disabled={Boolean(error) || !Boolean(amount) || BigInt(amount || 0) === 0n}
 				>
 					{t(isAdd ? "mint.add_collateral" : "mint.remove_collateral")}
 				</Button>
@@ -366,7 +366,7 @@ export const CollateralManageSection = () => {
 					className="text-lg leading-snug !font-extrabold"
 					onClick={handleAdd}
 					isLoading={isTxOnGoing}
-					disabled={Boolean(error) || !Boolean(amount)}
+					disabled={Boolean(error) || !Boolean(amount) || BigInt(amount || 0) === 0n}
 				>
 					{t(isAdd ? "mint.add_collateral" : "mint.remove_collateral")}
 				</Button>
