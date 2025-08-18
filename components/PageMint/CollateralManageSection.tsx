@@ -12,7 +12,7 @@ import { useSelector } from "react-redux";
 import { Address, erc20Abi, formatUnits, maxUint256 } from "viem";
 import { formatBigInt, formatCurrency, shortenAddress } from "@utils";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
-import { useChainId, useReadContracts } from "wagmi";
+import { useAccount, useChainId, useReadContracts } from "wagmi";
 import { writeContract } from "wagmi/actions";
 import { PositionV2ABI } from "@deuro/eurocoin";
 import { WAGMI_CONFIG } from "../../app.config";
@@ -35,6 +35,7 @@ export const CollateralManageSection = () => {
 	const [isTxOnGoing, setIsTxOnGoing] = useState(false);
 	const { t } = useTranslation();
 	const chainId = useChainId();
+	const { address: userAddress } = useAccount();
 
 	const { address: addressQuery } = router.query;
 	const positions = useSelector((state: RootState) => state.positions.list.list);
@@ -98,9 +99,21 @@ export const CollateralManageSection = () => {
 	const positionValueCollateral: number = collBalancePosition * collTokenPricePosition;
 	const collateralizationPercentage: number = Math.round((marketValueCollateral / positionValueCollateral) * 10000) / 100;
 
-	const maxToRemoveThreshold =
-		balanceOf - (debt * 10n ** BigInt(position.collateralDecimals)) / price - BigInt(position.minimumCollateral);
-
+	// Calculate required collateral
+	// position.price uses 36 decimals: for BBTC (8 decimals), the price format is 10^(36-8) = 10^28
+	// Example: 7 * 10^32 represents 70000 dEURO per BBTC
+	// Formula: requiredCollateral = debt * 10^(36-18) / positionPrice
+	//                              = debt * 10^18 / positionPrice
+	// Result is in smallest collateral units (satoshis for BBTC)
+	const positionPrice = BigInt(position.price);
+	const requiredForDebt = (debt * 10n ** 18n) / positionPrice;
+	
+	// The actual requirement is the MAXIMUM of debt requirement and minimum, not the sum!
+	const actualRequired = requiredForDebt > BigInt(position.minimumCollateral) 
+		? requiredForDebt 
+		: BigInt(position.minimumCollateral);
+	
+	const maxToRemoveThreshold = balanceOf - actualRequired;
 	const maxToRemove = debt > 0n ? (maxToRemoveThreshold > 0n ? maxToRemoveThreshold : 0n) : balanceOf;
 
 	const handleAddMax = () => {
@@ -201,12 +214,13 @@ export const CollateralManageSection = () => {
 		try {
 			setIsTxOnGoing(true);
 
-			const contractAmount = balanceOf - BigInt(amount);
-			const addHash = await writeContract(WAGMI_CONFIG, {
+			// WORKAROUND: Use withdrawCollateral directly instead of adjust
+			// due to bug in contract's getCollateralRequirement() function
+			const removeHash = await writeContract(WAGMI_CONFIG, {
 				address: position.position,
 				abi: PositionV2ABI,
-				functionName: "adjust",
-				args: [principal, contractAmount, price],
+				functionName: "withdrawCollateral",
+				args: [userAddress as Address, BigInt(amount)],
 			});
 
 			const toastContent = [
@@ -216,11 +230,11 @@ export const CollateralManageSection = () => {
 				},
 				{
 					title: t("common.txs.transaction"),
-					hash: addHash,
+					hash: removeHash,
 				},
 			];
 
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: addHash, confirmations: 1 }), {
+			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: removeHash, confirmations: 1 }), {
 				pending: {
 					render: <TxToast title={t("mint.txs.removing_collateral")} rows={toastContent} />,
 				},
