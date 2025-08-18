@@ -78,6 +78,12 @@ export const CollateralManageSection = () => {
 				address: position.position,
 				functionName: "getDebt",
 			},
+			{
+				chainId,
+				abi: PositionV2ABI,
+				address: position.position,
+				functionName: "getInterest",
+			},
 		],
 	});
 
@@ -85,6 +91,7 @@ export const CollateralManageSection = () => {
 	const price = data?.[1]?.result || 1n;
 	const balanceOf = data?.[2]?.result || 0n; // collateral reserve
 	const debt = data?.[3]?.result || 0n;
+	const interest = data?.[4]?.result || 0n;
 	const collateralPrice = prices[position.collateral.toLowerCase() as Address]?.price?.eur || 0;
 	const collateralValuation = collateralPrice * Number(formatUnits(balanceOf, position.collateralDecimals));
 	const walletBalance = balancesByAddress[position.collateral as Address]?.balanceOf || 0n;
@@ -99,21 +106,31 @@ export const CollateralManageSection = () => {
 	const positionValueCollateral: number = collBalancePosition * collTokenPricePosition;
 	const collateralizationPercentage: number = Math.round((marketValueCollateral / positionValueCollateral) * 10000) / 100;
 
-	// Calculate required collateral
-	// position.price uses 36 decimals: for BBTC (8 decimals), the price format is 10^(36-8) = 10^28
-	// Example: 7 * 10^32 represents 70000 dEURO per BBTC
-	// Formula: requiredCollateral = debt * 10^(36-18) / positionPrice
-	//                              = debt * 10^18 / positionPrice
-	// Result is in smallest collateral units (satoshis for BBTC)
-	const positionPrice = BigInt(position.price);
-	const requiredForDebt = (debt * 10n ** 18n) / positionPrice;
+	// Replicate exact smart contract calculation
+	// Contract function: _ceilDivPPM from MathUtil.sol
+	const ceilDivPPM = (amount: bigint, ppm: bigint): bigint => {
+		return amount === 0n ? 0n : (amount * 1_000_000n - 1n) / (1_000_000n - ppm) + 1n;
+	};
 	
-	// The actual requirement is the MAXIMUM of debt requirement and minimum, not the sum!
+	// Calculate exactly as the contract does:
+	// _getCollateralRequirement() = principal + _ceilDivPPM(interest, reserveContribution)
+	const reservePPM = BigInt(position.reserveContribution); // Reserve in PPM (e.g., 100000 = 10%)
+	
+	// Apply ceilDivPPM to interest (this is what causes the ~113 satoshi difference)
+	const interestWithReserve = ceilDivPPM(interest, reservePPM);
+	const totalDebtRequirement = principal + interestWithReserve;
+	
+	// Convert to collateral requirement using position.price (36 decimals)
+	const positionPrice = BigInt(position.price);
+	const requiredForDebt = (totalDebtRequirement * 10n ** 18n) / positionPrice;
+	
+	// The actual requirement is the MAXIMUM of debt requirement and minimum
 	const actualRequired = requiredForDebt > BigInt(position.minimumCollateral) 
 		? requiredForDebt 
 		: BigInt(position.minimumCollateral);
 	
-	const maxToRemoveThreshold = balanceOf - actualRequired;
+	// Calculate available to remove with small safety margin (2 satoshis) for rounding differences
+	const maxToRemoveThreshold = balanceOf - actualRequired - 2n;
 	const maxToRemove = debt > 0n ? (maxToRemoveThreshold > 0n ? maxToRemoveThreshold : 0n) : balanceOf;
 
 	const handleAddMax = () => {
