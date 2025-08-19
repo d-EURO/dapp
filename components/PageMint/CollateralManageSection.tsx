@@ -105,12 +105,10 @@ export const CollateralManageSection = () => {
 	const positionValueCollateral: number = collBalancePosition * collTokenPricePosition;
 	const collateralizationPercentage: number = Math.round((marketValueCollateral / positionValueCollateral) * 10000) / 100;
 
-	// Calculate required collateral directly from contract's getCollateralRequirement
 	const requiredCollateral = (collateralRequirement * 10n ** 18n) / price;
 	const minimumCollateral = BigInt(position.minimumCollateral);
 	const actualRequired = requiredCollateral > minimumCollateral ? requiredCollateral : minimumCollateral;
 
-	// Calculate maximum removable amount
 	const maxToRemove = debt > 0n 
 		? (balanceOf > actualRequired ? balanceOf - actualRequired : 0n)
 		: balanceOf;
