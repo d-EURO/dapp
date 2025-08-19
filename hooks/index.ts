@@ -2,7 +2,6 @@ export * from "./useContractUrl";
 export * from "./useSwapStats";
 export * from "./usePoolStats";
 export * from "./useLocalStorage";
-export * from "./useTheme";
 export * from "./useDelegationQuery";
 export * from "./useGovStats";
 export * from "./useTradeQuery";
