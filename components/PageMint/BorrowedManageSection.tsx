@@ -224,39 +224,14 @@ export const BorrowedManageSection = () => {
 					args: [BigInt(0), BigInt(0), BigInt(position.price)],
 				});
 			} else {
-				// The smart contract repays in this order:
-				// 1. First pays off interest (no reserve logic applied)
-				// 2. Then pays principal (incorrectly applies 0.9 factor due to reserve bug)
-				// We need to adjust only the principal portion
-				
+				// Adjusted for reserve portion => user input equals amount deducted from wallet
 				const userInputAmount = BigInt(amount);
-				const currentInterest = interest; // From contract data
-				const reserveRatio = BigInt(position.reserveContribution); // in PPM
+				const currentInterest = interest;
+				const reserveRatio = BigInt(position.reserveContribution);
 				
-				// Calculate how much of the user's input would go to principal vs interest
-				let principalPortion: bigint;
-				let interestPortion: bigint;
-				
-				if (userInputAmount <= currentInterest) {
-					// User is only paying interest
-					interestPortion = userInputAmount;
-					principalPortion = 0n;
-				} else {
-					// User is paying full interest + some principal
-					interestPortion = currentInterest;
-					principalPortion = userInputAmount - currentInterest;
-				}
-				
-				// Only adjust the principal portion for the reserve bug
-				// The bug: contract multiplies principal payment by (1 - reserveRatio)
-				// To compensate: we divide by (1 - reserveRatio)
-				let adjustedAmount: bigint;
-				if (principalPortion > 0n) {
-					const adjustedPrincipal = (principalPortion * 1_000_000n) / (1_000_000n - reserveRatio);
-					adjustedAmount = interestPortion + adjustedPrincipal;
-				} else {
-					adjustedAmount = interestPortion;
-				}
+				const adjustedAmount = userInputAmount <= currentInterest
+					? userInputAmount // Interest only - no adjustment needed
+					: currentInterest + ((userInputAmount - currentInterest) * 1_000_000n) / (1_000_000n - reserveRatio);
 				
 				payBackHash = await writeContract(WAGMI_CONFIG, {
 					address: position.position,
