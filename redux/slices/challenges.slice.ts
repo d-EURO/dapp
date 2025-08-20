@@ -16,6 +16,7 @@ import {
 	DispatchApiChallengesPrices,
 	DispatchBoolean,
 } from "./challenges.types";
+import { logApiError } from "../../utils/errorLogger";
 
 // --------------------------------------------------------------------------------
 
@@ -23,12 +24,11 @@ export const initialState: ChallengesState = {
 	error: null,
 	loaded: false,
 
-	list: { num: 0, list: [] },
-
-	mapping: { num: 0, challenges: [], map: {} },
-	challengers: { num: 0, challengers: [], map: {} },
-	positions: { num: 0, positions: [], map: {} },
-	challengesPrices: { num: 0, ids: [], map: {} },
+	list: undefined,
+	mapping: undefined,
+	challengers: undefined,
+	positions: undefined,
+	challengesPrices: undefined,
 };
 
 // --------------------------------------------------------------------------------
@@ -49,29 +49,29 @@ export const slice = createSlice({
 
 		// -------------------------------------
 		// SET LIST
-		setList: (state, action: { payload: ApiChallengesListing }) => {
+		setList: (state, action: { payload: ApiChallengesListing | undefined }) => {
 			state.list = action.payload;
 		},
 
 		// -------------------------------------
 		// SET MAPPING
-		setMapping: (state, action: { payload: ApiChallengesMapping }) => {
+		setMapping: (state, action: { payload: ApiChallengesMapping | undefined }) => {
 			state.mapping = action.payload;
 		},
 
 		// -------------------------------------
 		// SET Challengers
-		setChallengers: (state, action: { payload: ApiChallengesChallengers }) => {
+		setChallengers: (state, action: { payload: ApiChallengesChallengers | undefined }) => {
 			state.challengers = action.payload;
 		},
 
 		// SET Positions
-		setPositions: (state, action: { payload: ApiChallengesPositions }) => {
+		setPositions: (state, action: { payload: ApiChallengesPositions | undefined }) => {
 			state.positions = action.payload;
 		},
 
 		// SET Prices
-		setPrices: (state, action: { payload: ApiChallengesPrices }) => {
+		setPrices: (state, action: { payload: ApiChallengesPrices | undefined }) => {
 			state.challengesPrices = action.payload;
 		},
 	},
@@ -114,13 +114,12 @@ export const fetchChallengesList =
 			const response4 = await DEURO_API_CLIENT.get("/challenges/prices");
 			dispatch(slice.actions.setPrices(response4.data as ApiChallengesPrices));
 		} catch (error) {
-			console.error("Failed to load challenges data:", error);
-			// Set empty defaults to prevent app crash
-			dispatch(slice.actions.setList([]));
-			dispatch(slice.actions.setMapping({}));
-			dispatch(slice.actions.setChallengers({}));
-			dispatch(slice.actions.setPositions({}));
-			dispatch(slice.actions.setPrices({}));
+			logApiError(error, "challenges data");
+			dispatch(slice.actions.setList(undefined));
+			dispatch(slice.actions.setMapping(undefined));
+			dispatch(slice.actions.setChallengers(undefined));
+			dispatch(slice.actions.setPositions(undefined));
+			dispatch(slice.actions.setPrices(undefined));
 		}
 
 		// ---------------------------------------------------------------

@@ -26,7 +26,7 @@ export default function SavingsInteractionSection() {
 	const [isDeposit, setIsDeposit] = useState(true);
 	const [isTxOnGoing, setIsTxOnGoing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const rate = useSelector((state: RootState) => state.savings.savingsInfo.rate);
+	const rate = useSelector((state: RootState) => state.savings.savingsInfo?.rate);
 	const { t } = useTranslation();
 	const { frontendCode } = useFrontendCode();
 	const account = useAccount();
@@ -224,7 +224,7 @@ export default function SavingsInteractionSection() {
 				<div className="text-text-title text-center text-lg sm:text-xl font-black ">{t("savings.earn_yield_on_your_d_euro")}</div>
 				<div className="py-1 px-3 rounded-lg bg-[#E4F0FC] text-[#272B38] flex flex-row items-center gap-x-2 text-sm leading-[0.875rem]">
 					<span className="font-[400]">{t("savings.savings_rate")} (APR)</span>
-					<span className="font-extrabold">{rate / 10_000}%</span>
+					<span className="font-extrabold">{rate !== undefined ? `${rate / 10_000}%` : "-"}</span>
 				</div>
 			</div>
 			<div className="flex flex-col gap-y-3">
@@ -288,7 +288,7 @@ export default function SavingsInteractionSection() {
 						>
 							{isDeposit
 								? Boolean(amount)
-									? t("savings.start_earning_interest", { rate: rate / 10_000 })
+									? t("savings.start_earning_interest", { rate: rate !== undefined ? `${rate / 10_000}%` : "-" })
 									: t("savings.enter_amount_to_add_savings")
 								: !Boolean(amount)
 								? t("savings.enter_withdraw_amount")

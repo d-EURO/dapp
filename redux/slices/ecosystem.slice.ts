@@ -17,6 +17,7 @@ import {
 	ApiMinterListing,
 } from "@deuro/api";
 import { zeroAddress } from "viem";
+import { logApiError } from "../../utils/errorLogger";
 
 // --------------------------------------------------------------------------------
 
@@ -24,29 +25,11 @@ export const initialState: EcosystemState = {
 	error: null,
 	loaded: false,
 
-	collateralPositions: {},
-	collateralStats: { num: 0, addresses: [], totalValueLocked: { usd: 0, eur: 0 }, map: {} },
-	depsInfo: {	
-		values: { depsMarketCapInChf: 0, price: 0, totalSupply: 0 },
-		earnings: { profit: 0, loss: 0, unrealizedProfit: 0 },
-		reserve: { balance: 0, equity: 0, minter: 0 },
-	},
-	stablecoinInfo: {
-		raw: { mint: "0", burn: "0" },
-		total: { mint: 0, burn: 0, supply: 0 },
-		counter: { mint: 0, burn: 0 },
-
-		erc20: { address: zeroAddress, decimals: 0, name: "", symbol: "" },
-		chain: { id: 0, name: "" },
-		price: { usd: 0 },
-		deps: {
-			price: 0,
-			totalSupply: 0,
-			depsMarketCapInChf: 0,
-		},
-		tvl: { usd: 0, eur: 0 },
-	},
-	stablecoinMinters: { num: 0, list: [] },
+	collateralPositions: undefined,
+	collateralStats: undefined,
+	depsInfo: undefined,
+	stablecoinInfo: undefined,
+	stablecoinMinters: undefined,
 };
 
 // --------------------------------------------------------------------------------
@@ -67,27 +50,27 @@ export const slice = createSlice({
 
 		// -------------------------------------
 		// SET Collateral Positions
-		setCollateralPositions: (state, action: { payload: ApiEcosystemCollateralPositions }) => {
+		setCollateralPositions: (state, action: { payload: ApiEcosystemCollateralPositions | undefined }) => {
 			state.collateralPositions = action.payload;
 		},
 
 		// SET Collateral Stats
-		setCollateralStats: (state, action: { payload: ApiEcosystemCollateralStats }) => {
+		setCollateralStats: (state, action: { payload: ApiEcosystemCollateralStats | undefined }) => {
 			state.collateralStats = action.payload;
 		},
 
 		// SET Deps Info
-		setDepsInfo: (state, action: { payload: ApiEcosystemDepsInfo }) => {
+		setDepsInfo: (state, action: { payload: ApiEcosystemDepsInfo | undefined }) => {
 			state.depsInfo = action.payload;
 		},
 
 		// SET Product token Info
-		setStablecoinInfo: (state, action: { payload: ApiEcosystemStablecoinInfo }) => {
+		setStablecoinInfo: (state, action: { payload: ApiEcosystemStablecoinInfo | undefined }) => {
 			state.stablecoinInfo = action.payload;
 		},
 
 		// SET Product token Minters
-		setStablecoinMinters: (state, action: { payload: ApiMinterListing }) => {
+		setStablecoinMinters: (state, action: { payload: ApiMinterListing | undefined }) => {
 			state.stablecoinMinters = action.payload;
 		},
 	},
@@ -134,36 +117,12 @@ export const fetchEcosystem =
 			// Finalizing, loaded set to ture
 			dispatch(slice.actions.setLoaded(true));
 		} catch (error) {
-			console.error("Failed to load ecosystem data:", error);
-			// Set default/empty data to prevent app crash
-			dispatch(slice.actions.setCollateralPositions([]));
-			dispatch(slice.actions.setCollateralStats({
-				num: 0,
-				addresses: [],
-				totalValueLocked: { usd: "-", eur: "-" },
-				map: {}
-			}));
-			dispatch(slice.actions.setDepsInfo({
-				values: { depsMarketCapInChf: "-", price: "-", totalSupply: "-" },
-				earnings: { profit: "-", loss: "-", unrealizedProfit: "-" },
-				reserve: { balance: "-", equity: "-", minter: "-" }
-			}));
-			dispatch(slice.actions.setStablecoinInfo({
-				raw: { mint: "-", burn: "-" },
-				total: { mint: "-", burn: "-", supply: "-" },
-				counter: { mint: 0, burn: 0 },
-				erc20: { address: zeroAddress, decimals: 0, name: "", symbol: "" },
-				chain: { id: 0, name: "" },
-				price: { usd: "-" },
-				deps: {
-					price: "-",
-					totalSupply: "-",
-					depsMarketCapInChf: "-"
-				},
-				tvl: { usd: "-", eur: "-" }
-			}));
-			dispatch(slice.actions.setStablecoinMinters([]));
-			// Still mark as loaded to prevent infinite loading
+			logApiError(error, "ecosystem data");
+			dispatch(slice.actions.setCollateralPositions(undefined));
+			dispatch(slice.actions.setCollateralStats(undefined));
+			dispatch(slice.actions.setDepsInfo(undefined));
+			dispatch(slice.actions.setStablecoinInfo(undefined));
+			dispatch(slice.actions.setStablecoinMinters(undefined));
 			dispatch(slice.actions.setLoaded(true));
 		}
 	};

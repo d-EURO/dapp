@@ -45,7 +45,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           />
           <h2 className="text-2xl font-bold mb-2">Something went wrong</h2>
           <p className="text-gray-600 mb-4 text-center max-w-md">
-            We're having trouble loading this content. This might be due to a connection issue or a temporary problem with our services.
+            {`We're having trouble loading this content. This might be due to a connection issue or a temporary problem with our services.`}
           </p>
           <button
             onClick={this.handleReset}

@@ -1,8 +1,9 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
-import { PricesState, DispatchBoolean, DispatchApiPriceMapping, DispatchApiPriceERC20Mapping } from "./prices.types";
+import { PricesState, DispatchBoolean, DispatchApiPriceMapping, DispatchApiPriceERC20Mapping, DispatchApiPriceERC20, DispatchPriceQueryCurrencies } from "./prices.types";
 import { ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping, PriceQueryCurrencies } from "@deuro/api";
 import { DEURO_API_CLIENT } from "../../app.config";
 import { zeroAddress } from "viem";
+import { logApiError } from "../../utils/errorLogger";
 
 // --------------------------------------------------------------------------------
 
@@ -10,21 +11,11 @@ export const initialState: PricesState = {
 	error: null,
 	loaded: false,
 
-	coingecko: {},
-	eur: {},
-	mint: {
-		address: zeroAddress,
-		name: "dEURO",
-		symbol: "dEURO",
-		decimals: 18,
-	},
-	nativePS: {
-		address: zeroAddress,
-		name: "dEURO Pool Share",
-		symbol: "DEPS",
-		decimals: 18,
-	},
-	collateral: {},
+	coingecko: undefined,
+	eur: undefined,
+	mint: undefined,
+	nativePS: undefined,
+	collateral: undefined,
 };
 
 // --------------------------------------------------------------------------------
@@ -45,29 +36,29 @@ export const slice = createSlice({
 
 		// -------------------------------------
 		// SET COINGECKO PRICE LIST
-		setListMapping: (state, action: { payload: ApiPriceMapping }) => {
-			state.coingecko = { ...state.coingecko, ...action.payload };
+		setListMapping: (state, action: { payload: ApiPriceMapping | undefined }) => {
+			state.coingecko = action.payload;
 		},
 
 		// -------------------------------------
 		// SET MINT ERC20Info
-		setMintERC20Info: (state, action: { payload: ApiPriceERC20 }) => {
+		setMintERC20Info: (state, action: { payload: ApiPriceERC20 | undefined }) => {
 			state.mint = action.payload;
 		},
 
 		// -------------------------------------
 		// SET Native Pool Share ERC20Info
-		setNativePSERC20Info: (state, action: { payload: ApiPriceERC20 }) => {
+		setNativePSERC20Info: (state, action: { payload: ApiPriceERC20 | undefined }) => {
 			state.nativePS = action.payload;
 		},
 
 		// SET COLLATERAL ERC20Info
-		setCollateralERC20Info: (state, action: { payload: ApiPriceERC20Mapping }) => {
+		setCollateralERC20Info: (state, action: { payload: ApiPriceERC20Mapping | undefined }) => {
 			state.collateral = action.payload;
 		},
 
 		// SET EUR PRICE
-		setEurPrice: (state, action: { payload: PriceQueryCurrencies }) => {
+		setEurPrice: (state, action: { payload: PriceQueryCurrencies | undefined }) => {
 			state.eur = action.payload;
 		},
 	},
@@ -78,7 +69,7 @@ export const actions = slice.actions;
 
 // --------------------------------------------------------------------------------
 export const fetchPricesList =
-	() => async (dispatch: Dispatch<DispatchBoolean | DispatchApiPriceMapping | DispatchApiPriceERC20Mapping>) => {
+	() => async (dispatch: Dispatch<DispatchBoolean | DispatchApiPriceMapping | DispatchApiPriceERC20Mapping | DispatchApiPriceERC20 | DispatchPriceQueryCurrencies>) => {
 		// ---------------------------------------------------------------
 		console.log("Loading [REDUX]: PricesList");
 
@@ -100,13 +91,12 @@ export const fetchPricesList =
 			const response5 = await DEURO_API_CLIENT.get("/prices/eur");
 			dispatch(slice.actions.setEurPrice(response5.data as PriceQueryCurrencies));
 		} catch (error) {
-			console.error("Failed to load prices data:", error);
-			// Set default/fallback data to prevent app crash
-			dispatch(slice.actions.setListMapping({}));
-			dispatch(slice.actions.setMintERC20Info({ symbol: "dEURO", address: "", decimals: 18, price: { usd: 0 } }));
-			dispatch(slice.actions.setCollateralERC20Info({}));
-			dispatch(slice.actions.setNativePSERC20Info({ symbol: "nDEPS", address: "", decimals: 18, price: { usd: 0 } }));
-			dispatch(slice.actions.setEurPrice({ usd: 1.1 })); // Fallback EUR price
+			logApiError(error, "prices data");
+			dispatch(slice.actions.setListMapping(undefined));
+			dispatch(slice.actions.setMintERC20Info(undefined));
+			dispatch(slice.actions.setCollateralERC20Info(undefined));
+			dispatch(slice.actions.setNativePSERC20Info(undefined));
+			dispatch(slice.actions.setEurPrice(undefined));
 		}
 
 		// ---------------------------------------------------------------

@@ -11,6 +11,7 @@ import {
 	DispatchApiPositionsOwners,
 	DispatchApiPositionsMapping,
 } from "./positions.types";
+import { logApiError } from "../../utils/errorLogger";
 
 
 const WFP_POSITION_ORIGINAL = "0xca428F192c20a48b23be1408c6fF12212746D866";
@@ -28,10 +29,10 @@ export const initialState: PositionsState = {
 	error: null,
 	loaded: false,
 
-	list: { num: 0, list: [] },
-	mapping: { num: 0, addresses: [], map: {} },
-	requests: { num: 0, addresses: [], map: {} },
-	owners: { num: 0, owners: [], map: {} },
+	list: undefined,
+	mapping: undefined,
+	requests: undefined,
+	owners: undefined,
 
 	openPositions: [],
 	closedPositions: [],
@@ -59,24 +60,24 @@ export const slice = createSlice({
 
 		// -------------------------------------
 		// SET LIST
-		setList: (state, action: { payload: ApiPositionsListing }) => {
+		setList: (state, action: { payload: ApiPositionsListing | undefined }) => {
 			state.list = action.payload;
 		},
 
 		// -------------------------------------
 		// SET LIST Mapping
-		setListMapping: (state, action: { payload: ApiPositionsMapping }) => {
+		setListMapping: (state, action: { payload: ApiPositionsMapping | undefined }) => {
 			state.mapping = action.payload;
 		},
 
 		// -------------------------------------
 		// SET REQUESTS LIST
-		setRequestsList: (state, action: { payload: ApiPositionsMapping }) => {
+		setRequestsList: (state, action: { payload: ApiPositionsMapping | undefined }) => {
 			state.requests = action.payload;
 		},
 
 		// SET OWNERS POSITIOS
-		setOwnersPositions: (state, action: { payload: ApiPositionsOwners }) => {
+		setOwnersPositions: (state, action: { payload: ApiPositionsOwners | undefined }) => {
 			state.owners = action.payload;
 		},
 
@@ -173,15 +174,11 @@ export const fetchPositionsList =
 			dispatch(slice.actions.setOpenPositionsByOriginal(openPositionsByOriginal));
 			dispatch(slice.actions.setOpenPositionsByCollateral(openPositionsByCollateral));
 		} catch (error) {
-			console.error("Failed to load positions data:", error);
-			// Set empty defaults to prevent app crash
-			const emptyList = { list: [], total: 0 };
-			const emptyMapping = { map: {} };
-			
-			dispatch(slice.actions.setList(emptyList));
-			dispatch(slice.actions.setListMapping(emptyMapping));
-			dispatch(slice.actions.setOwnersPositions(emptyMapping));
-			dispatch(slice.actions.setRequestsList(emptyMapping));
+			logApiError(error, "positions data");
+			dispatch(slice.actions.setList(undefined));
+			dispatch(slice.actions.setListMapping(undefined));
+			dispatch(slice.actions.setOwnersPositions(undefined));
+			dispatch(slice.actions.setRequestsList(undefined));
 			dispatch(slice.actions.setOpenPositions([]));
 			dispatch(slice.actions.setClosedPositions([]));
 			dispatch(slice.actions.setDeniedPositions([]));
