@@ -78,6 +78,12 @@ export const CollateralManageSection = () => {
 				address: position.position,
 				functionName: "getDebt",
 			},
+			{
+				chainId,
+				abi: PositionV2ABI,
+				address: position.position,
+				functionName: "getCollateralRequirement",
+			},
 		] : [],
 	});
 
@@ -85,6 +91,7 @@ export const CollateralManageSection = () => {
 	const price = data?.[1]?.result || 1n;
 	const balanceOf = data?.[2]?.result || 0n; // collateral reserve
 	const debt = data?.[3]?.result || 0n;
+	const collateralRequirement = data?.[4]?.result || 0n;
 	const collateralPrice = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
 	const collateralValuation = collateralPrice * Number(formatUnits(balanceOf, position?.collateralDecimals || 18));
 	const walletBalance = position ? balancesByAddress[position.collateral as Address]?.balanceOf || 0n : 0n;
@@ -277,7 +284,35 @@ export const CollateralManageSection = () => {
 		}
 	};
 
-	const amountToUse = isAdd ? balanceOf + BigInt(amount) : balanceOf - BigInt(amount);
+	// Error validation only for adding collateral
+	useEffect(() => {
+		if (!isAdd) return;
+
+		if (!amount) {
+			setError(null);
+		} else if (BigInt(amount) > walletBalance) {
+			setError(t("common.error.insufficient_balance", { symbol: position.collateralSymbol }));
+		} else {
+			setError(null);
+		}
+	}, [isAdd, amount, walletBalance, position.collateralSymbol]);
+
+	// Error validation only for removing collateral
+	useEffect(() => {
+		if (isAdd) return;
+
+		if (!amount) {
+			setError(null);
+		} else if (BigInt(amount) > maxToRemove) {
+			setError(t("mint.error.amount_greater_than_max_to_remove"));
+		} else if (BigInt(amount) > balanceOf) {
+			setError(t("mint.error.amount_greater_than_position_balance"));
+		} else {
+			setError(null);
+		}
+	}, [isAdd, amount, maxToRemove, balanceOf]);
+
+	const amountToUse = isAdd ? balanceOf + BigInt(amount || 0) : balanceOf - BigInt(amount || 0);
 	const loanDetails = getLoanDetailsByCollateralAndYouGetAmount(position, amountToUse, principal);
 
 	return (
@@ -337,16 +372,16 @@ export const CollateralManageSection = () => {
 					className="text-lg leading-snug !font-extrabold"
 					onClick={handleRemove}
 					isLoading={isTxOnGoing}
-					disabled={Boolean(error) || !Boolean(amount)}
+					disabled={!!error || !amount || !BigInt(amount)}
 				>
 					{t(isAdd ? "mint.add_collateral" : "mint.remove_collateral")}
 				</Button>
-			) : allowance >= BigInt(amount) ? (
+			) : allowance >= BigInt(amount || 0) ? (
 				<Button
 					className="text-lg leading-snug !font-extrabold"
 					onClick={handleAdd}
 					isLoading={isTxOnGoing}
-					disabled={Boolean(error) || !Boolean(amount)}
+					disabled={!!error || !amount || !BigInt(amount)}
 				>
 					{t(isAdd ? "mint.add_collateral" : "mint.remove_collateral")}
 				</Button>
