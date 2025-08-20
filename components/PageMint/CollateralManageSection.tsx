@@ -284,34 +284,6 @@ export const CollateralManageSection = () => {
 		}
 	};
 
-	// Error validation only for adding collateral
-	useEffect(() => {
-		if (!isAdd) return;
-
-		if (!amount) {
-			setError(null);
-		} else if (BigInt(amount) > walletBalance) {
-			setError(t("common.error.insufficient_balance", { symbol: position.collateralSymbol }));
-		} else {
-			setError(null);
-		}
-	}, [isAdd, amount, walletBalance, position.collateralSymbol]);
-
-	// Error validation only for removing collateral
-	useEffect(() => {
-		if (isAdd) return;
-
-		if (!amount) {
-			setError(null);
-		} else if (BigInt(amount) > maxToRemove) {
-			setError(t("mint.error.amount_greater_than_max_to_remove"));
-		} else if (BigInt(amount) > balanceOf) {
-			setError(t("mint.error.amount_greater_than_position_balance"));
-		} else {
-			setError(null);
-		}
-	}, [isAdd, amount, maxToRemove, balanceOf]);
-
 	const amountToUse = isAdd ? balanceOf + BigInt(amount || 0) : balanceOf - BigInt(amount || 0);
 	const loanDetails = getLoanDetailsByCollateralAndYouGetAmount(position, amountToUse, principal);
 
