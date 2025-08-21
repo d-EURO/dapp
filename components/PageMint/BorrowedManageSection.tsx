@@ -9,7 +9,6 @@ import { useRouter } from "next/router";
 import { formatCurrency, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
-import { PositionQuery } from "@deuro/api";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { Address, formatUnits, maxUint256, zeroAddress } from "viem";
 import { PositionV2ABI } from "@deuro/eurocoin";
@@ -39,22 +38,24 @@ export const BorrowedManageSection = () => {
 
 	const router = useRouter();
 	const { address: addressQuery } = router.query;
-	const prices = useSelector((state: RootState) => state.prices.coingecko);
-	const positions = useSelector((state: RootState) => state.positions.list.list);
-	const position = positions.find((p) => p.position == addressQuery) as PositionQuery;
+	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
+	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
+	const position = positions.find((p) => p.position == addressQuery);
 
-	const { balancesByAddress, refetchBalances } = useWalletERC20Balances([
-		{
-			symbol: position.deuroSymbol,
-			address: position.deuro,
-			name: position.deuroName,
-			allowance: [position.position],
-		},
-	]);
-	const url = useContractUrl(position.position);
+	const { balancesByAddress, refetchBalances } = useWalletERC20Balances(
+		position ? [
+			{
+				symbol: position.deuroSymbol,
+				address: position.deuro,
+				name: position.deuroName,
+				allowance: [position.position],
+			},
+		] : []
+	);
+	const url = useContractUrl(position?.position || zeroAddress as Address);
 	
 	const { data, refetch: refetchReadContracts } = useReadContracts({
-		contracts: [
+		contracts: position ? [
 			{
 				chainId,
 				address: position.position,
@@ -86,36 +87,79 @@ export const BorrowedManageSection = () => {
 				address: position.position,
 				functionName: "getDebt",
 			},
-		],
+		] : [],
 	});
 
-	const { reserveContribution } = position;
+	const { reserveContribution } = position || {};
 
-	const collateralPrice = prices[position.collateral.toLowerCase() as Address]?.price?.eur || 0;
+	const collateralPrice = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
 	const principal = data?.[0]?.result || 0n;
 	const price = data?.[1]?.result || 1n;
 	const balanceOf = data?.[2]?.result || 0n;
 	const interest = data?.[3]?.result || 0n;
 	const totalDebt = data?.[4]?.result || 0n;
-	const amountBorrowed = BigInt(principal) - (BigInt(principal) * BigInt(reserveContribution)) / 1_000_000n;
+	const amountBorrowed = reserveContribution ? BigInt(principal) - (BigInt(principal) * BigInt(reserveContribution)) / 1_000_000n : 0n;
 	const debt = amountBorrowed + interest;
-	const walletBalance = balancesByAddress?.[position.deuro as Address]?.balanceOf || 0n;
-	const allowance = balancesByAddress?.[position.deuro as Address]?.allowance?.[position.position] || 0n;
+	const walletBalance = position ? balancesByAddress?.[position.deuro as Address]?.balanceOf || 0n : 0n;
+	const allowance = position ? balancesByAddress?.[position.deuro as Address]?.allowance?.[position.position] || 0n : 0n;
 
-	const collBalancePosition: number = Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100;
-	const collTokenPriceMarket = prices[position.collateral.toLowerCase() as Address]?.price?.eur || 0;
-	const collTokenPricePosition: number = Math.round((parseInt(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100;
+	const collBalancePosition: number = position ? Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100 : 0;
+	const collTokenPriceMarket = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
+	const collTokenPricePosition: number = position ? Math.round((parseInt(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100 : 0;
 	
 	const marketValueCollateral: number = collBalancePosition * collTokenPriceMarket;
+	
+	// Calculate max values for validation (will be 0 if position is undefined)
+	const maxAmountByDepositedCollateral = position 
+		? getLoanDetailsByCollateralAndStartingLiqPrice(position, balanceOf, price).amountToSendToWallet
+		: 0n;
+	const maxBeforeAddingMoreCollateral = maxAmountByDepositedCollateral - totalDebt > 0 ? maxAmountByDepositedCollateral - totalDebt : 0n;
+
+	// Error validation for Borrow More
+	useEffect(() => {
+		if (!position || !isBorrowMore) return;
+
+		if (!amount) {
+			setError(null);
+		} else if (BigInt(amount) > maxBeforeAddingMoreCollateral) {
+			setError(
+				t("mint.error.minting_limit_exceeded", {
+					amount: formatCurrency(formatUnits(maxBeforeAddingMoreCollateral, 18)),
+					symbol: position.deuroSymbol,
+				})
+			);
+		} else {
+			setError(null);
+		}
+	}, [isBorrowMore, amount, maxBeforeAddingMoreCollateral, position, t]);
+
+	// Error validation for Pay Back
+	useEffect(() => {
+		if (!position || isBorrowMore) return;
+
+		if (!amount) {
+			setError(null);
+		} else if (BigInt(amount) > walletBalance) {
+			setError(t("common.error.insufficient_balance", { symbol: position.deuroSymbol }));
+		} else if (BigInt(amount) > debt) {
+			setError(
+				t("mint.error.amount_greater_than_debt", { amount: formatCurrency(formatUnits(debt, 18)), symbol: position.deuroSymbol })
+			);
+		} else {
+			setError(null);
+		}
+	}, [isBorrowMore, amount, debt, walletBalance, position, t]);
+	
+	// Show loading or redirect if position not found
+	if (!position) {
+		return (
+			<div className="flex justify-center items-center h-64">
+				<span className="text-text-muted2">Loading position data...</span>
+			</div>
+		);
+	}
 	const positionValueCollateral: number = collBalancePosition * collTokenPricePosition;
 	const collateralizationPercentage: number = Math.round((marketValueCollateral / positionValueCollateral) * 10000) / 100;
-
-	const { amountToSendToWallet: maxAmountByDepositedCollateral } = getLoanDetailsByCollateralAndStartingLiqPrice(
-		position,
-		balanceOf,
-		price
-	);
-	const maxBeforeAddingMoreCollateral = maxAmountByDepositedCollateral - totalDebt > 0 ? maxAmountByDepositedCollateral - totalDebt : 0n;
 
 	const handleMaxAmount = () => {
 		if (isBorrowMore) {
@@ -224,12 +268,20 @@ export const BorrowedManageSection = () => {
 					args: [BigInt(0), BigInt(0), BigInt(position.price)],
 				});
 			} else {
-				const { loanAmount } = getLoanDetailsByCollateralAndYouGetAmount(position, balanceOf, BigInt(amount));
+				// Adjusted for reserve portion => user input equals amount deducted from wallet
+				const userInputAmount = BigInt(amount);
+				const currentInterest = interest;
+				const reserveRatio = BigInt(position.reserveContribution);
+				
+				const adjustedAmount = userInputAmount <= currentInterest
+					? userInputAmount // Interest only - no adjustment needed
+					: currentInterest + ((userInputAmount - currentInterest) * 1_000_000n) / (1_000_000n - reserveRatio);
+				
 				payBackHash = await writeContract(WAGMI_CONFIG, {
 					address: position.position,
 					abi: PositionV2ABI,
 					functionName: "repay",
-					args: [loanAmount],
+					args: [adjustedAmount],
 				});
 			}
 
@@ -262,41 +314,6 @@ export const BorrowedManageSection = () => {
 		}
 	};
 
-	// Error validation for Borrow More
-	useEffect(() => {
-		if (!isBorrowMore) return;
-
-		if (!amount) {
-			setError(null);
-		} else if (BigInt(amount) > maxBeforeAddingMoreCollateral) {
-			setError(
-				t("mint.error.minting_limit_exceeded", {
-					amount: formatCurrency(formatUnits(maxBeforeAddingMoreCollateral, 18)),
-					symbol: position.deuroSymbol,
-				})
-			);
-		} else {
-			setError(null);
-		}
-	}, [isBorrowMore, amount, maxBeforeAddingMoreCollateral]);
-
-	// Error validation for Pay Back
-	useEffect(() => {
-		if (isBorrowMore) return;
-
-		if (!amount) {
-			setError(null);
-		} else if (BigInt(amount) > walletBalance) {
-			setError(t("common.error.insufficient_balance", { symbol: position.deuroSymbol }));
-		} else if (BigInt(amount) > debt) {
-			setError(
-				t("mint.error.amount_greater_than_debt", { amount: formatCurrency(formatUnits(debt, 18)), symbol: position.deuroSymbol })
-			);
-		} else {
-			setError(null);
-		}
-	}, [isBorrowMore, amount, debt, walletBalance]);
-
 	const loanDetails = getLoanDetailsByCollateralAndYouGetAmount(position, balanceOf, BigInt(amount) || BigInt(totalDebt));
 
 	return (
@@ -307,7 +324,7 @@ export const BorrowedManageSection = () => {
 						<TokenLogo currency={TOKEN_SYMBOL} />
 						<div className="flex flex-col">
 							<span className="text-base font-extrabold leading-tight">
-								<span className="">{formatCurrency(formatUnits(debt, 18))}</span> {TOKEN_SYMBOL}
+								<span className="">{reserveContribution ? formatCurrency(formatUnits(debt, 18)) : "-"}</span> {reserveContribution ? TOKEN_SYMBOL : ""}
 							</span>
 							<span className="text-xs font-medium text-text-muted2 leading-[1rem]"></span>
 						</div>
@@ -365,12 +382,12 @@ export const BorrowedManageSection = () => {
 					className="text-lg leading-snug !font-extrabold"
 					onClick={isBorrowMore ? handleBorrowMore : handlePayBack}
 					isLoading={isTxOnGoing}
-					disabled={!amount}
+					disabled={!amount || !BigInt(amount) || Boolean(error)}
 				>
 					{t(
 						isBorrowMore
 							? "mint.borrow_more"
-							: amount.toString() === debt.toString()
+							: amount && BigInt(amount) && amount.toString() === debt.toString()
 							? "mint.pay_back_and_close"
 							: "mint.pay_back"
 					)}
