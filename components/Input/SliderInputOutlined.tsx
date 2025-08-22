@@ -28,7 +28,7 @@ export function SliderInputOutlined({ value, onChange, min, max, decimals, isErr
 			}`}>
 				<div className="h-18 self-stretch justify-between inline-flex flex-col sm:flex-row">
 					<div className="flex-col justify-center items-start inline-flex">
-						<div className="self-stretch px-2 bg-white rounded-xl flex-col justify-center items-start flex">
+						<div className="self-stretch px-2 bg-white dark:bg-transparent rounded-xl flex-col justify-center items-start flex">
 							<div className="h-11 self-stretch justify-start items-center gap-1 inline-flex overflow-hidden">
 								<div className="text-input-placeholder text-xl leading-normal">€</div>
 								<BigNumberInput

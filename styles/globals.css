@@ -125,6 +125,36 @@ div.date-input div.react-datepicker__input-container input {
 	width: 100%;
 }
 
+/* Dark mode for date picker */
+.dark .react-datepicker__input-container input {
+	@apply text-slate-100 placeholder-slate-500;
+}
+
+.dark .react-datepicker {
+	@apply bg-slate-900 border-slate-700;
+}
+
+.dark .react-datepicker__header {
+	@apply bg-slate-800 border-slate-700;
+}
+
+.dark .react-datepicker__current-month,
+.dark .react-datepicker__day-name {
+	@apply text-slate-100;
+}
+
+.dark .react-datepicker__day {
+	@apply text-slate-100 hover:bg-slate-700;
+}
+
+.dark .react-datepicker__day--selected {
+	@apply bg-blue-600 hover:bg-blue-500;
+}
+
+.dark .react-datepicker__day--disabled {
+	@apply text-slate-600;
+}
+
 
 /* Wallet connect web3modal theme */
 button[data-testid="component-big-button"] {
@@ -240,7 +270,7 @@ button[data-testid="component-big-button"] {
   
   /* Input fields */
   .dark .bg-input-bg {
-    @apply bg-slate-800/50 border-slate-700;
+    @apply bg-slate-800 border-slate-700;
   }
   
   .dark input,
@@ -248,8 +278,46 @@ button[data-testid="component-big-button"] {
     @apply bg-transparent text-slate-100 placeholder-slate-500;
   }
   
+  .dark input[type="text"],
+  .dark input[type="number"],
+  .dark input[type="email"],
+  .dark input[type="password"] {
+    @apply text-slate-100;
+  }
+  
   .dark .bg-input-bgNotEditable {
     @apply bg-slate-800/30;
+  }
+  
+  .dark .text-input-primary {
+    @apply text-slate-100;
+  }
+  
+  .dark .text-input-placeholder,
+  .dark .placeholder-input-placeholder {
+    @apply text-slate-500;
+  }
+  
+  .dark .text-input-label {
+    @apply text-slate-400;
+  }
+  
+  .dark .border-input-border {
+    @apply border-slate-600;
+  }
+  
+  .dark .hover\:before\:border-input-borderHover:hover::before,
+  .dark .before\:border-input-borderHover::before {
+    @apply border-slate-500;
+  }
+  
+  .dark .before\:border-input-borderFocus::before,
+  .dark .before\:border-2.before\:border-input-borderFocus::before {
+    @apply border-blue-500;
+  }
+  
+  .dark .before\:border-input-border::before {
+    @apply border-slate-600;
   }
   
   /* Buttons */

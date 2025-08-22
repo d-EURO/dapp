@@ -87,7 +87,7 @@ export default function TokenInputSelect({
 						<div className="px-3 py-2 text-text-disabled font-bold transition-opacity">{output}</div>
 					) : (
 						<div
-							className={`flex h-11 rounded-lg bg-white border ${
+							className={`flex h-11 rounded-lg bg-white dark:bg-slate-800 border ${
 								error ? "border-text-warning" : "border-input-border"
 							}`}
 						>
