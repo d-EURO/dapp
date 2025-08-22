@@ -329,12 +329,89 @@ button[data-testid="component-big-button"] {
     @apply bg-blue-500;
   }
   
-  .dark .bg-button-secondary-bg {
-    @apply bg-slate-800 hover:bg-slate-700;
+  .dark .text-button-primary-default-text {
+    @apply text-white;
   }
   
-  .dark .bg-button-secondary-hover-bg:hover {
+  .dark .text-button-primary-disabled-text {
+    @apply text-slate-500;
+  }
+  
+  .dark .bg-button-primary-disabled-bg {
+    @apply bg-slate-800;
+  }
+  
+  .dark .bg-button-secondary-default-bg {
+    @apply bg-slate-800;
+  }
+  
+  .dark .text-button-secondary-default-text {
+    @apply text-slate-100;
+  }
+  
+  .dark .bg-button-secondary-hover-bg:hover,
+  .dark .hover\:bg-button-secondary-hover-bg:hover {
     @apply bg-slate-700;
+  }
+  
+  .dark .text-button-secondary-hover-text:hover,
+  .dark .hover\:text-button-secondary-hover-text:hover {
+    @apply text-slate-100;
+  }
+  
+  .dark .bg-button-secondary-disabled-bg {
+    @apply bg-slate-900;
+  }
+  
+  .dark .text-button-secondary-disabled-text {
+    @apply text-slate-600;
+  }
+  
+  /* Max button */
+  .dark .bg-button-max-bg {
+    @apply bg-slate-700;
+  }
+  
+  .dark .text-button-max-text {
+    @apply text-slate-100;
+  }
+  
+  .dark .hover\:bg-button-max-hover:hover {
+    @apply bg-slate-600;
+  }
+  
+  .dark .bg-button-max-disabledBg {
+    @apply bg-slate-800;
+  }
+  
+  .dark .text-button-max-disabledText {
+    @apply text-slate-600;
+  }
+  
+  /* Text buttons */
+  .dark .text-button-text-default-text {
+    @apply text-slate-300;
+  }
+  
+  .dark .hover\:text-button-text-hover-text:hover {
+    @apply text-blue-400;
+  }
+  
+  .dark .text-button-text-disabled-text {
+    @apply text-slate-600;
+  }
+  
+  /* Text group buttons */
+  .dark .text-button-textGroup-primary-text {
+    @apply text-blue-400;
+  }
+  
+  .dark .text-button-textGroup-secondary-text {
+    @apply text-slate-400;
+  }
+  
+  .dark .hover\:text-button-textGroup-hover-text:hover {
+    @apply text-slate-200;
   }
   
   /* Menu and navigation */
