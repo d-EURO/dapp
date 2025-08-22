@@ -25,8 +25,8 @@ export default function Button({ size = "md", width, className, onClick, isLoadi
 					${className} ${sizeClass}
 				 	${
 						disabled || isLoading
-							? "font-medium cursor-not-allowed bg-button-primary-disabled-bg text-button-primary-disabled-text"
-							: "font-extrabold bg-button-primary-default-bg text-button-primary-default-text hover:bg-button-primary-hover-bg hover:text-button-primary-hover-text"
+							? "font-medium cursor-not-allowed bg-button-primary-disabled-bg text-button-primary-disabled-text dark:bg-slate-800 dark:text-slate-500"
+							: "font-extrabold bg-button-primary-default-bg text-button-primary-default-text hover:bg-button-primary-hover-bg hover:text-button-primary-hover-text dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
 					} 
 					${width ?? "w-full"}`}
 				onClick={(e) => !disabled && !isLoading && onClick?.(e)}
@@ -40,9 +40,9 @@ export default function Button({ size = "md", width, className, onClick, isLoadi
 
 export const SecondaryButton = ({ children, className, onClick, disabled, isLoading }: Props) => {
 	const disabledClass =
-		disabled || isLoading ? "cursor-not-allowed bg-button-secondary-disabled-bg text-button-secondary-disabled-text" : "";
-	const hoverClass = !disabled && !isLoading ? "hover:bg-button-secondary-hover-bg hover:text-button-secondary-hover-text" : "";
-	const defaultClass = !disabled && !isLoading ? "bg-button-secondary-default-bg text-button-secondary-default-text" : "";
+		disabled || isLoading ? "cursor-not-allowed bg-button-secondary-disabled-bg text-button-secondary-disabled-text dark:bg-slate-900 dark:text-slate-600" : "";
+	const hoverClass = !disabled && !isLoading ? "hover:bg-button-secondary-hover-bg hover:text-button-secondary-hover-text dark:hover:bg-slate-700 dark:hover:text-slate-100" : "";
+	const defaultClass = !disabled && !isLoading ? "bg-button-secondary-default-bg text-button-secondary-default-text dark:bg-slate-800 dark:text-slate-100" : "";
 
 	return (
 		<button
@@ -69,7 +69,7 @@ export const SecondaryLinkButton = ({ children, className, onClick, disabled, is
 	return (
 		<Link
 			href={_href}
-			className={`btn text-base font-extrabold bg-button-secondary-default-bg text-button-secondary-default-text hover:bg-button-secondary-hover-bg hover:text-button-secondary-hover-text ${className}`}
+			className={`btn text-base font-extrabold bg-button-secondary-default-bg text-button-secondary-default-text hover:bg-button-secondary-hover-bg hover:text-button-secondary-hover-text dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 dark:hover:text-slate-100 ${className}`}
 			onClick={(e) => !disabled && !isLoading && onClick?.(e)}
 		>
 			{isLoading && <LoadingSpin />}

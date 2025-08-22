@@ -120,7 +120,7 @@ export const ReferralsStats = () => {
 							onClick={handleClaim}
 						>
 							<span>{t("referrals.claim")}</span>
-							<Image src="/icons/ph_hand-coins-black.svg" alt="arrow-right" width={20} height={20} />
+							<Image src="/icons/ph_hand-coins-black.svg" alt="arrow-right" width={20} height={20} className="dark:invert" />
 						</SecondaryButton>
 					</div>
 				</div>

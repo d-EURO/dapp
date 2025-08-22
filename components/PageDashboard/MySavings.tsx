@@ -67,7 +67,7 @@ export const MySavings = () => {
 						{t("dashboard.reinvest")}
 					</Button>
 					<SecondaryButton className="w-full h-10 py-2.5 px-4" disabled={interestToBeCollected === 0n} isLoading={isClaiming} onClick={claimInterest}>
-						<Image src="/icons/ph_hand-coins-black.svg" alt="arrow-right" width={20} height={20} />
+						<Image src="/icons/ph_hand-coins-black.svg" alt="arrow-right" width={20} height={20} className="dark:invert" />
 						{t("dashboard.collect_interest")}
 					</SecondaryButton>
 				</div>
