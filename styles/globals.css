@@ -178,3 +178,179 @@ button[data-testid="component-big-button"] {
 	background: transparent;
 	border-radius: 4px;
 }
+
+/* Dark mode - Professional color scheme */
+@layer base {
+  .dark {
+    color-scheme: dark;
+  }
+  
+  /* Main backgrounds */
+  .dark body {
+    @apply bg-slate-950;
+    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+  }
+  
+  .dark .bg-layout-primary {
+    @apply bg-slate-950;
+  }
+  
+  /* Card and panel backgrounds */
+  .dark .bg-white {
+    @apply bg-slate-900/95 backdrop-blur-sm border-slate-800/50;
+  }
+  
+  .dark .bg-card-body-primary {
+    @apply bg-slate-900/95 backdrop-blur-sm;
+  }
+  
+  /* Text colors */
+  .dark .text-text-primary {
+    @apply text-slate-100;
+  }
+  
+  .dark .text-text-secondary {
+    @apply text-slate-300;
+  }
+  
+  .dark .text-text-muted,
+  .dark .text-text-muted2,
+  .dark .text-text-muted3,
+  .dark .text-input-label {
+    @apply text-slate-400;
+  }
+  
+  .dark .text-text-header,
+  .dark .text-text-subheader {
+    @apply text-slate-300;
+  }
+  
+  /* Borders */
+  .dark .border-borders-primary {
+    @apply border-slate-800;
+  }
+  
+  .dark .border-borders-secondary {
+    @apply border-slate-700;
+  }
+  
+  .dark .border-input-border {
+    @apply border-slate-700;
+  }
+  
+  /* Input fields */
+  .dark .bg-input-bg {
+    @apply bg-slate-800/50 border-slate-700;
+  }
+  
+  .dark input,
+  .dark textarea {
+    @apply bg-transparent text-slate-100 placeholder-slate-500;
+  }
+  
+  .dark .bg-input-bgNotEditable {
+    @apply bg-slate-800/30;
+  }
+  
+  /* Buttons */
+  .dark .bg-button-primary-default-bg {
+    @apply bg-blue-600 hover:bg-blue-500;
+  }
+  
+  .dark .hover\:bg-button-primary-hover-bg:hover {
+    @apply bg-blue-500;
+  }
+  
+  .dark .bg-button-secondary-bg {
+    @apply bg-slate-800 hover:bg-slate-700;
+  }
+  
+  .dark .bg-button-secondary-hover-bg:hover {
+    @apply bg-slate-700;
+  }
+  
+  /* Menu and navigation */
+  .dark .hover\:bg-menu-hover-bg:hover {
+    @apply bg-slate-800/50;
+  }
+  
+  .dark .bg-menu-active-bg {
+    @apply bg-slate-800;
+  }
+  
+  /* Special elements */
+  .dark .bg-yellow-50 {
+    @apply bg-yellow-900/20;
+  }
+  
+  .dark .border-yellow-200 {
+    @apply border-yellow-800/50;
+  }
+  
+  .dark .text-yellow-800 {
+    @apply text-yellow-400;
+  }
+  
+  /* Scrollbars */
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700;
+  }
+  
+  .dark ::-webkit-scrollbar-track {
+    @apply bg-slate-900;
+  }
+  
+  /* Select dropdown */
+  .dark .css-1dimb5e-singleValue,
+  .dark .css-1jqq78o-placeholder {
+    @apply text-slate-300;
+  }
+  
+  /* Toast notifications */
+  .dark .Toastify__toast {
+    @apply bg-slate-900 border-slate-700;
+  }
+  
+  /* Hover states */
+  .dark .hover\:bg-gray-100:hover {
+    @apply bg-slate-800;
+  }
+  
+  .dark .hover\:bg-gray-700:hover {
+    @apply bg-slate-700;
+  }
+  
+  /* Focus states */
+  .dark .focus\:border-blue-500:focus,
+  .dark .border-input-borderFocus {
+    @apply border-blue-500;
+  }
+  
+  /* Success/Error colors */
+  .dark .text-text-success {
+    @apply text-green-400;
+  }
+  
+  .dark .text-text-warning,
+  .dark .text-text-error {
+    @apply text-red-400;
+  }
+  
+  /* Charts and data visualization */
+  .dark .bg-slate-200 {
+    @apply bg-slate-700;
+  }
+  
+  .dark .bg-slate-300 {
+    @apply bg-slate-600;
+  }
+  
+  /* Shadows for depth */
+  .dark .shadow-xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  .dark .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+}

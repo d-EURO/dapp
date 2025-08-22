@@ -45,8 +45,8 @@ export default function NormalInput({
 						<div className="px-3 py-2 font-bold transition-opacity">{output}</div>
 					) : (
 						<div
-							className={`flex gap-1 rounded-lg text-text-primary p-1 bg-white border-2 ${
-								error ? "border-text-warning" : "border-card-content-secondary"
+							className={`flex gap-1 rounded-lg text-text-primary p-1 bg-white dark:bg-slate-800 border-2 ${
+								error ? "border-text-warning" : "border-card-content-secondary dark:border-slate-600"
 							}`}
 						>
 							<BigNumberInput

@@ -18,36 +18,39 @@ import { FrontendCodeProvider } from "@components/FrontendCodeProvider";
 import { appWithTranslation } from "next-i18next";
 import { useLanguageSelector } from "../hooks/useLanguageSelector";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { ThemeProvider } from "../contexts/ThemeContext";
 
 function App({ Component, pageProps }: AppProps) {
 	useLanguageSelector();
 
 	return (
-		<ReduxProvider store={store}>
-			<Web3ModalProvider>
-				<ApolloProvider client={PONDER_CLIENT}>
-					<BlockUpdater>
-						<FrontendCodeProvider>
-							<NextSeoProvider />
-							<ToastContainer
-								className="border-card-content-primary border-2 bg-card-body-primary rounded-xl"
-								toastClassName={(c) => "bg-card-body-primary text-text-primary rounded-xl"}
-								position="bottom-right"
-								hideProgressBar={false}
-								rtl={false}
-								closeButton={false}
-							/>
-							<USGovSanctionList />
-							<ErrorBoundary>
-								<Layout>
-									<Component {...pageProps} />
-								</Layout>
-							</ErrorBoundary>
-						</FrontendCodeProvider>
-					</BlockUpdater>
-				</ApolloProvider>
-			</Web3ModalProvider>
-		</ReduxProvider>
+		<ThemeProvider>
+			<ReduxProvider store={store}>
+				<Web3ModalProvider>
+					<ApolloProvider client={PONDER_CLIENT}>
+						<BlockUpdater>
+							<FrontendCodeProvider>
+								<NextSeoProvider />
+								<ToastContainer
+									className="border-card-content-primary border-2 bg-card-body-primary rounded-xl"
+									toastClassName={(c) => "bg-card-body-primary text-text-primary rounded-xl"}
+									position="bottom-right"
+									hideProgressBar={false}
+									rtl={false}
+									closeButton={false}
+								/>
+								<USGovSanctionList />
+								<ErrorBoundary>
+									<Layout>
+										<Component {...pageProps} />
+									</Layout>
+								</ErrorBoundary>
+							</FrontendCodeProvider>
+						</BlockUpdater>
+					</ApolloProvider>
+				</Web3ModalProvider>
+			</ReduxProvider>
+		</ThemeProvider>
 	);
 }
 

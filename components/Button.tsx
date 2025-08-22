@@ -87,7 +87,7 @@ interface SegmentedControlButtonProps {
 export const SegmentedControlButton = ({ children, selected, onClick }: SegmentedControlButtonProps) => {
 	return (
 		<button
-			className={`btn px-3 py-1.5 rounded-lg ${selected ? "bg-white" : "bg-transparent hover:bg-[#F9FAFC]"} text-sm font-medium transition-all duration-300`}
+			className={`btn px-3 py-1.5 rounded-lg ${selected ? "bg-white dark:bg-slate-700" : "bg-transparent hover:bg-[#F9FAFC] dark:hover:bg-slate-800"} text-sm font-medium transition-all duration-300`}
 			onClick={onClick}
 		>
 			{children}

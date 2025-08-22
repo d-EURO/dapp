@@ -5,7 +5,7 @@ import { ReferralsStats } from "./ReferralsStats";
 
 const ExplanationItem = ({ icon, title, description }: { icon: string; title: string; description: string }) => (
 	<div className="max-w-[28rem] justify-start items-start gap-3 flex">
-		<div className="w-10 h-10 bg-[#f2f7fd] rounded-full flex justify-center items-center">
+		<div className="w-10 h-10 bg-[#f2f7fd] dark:bg-slate-800 rounded-full flex justify-center items-center">
 			<Image src={icon} width={20} height={20} alt={title} />
 		</div>
 		<div className="grow shrink basis-0 flex-col justify-center items-start">
