@@ -25,8 +25,8 @@ export default function Button({ size = "md", width, className, onClick, isLoadi
 					${className} ${sizeClass}
 				 	${
 						disabled || isLoading
-							? "font-medium cursor-not-allowed bg-button-primary-disabled-bg text-button-primary-disabled-text dark:bg-slate-800 dark:text-slate-500"
-							: "font-extrabold bg-button-primary-default-bg text-button-primary-default-text hover:bg-button-primary-hover-bg hover:text-button-primary-hover-text dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
+							? "font-medium cursor-not-allowed bg-[#e9ebf0] text-[#adb2c1] dark:bg-slate-800 dark:text-slate-500"
+							: "font-extrabold bg-[#092f62] text-white hover:bg-[#0F80F0] hover:text-white dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
 					} 
 					${width ?? "w-full"}`}
 				onClick={(e) => !disabled && !isLoading && onClick?.(e)}
@@ -39,14 +39,14 @@ export default function Button({ size = "md", width, className, onClick, isLoadi
 }
 
 export const SecondaryButton = ({ children, className, onClick, disabled, isLoading }: Props) => {
-	const disabledClass =
-		disabled || isLoading ? "cursor-not-allowed bg-button-secondary-disabled-bg text-button-secondary-disabled-text dark:bg-slate-900 dark:text-slate-600" : "";
-	const hoverClass = !disabled && !isLoading ? "hover:bg-button-secondary-hover-bg hover:text-button-secondary-hover-text dark:hover:bg-slate-700 dark:hover:text-slate-100" : "";
-	const defaultClass = !disabled && !isLoading ? "bg-button-secondary-default-bg text-button-secondary-default-text dark:bg-slate-800 dark:text-slate-100" : "";
+	const baseClass = "btn text-base font-extrabold";
+	const enabledClass = !disabled && !isLoading 
+		? "bg-[#F5F6F9] text-[#272B38] hover:bg-[#EAEBF0] hover:text-[#272B38] dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600 dark:hover:text-slate-100" 
+		: "cursor-not-allowed bg-[#F5F6F9] text-[#ADB2C2] dark:bg-slate-800/50 dark:text-slate-500";
 
 	return (
 		<button
-			className={`btn text-base font-extrabold ${className} ${disabledClass} ${hoverClass} ${defaultClass}`}
+			className={`${baseClass} ${enabledClass} ${className || ''}`}
 			onClick={(e) => !disabled && !isLoading && onClick?.(e)}
 			disabled={disabled || isLoading}
 		>
@@ -69,7 +69,7 @@ export const SecondaryLinkButton = ({ children, className, onClick, disabled, is
 	return (
 		<Link
 			href={_href}
-			className={`btn text-base font-extrabold bg-button-secondary-default-bg text-button-secondary-default-text hover:bg-button-secondary-hover-bg hover:text-button-secondary-hover-text dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 dark:hover:text-slate-100 ${className}`}
+			className={`btn text-base font-extrabold bg-[#F5F6F9] text-[#272B38] hover:bg-[#EAEBF0] hover:text-[#272B38] dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600 dark:hover:text-slate-100 ${className || ''}`}
 			onClick={(e) => !disabled && !isLoading && onClick?.(e)}
 		>
 			{isLoading && <LoadingSpin />}
