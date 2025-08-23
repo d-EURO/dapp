@@ -15,8 +15,10 @@ export default function NavButton({ to, name, external }: Props) {
 
 	const href = `${to}${toQueryString(carryOnQueryParams)}`;
 
-	const activeClass = active ? "bg-menu-active-bg menu-active-text" : "bg-menu-default-bg menu-default-text";
-	const hoverClass = "hover:bg-menu-hover-bg hover:menu-hover-text";
+	const activeClass = active 
+		? "bg-menu-active-bg text-menu-active-text dark:bg-slate-700 dark:text-slate-100" 
+		: "bg-menu-default-bg text-menu-default-text dark:bg-transparent dark:text-slate-300";
+	const hoverClass = "hover:bg-menu-hover-bg hover:text-menu-hover-text dark:hover:bg-slate-800 dark:hover:text-slate-100";
 
 	return (
 		<Link

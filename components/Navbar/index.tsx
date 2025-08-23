@@ -43,7 +43,7 @@ export default function Navbar() {
 	return (
 		<div className="fixed top-0 left-0 right-0 z-20">
 			<div>
-				<header className="w-full h-16 px-5 lg:px-10 bg-white border-b border-menu-separator bg-menu-back backdrop-blur justify-between items-center inline-flex">
+				<header className="w-full h-16 px-5 lg:px-10 bg-white dark:bg-slate-900 border-b border-menu-separator dark:border-slate-800 backdrop-blur justify-between items-center inline-flex">
 					<div className="h-9 justify-start items-center gap-6 inline-flex">
 						<Link className="w-[120px] flex items-center justify-center" href={CONFIG.landing}>
 							<div className="relative">
@@ -97,7 +97,7 @@ export default function Navbar() {
 									isNavBarOpen ? "translate-x-0" : "translate-x-full"
 								}`}
 							>
-								<div className="min-h-full w-full bg-white rounded-l-xl border border-borders-primary backdrop-blur px-6 pt-12 shadow-xl relative">
+								<div className="min-h-full w-full bg-white dark:bg-slate-900 rounded-l-xl border border-borders-primary dark:border-slate-800 backdrop-blur px-6 pt-12 shadow-xl relative">
 									<div className="absolute top-4 left-[24px]">
 										<LanguageSelectorDropdown />
 									</div>
