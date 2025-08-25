@@ -143,7 +143,10 @@ export default function PositionCreate({}) {
 			setCollateralError(notEnoughBalance);
 		} else if (maxFromLimit > 0n && BigInt(collateralAmount) > maxFromLimit) {
 			const maxColl = formatBigInt(maxFromLimit, selectedPosition?.collateralDecimals || 0);
-			const limitExceeded = `Maximum ${maxColl} ${selectedPosition?.collateralSymbol} due to minting limit`;
+			const limitExceeded = t("mint.error.minting_limit_exceeded", {
+				amount: maxColl,
+				symbol: selectedPosition?.collateralSymbol,
+			});
 			setCollateralError(limitExceeded);
 		} else {
 			setCollateralError("");
