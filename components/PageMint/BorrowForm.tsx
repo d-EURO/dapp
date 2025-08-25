@@ -120,7 +120,7 @@ export default function PositionCreate({}) {
 	useEffect(() => {
 		if (!selectedPosition || !selectedCollateral) return;
 
-		if (BigInt(collateralAmount) === 0n || collateralAmount === "" || !address) {
+		if (collateralAmount === "" || !address) {
 			setCollateralError("");
 			return;
 		}
@@ -143,9 +143,12 @@ export default function PositionCreate({}) {
 			setCollateralError(notEnoughBalance);
 		} else if (maxFromLimit > 0n && BigInt(collateralAmount) > maxFromLimit) {
 			const maxColl = formatBigInt(maxFromLimit, selectedPosition?.collateralDecimals || 0);
-			const limitExceeded = t("mint.error.minting_limit_exceeded", {
-				amount: maxColl,
-				symbol: selectedPosition?.collateralSymbol,
+			const availableToMint = formatBigInt(BigInt(selectedPosition.availableForClones), 18);
+			const limitExceeded = t("mint.error.global_minting_limit_exceeded", {
+				maxCollateral: maxColl,
+				collateralSymbol: selectedPosition?.collateralSymbol,
+				maxMint: availableToMint,
+				mintSymbol: TOKEN_SYMBOL,
 			});
 			setCollateralError(limitExceeded);
 		} else {
@@ -525,6 +528,7 @@ export default function PositionCreate({}) {
 									!selectedCollateral ||
 									isLiquidationPriceTooHigh ||
 									isCollateralError ||
+									!!collateralError ||
 									userBalance < BigInt(collateralAmount)
 								}
 							>
@@ -533,7 +537,12 @@ export default function PositionCreate({}) {
 									: t("common.receive") + " " + formatCurrency(formatUnits(BigInt(borrowedAmount), 18), 2)}
 							</Button>
 						) : (
-							<Button className="!p-4 text-lg font-extrabold leading-none" onClick={handleApprove} isLoading={isApproving}>
+							<Button
+								className="!p-4 text-lg font-extrabold leading-none"
+								onClick={handleApprove}
+								isLoading={isApproving}
+								disabled={!!collateralError}
+							>
 								{t("common.approve")}
 							</Button>
 						)}
