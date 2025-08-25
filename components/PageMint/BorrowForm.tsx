@@ -50,6 +50,7 @@ export default function PositionCreate({}) {
 	const [isCloneSuccess, setIsCloneSuccess] = useState(false);
 	const [isCloneLoading, setIsCloneLoading] = useState(false);
 	const [collateralError, setCollateralError] = useState("");
+	const [isMaxedOut, setIsMaxedOut] = useState(false);
 
 	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
 	const challenges = useSelector((state: RootState) => state.challenges.list?.list || []);
@@ -60,6 +61,16 @@ export default function PositionCreate({}) {
 	const { address } = useAccount();
 	const router = useRouter();
 	const { query } = router;
+
+	const getMaxCollateralFromMintLimit = (availableForClones: bigint, liqPrice: bigint) => {
+		if (!availableForClones || liqPrice === 0n) return 0n;
+		return (availableForClones * BigInt(1e18)) / liqPrice;
+	};
+
+	const getMaxCollateralAmount = (balance: bigint, availableForClones: bigint, liqPrice: bigint) => {
+		const maxFromLimit = getMaxCollateralFromMintLimit(availableForClones, liqPrice);
+		return maxFromLimit > 0n && balance > maxFromLimit ? maxFromLimit : balance;
+	};
 
 	const elegiblePositions = useMemo(() => {
 		const blockTimestamp = latestBlock?.timestamp || new Date().getTime() / 1000;
@@ -96,16 +107,6 @@ export default function PositionCreate({}) {
 	const { frontendCode } = useFrontendCode();
 	const { t } = useTranslation();
 
-	const getMaxCollateralFromMintLimit = (availableForClones: bigint, liqPrice: bigint) => {
-		if (!availableForClones || liqPrice === 0n) return 0n;
-		return (availableForClones * BigInt(1e18)) / liqPrice;
-	};
-
-	const getMaxCollateralAmount = (balance: bigint, availableForClones: bigint, liqPrice: bigint) => {
-		const maxFromLimit = getMaxCollateralFromMintLimit(availableForClones, liqPrice);
-		return maxFromLimit > 0n && balance > maxFromLimit ? maxFromLimit : balance;
-	};
-
 	useEffect(() => {
 		if (query?.collateral && collateralTokenList.length > 0 && !selectedCollateral) {
 			const queryCollateral = Array.isArray(query.collateral) ? query.collateral[0] : query.collateral;
@@ -120,10 +121,8 @@ export default function PositionCreate({}) {
 	useEffect(() => {
 		if (!selectedPosition || !selectedCollateral) return;
 
-		if (collateralAmount === "" || !address) {
-			setCollateralError("");
-			return;
-		}
+		setIsMaxedOut(false);
+		setCollateralError("");
 
 		const balanceInWallet = balancesByAddress[selectedCollateral?.address];
 
@@ -132,7 +131,11 @@ export default function PositionCreate({}) {
 			BigInt(liquidationPrice || selectedPosition.price)
 		);
 
-		if (BigInt(collateralAmount) < BigInt(selectedPosition.minimumCollateral)) {
+		if (maxFromLimit < BigInt(selectedPosition.minimumCollateral)) {
+			setIsMaxedOut(true);
+		} else if (collateralAmount === "" || !address) {
+			return;
+		} else if (BigInt(collateralAmount) < BigInt(selectedPosition.minimumCollateral)) {
 			const minColl = formatBigInt(BigInt(selectedPosition?.minimumCollateral || 0n), selectedPosition?.collateralDecimals || 0);
 			const notTheMinimum = `${t("mint.error.must_be_at_least_the_minimum_amount")} (${minColl} ${
 				selectedPosition?.collateralSymbol
@@ -151,8 +154,6 @@ export default function PositionCreate({}) {
 				mintSymbol: TOKEN_SYMBOL,
 			});
 			setCollateralError(limitExceeded);
-		} else {
-			setCollateralError("");
 		}
 	}, [collateralAmount, balancesByAddress, address, selectedPosition, liquidationPrice]);
 
@@ -176,8 +177,6 @@ export default function PositionCreate({}) {
 	const collateralUserBalance = balances.find((b) => b.address == selectedCollateral?.address);
 	const userAllowance = collateralUserBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n;
 	const userBalance = collateralUserBalance?.balanceOf || 0n;
-	const isCollateralError =
-		collateralAmount !== "0" && collateralAmount !== "" && BigInt(userBalance) < BigInt(selectedPosition?.minimumCollateral || 0n);
 	const selectedBalance = Boolean(selectedCollateral) ? balancesByAddress[selectedCollateral?.address as Address] : null;
 	const usdLiquidationPrice = formatCurrency(
 		parseFloat(formatUnits(BigInt(liquidationPrice), 36 - (selectedPosition?.collateralDecimals || 0))) * (eurPrice || 0),
@@ -455,6 +454,18 @@ export default function PositionCreate({}) {
 								</div>
 							}
 						/>
+						{isMaxedOut && selectedPosition && (
+							<div className="self-stretch mt-1 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-md">
+								<div className="text-yellow-800 text-sm font-medium">
+									⚠️ {t("mint.error.position_unavailable_limit_exhausted", {
+										available: formatCurrency(formatUnits(BigInt(selectedPosition.availableForClones), 18), 2, 2),
+										symbol: TOKEN_SYMBOL,
+										minCollateral: formatBigInt(BigInt(selectedPosition.minimumCollateral), selectedPosition.collateralDecimals),
+										collateralSymbol: selectedPosition.collateralSymbol
+									})}
+								</div>
+							</div>
+						)}
 						<SelectCollateralModal
 							title={t("mint.token_select_modal_title")}
 							isOpen={isOpenTokenSelector}
@@ -515,7 +526,7 @@ export default function PositionCreate({}) {
 							<Button
 								className="!p-4 text-lg font-extrabold leading-none"
 								onClick={handleOnClonePosition}
-								disabled={!selectedPosition || !selectedCollateral || isLiquidationPriceTooHigh}
+								disabled={!selectedPosition || !selectedCollateral || isLiquidationPriceTooHigh || isMaxedOut}
 							>
 								{t("common.receive") + " 0.00 " + TOKEN_SYMBOL}
 							</Button>
@@ -527,8 +538,8 @@ export default function PositionCreate({}) {
 									!selectedPosition ||
 									!selectedCollateral ||
 									isLiquidationPriceTooHigh ||
-									isCollateralError ||
 									!!collateralError ||
+									isMaxedOut ||
 									userBalance < BigInt(collateralAmount)
 								}
 							>
@@ -541,7 +552,7 @@ export default function PositionCreate({}) {
 								className="!p-4 text-lg font-extrabold leading-none"
 								onClick={handleApprove}
 								isLoading={isApproving}
-								disabled={!!collateralError}
+								disabled={!!collateralError || isMaxedOut}
 							>
 								{t("common.approve")}
 							</Button>
