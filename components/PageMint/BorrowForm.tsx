@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { Address, erc20Abi, formatUnits, maxUint256, TransactionReceipt, Log, decodeEventLog, zeroAddress } from "viem";
+import { Address, erc20Abi, formatUnits, TransactionReceipt, Log, decodeEventLog, zeroAddress } from "viem";
 import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
 import AppCard from "@components/AppCard";
 import Button from "@components/Button";
@@ -96,17 +96,27 @@ export default function PositionCreate({}) {
 	const { frontendCode } = useFrontendCode();
 	const { t } = useTranslation();
 
+	const getMaxCollateralFromMintLimit = (availableForClones: bigint, liqPrice: bigint) => {
+		if (!availableForClones || liqPrice === 0n) return 0n;
+		return (availableForClones * BigInt(1e18)) / liqPrice;
+	};
+
+	const getMaxCollateralAmount = (balance: bigint, availableForClones: bigint, liqPrice: bigint) => {
+		const maxFromLimit = getMaxCollateralFromMintLimit(availableForClones, liqPrice);
+		return maxFromLimit > 0n && balance > maxFromLimit ? maxFromLimit : balance;
+	};
+
 	useEffect(() => {
-		if (query && query.collateral) {
+		if (query?.collateral && collateralTokenList.length > 0 && !selectedCollateral) {
 			const queryCollateral = Array.isArray(query.collateral) ? query.collateral[0] : query.collateral;
 			const collateralToken = collateralTokenList.find((b) => b.symbol.toLowerCase() === queryCollateral?.toLowerCase());
 			if (collateralToken) {
 				handleOnSelectedToken(collateralToken);
 			}
 		}
-	}, []);
+	}, [query?.collateral, collateralTokenList.length, !selectedCollateral]);
 
-	// Collateral input validation
+	// Collateral input validation with minting limit check
 	useEffect(() => {
 		if (!selectedPosition || !selectedCollateral) return;
 
@@ -116,6 +126,12 @@ export default function PositionCreate({}) {
 		}
 
 		const balanceInWallet = balancesByAddress[selectedCollateral?.address];
+
+		const maxFromLimit = getMaxCollateralFromMintLimit(
+			BigInt(selectedPosition.availableForClones),
+			BigInt(liquidationPrice || selectedPosition.price)
+		);
+
 		if (BigInt(collateralAmount) < BigInt(selectedPosition.minimumCollateral)) {
 			const minColl = formatBigInt(BigInt(selectedPosition?.minimumCollateral || 0n), selectedPosition?.collateralDecimals || 0);
 			const notTheMinimum = `${t("mint.error.must_be_at_least_the_minimum_amount")} (${minColl} ${
@@ -125,10 +141,14 @@ export default function PositionCreate({}) {
 		} else if (BigInt(collateralAmount) > BigInt(balanceInWallet?.balanceOf || 0n)) {
 			const notEnoughBalance = t("common.error.insufficient_balance", { symbol: selectedPosition?.collateralSymbol });
 			setCollateralError(notEnoughBalance);
+		} else if (maxFromLimit > 0n && BigInt(collateralAmount) > maxFromLimit) {
+			const maxColl = formatBigInt(maxFromLimit, selectedPosition?.collateralDecimals || 0);
+			const limitExceeded = `Maximum ${maxColl} ${selectedPosition?.collateralSymbol} due to minting limit`;
+			setCollateralError(limitExceeded);
 		} else {
 			setCollateralError("");
 		}
-	}, [collateralAmount, balancesByAddress, address]);
+	}, [collateralAmount, balancesByAddress, address, selectedPosition, liquidationPrice]);
 
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
@@ -173,22 +193,18 @@ export default function PositionCreate({}) {
 		const liqPrice = BigInt(selectedPosition.price);
 
 		setSelectedPosition(selectedPosition);
-		
-		// Use max available balance or minimum collateral, whichever is larger
+
+		// Calculate max collateral respecting minting limit
 		const tokenBalance = balancesByAddress[token.address]?.balanceOf || 0n;
-		const maxAmount = tokenBalance > BigInt(selectedPosition.minimumCollateral) 
-			? tokenBalance.toString() 
-			: selectedPosition.minimumCollateral;
-		
-		setCollateralAmount(maxAmount);
+		const maxAmount = getMaxCollateralAmount(tokenBalance, BigInt(selectedPosition.availableForClones), liqPrice);
+		const defaultAmount =
+			maxAmount > BigInt(selectedPosition.minimumCollateral) ? maxAmount.toString() : selectedPosition.minimumCollateral;
+
+		setCollateralAmount(defaultAmount);
 		setExpirationDate(toDate(selectedPosition.expiration));
 		setLiquidationPrice(liqPrice.toString());
 
-		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(
-			selectedPosition,
-			BigInt(maxAmount),
-			liqPrice
-		);
+		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(selectedPosition, BigInt(defaultAmount), liqPrice);
 
 		setLoanDetails(loanDetails);
 		setBorrowedAmount(loanDetails.amountToSendToWallet.toString());
@@ -197,6 +213,12 @@ export default function PositionCreate({}) {
 	const onAmountCollateralChange = (value: string) => {
 		setCollateralAmount(value);
 		if (!selectedPosition) return;
+
+		if (!value || value === "") {
+			setLoanDetails(undefined);
+			setBorrowedAmount("0");
+			return;
+		}
 
 		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(selectedPosition, BigInt(value), BigInt(liquidationPrice));
 		setLoanDetails(loanDetails);
@@ -207,6 +229,7 @@ export default function PositionCreate({}) {
 		setLiquidationPrice(value);
 
 		if (!selectedPosition) return;
+		if (!collateralAmount || collateralAmount === "" || collateralAmount === "0") return;
 
 		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(selectedPosition, BigInt(collateralAmount), BigInt(value));
 		setLoanDetails(loanDetails);
@@ -341,7 +364,10 @@ export default function PositionCreate({}) {
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: formatCurrency(formatUnits(BigInt(collateralAmount), selectedCollateral?.decimals || 18)) + " " + selectedCollateral?.symbol,
+					value:
+						formatCurrency(formatUnits(BigInt(collateralAmount), selectedCollateral?.decimals || 18)) +
+						" " +
+						selectedCollateral?.symbol,
 				},
 				{
 					title: t("common.txs.spender"),
@@ -393,15 +419,29 @@ export default function PositionCreate({}) {
 										<div className="text-input-label text-xs font-medium leading-none">${collateralUsdValue}</div>
 									</div>
 									<div className="h-7 justify-end items-center gap-2.5 flex">
-										{selectedBalance && (
+										{selectedBalance && selectedPosition && (
 											<>
 												<div className="text-input-label text-xs font-medium leading-none">
-													{formatUnits(selectedBalance.balanceOf || 0n, selectedBalance.decimals || 18)}{" "}
+													{formatUnits(
+														getMaxCollateralAmount(
+															selectedBalance.balanceOf || 0n,
+															BigInt(selectedPosition.availableForClones),
+															BigInt(liquidationPrice || selectedPosition.price)
+														),
+														selectedBalance.decimals || 18
+													)}{" "}
 													{selectedBalance.symbol}
 												</div>
 												<MaxButton
 													disabled={BigInt(selectedBalance.balanceOf || 0n) === BigInt(0)}
-													onClick={() => onAmountCollateralChange(selectedBalance?.balanceOf?.toString() || "0")}
+													onClick={() => {
+														const maxAmount = getMaxCollateralAmount(
+															selectedBalance.balanceOf || 0n,
+															BigInt(selectedPosition.availableForClones),
+															BigInt(liquidationPrice || selectedPosition.price)
+														);
+														onAmountCollateralChange(maxAmount.toString());
+													}}
 												/>
 											</>
 										)}
