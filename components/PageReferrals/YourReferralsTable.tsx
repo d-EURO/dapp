@@ -6,7 +6,7 @@ import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare, faMinus, faPlus, faArrowDownWideShort, faArrowUpShortWide } from "@fortawesome/free-solid-svg-icons";
 import SortBySelect from "@components/Input/SortBySelect";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import { SectionTitle } from "@components/SectionTitle";
 import { useTranslation } from "next-i18next";
@@ -18,6 +18,7 @@ import { useChainId } from "wagmi";
 import { ADDRESS, SavingsGatewayABI } from "@deuro/eurocoin";
 import { readContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
+
 interface ReferralData {
 	volume: string;
 	interest: string;
@@ -27,11 +28,36 @@ interface ReferralData {
 	address: string;
 }
 
-const subHeaders = ["dEURO", "dEURO", "dEURO", "dEURO", ""];
+interface FrontendRewardsItem {
+	referred: string;
+	volume: string;
+	timestamp: number;
+}
+
+interface SavingsItem {
+	id: string;
+	amount: string;
+}
+
+interface InterestItem {
+	id: string;
+	amount: string;
+}
 
 export default function YourReferralsTable() {
 	const { t } = useTranslation();
-	const headers = [t("referrals.current_savings_balance"), t("referrals.total_interest_received"), t("referrals.total_interest_paid"), t("referrals.referral_bonus"), t("referrals.address")];
+
+	const headers = useMemo(
+		() => [
+			t("referrals.current_savings_balance"),
+			t("referrals.total_interest_received"),
+			t("referrals.total_interest_paid"),
+			t("referrals.referral_bonus"),
+			t("referrals.address"),
+		],
+		[t]
+	);
+
 	const [isShowMore, setIsShowMore] = useState(false);
 	const [tab, setTab] = useState<string>(headers[0]);
 	const [reverse, setReverse] = useState<boolean>(false);
@@ -60,39 +86,44 @@ export default function YourReferralsTable() {
 		}
 	);
 
-	// Get unique addresses from referral data
-	const referredAddresses = referralData?.frontendRewardsVolumeMappings?.items?.map((item: any) => 
-		item.referred.toLowerCase()
-	) || [];
+	const referredAddresses = useMemo(() => {
+		const items = referralData?.frontendRewardsVolumeMappings?.items as FrontendRewardsItem[] | undefined;
+		return items?.map((item) => item.referred.toLowerCase()) || [];
+	}, [referralData]);
 
-	// Fetch accrued interest for each address
+	const addressesKey = useMemo(() => [...referredAddresses].sort().join(","), [referredAddresses]);
+
 	useEffect(() => {
 		const fetchAccruedInterests = async () => {
 			if (referredAddresses.length === 0) return;
-			
-			const interests = new Map<string, bigint>();
-			
-			for (const address of referredAddresses) {
-				try {
-					const accruedInterest = await readContract(WAGMI_CONFIG, {
-						address: ADDRESS[chainId].savingsGateway,
-						abi: SavingsGatewayABI,
-						functionName: "accruedInterest",
-						args: [address as `0x${string}`],
-					});
-					interests.set(address, accruedInterest);
-				} catch (error) {
-					console.error(`Failed to fetch accrued interest for ${address}:`, error);
-					interests.set(address, 0n);
-				}
+
+			try {
+				const promises = referredAddresses.map(async (address) => {
+					try {
+						const accruedInterest = await readContract(WAGMI_CONFIG, {
+							address: ADDRESS[chainId].savingsGateway,
+							abi: SavingsGatewayABI,
+							functionName: "accruedInterest",
+							args: [address as `0x${string}`],
+						});
+						return { address, interest: accruedInterest };
+					} catch (error) {
+						console.error(`Failed to fetch accrued interest for ${address}:`, error);
+						return { address, interest: 0n };
+					}
+				});
+
+				const results = await Promise.all(promises);
+				const interests = new Map(results.map((r) => [r.address, r.interest]));
+				setAccruedInterests(interests);
+			} catch (error) {
+				console.error("Failed to fetch accrued interests:", error);
 			}
-			
-			setAccruedInterests(interests);
 		};
-		
+
 		fetchAccruedInterests();
-	}, [referredAddresses.join(','), chainId]);
-	
+	}, [addressesKey, chainId]);
+
 	// Query savings data for all referred addresses
 	const { data: savingsData } = useQuery(
 		gql`
@@ -137,59 +168,56 @@ export default function YourReferralsTable() {
 		if (tab === e) {
 			setReverse(!reverse);
 		} else {
-			if (e === headers[1]) setReverse(true);
-			else setReverse(false);
-
+			setReverse(e === headers[1]);
 			setTab(e);
 		}
 	};
 
-	const referralVolume = referralData?.frontendRewardsVolumeMappings?.items || [];
-	const savingsMap = new Map(
-		savingsData?.savingsSavedMappings?.items?.map((item: any) => [
-			item.id.toLowerCase(),
-			item.amount
-		]) || []
-	);
-	
-	const interestMap = new Map(
-		interestData?.savingsInterestMappings?.items?.map((item: any) => [
-			item.id.toLowerCase(),
-			item.amount
-		]) || []
-	);
-	
-	const data: ReferralData[] = referralVolume.map((item: any) => {
-		const dateArr: string[] = new Date(item.timestamp * 1000).toDateString().split(" ");
-		const dateStr: string = `${dateArr[2]} ${dateArr[1]} ${dateArr[3]}`;
-		const bonusAmount = BigInt(item.volume);
-		
-		// Get savings amount and interest for this address
-		const savingsAmount = savingsMap.get(item.referred.toLowerCase()) || "0";
-		const historicalInterest = BigInt(interestMap.get(item.referred.toLowerCase()) || "0");
-		const currentAccruedInterest = accruedInterests.get(item.referred.toLowerCase()) || 0n;
-		
-		// Combine historical interest with current accrued interest
-		const totalInterest = historicalInterest + currentAccruedInterest;
-		
-		return {
-			volume: savingsAmount,
-			interest: totalInterest.toString(),
-			interestPaid: historicalInterest.toString(),
-			bonus: bonusAmount.toString(),
-			date: dateStr,
-			address: item.referred,
-		}
-	});
+	const savingsMap = useMemo(() => {
+		const items = savingsData?.savingsSavedMappings?.items as SavingsItem[] | undefined;
+		if (!items) return new Map<string, string>();
+		return new Map(items.map((item) => [item.id.toLowerCase(), item.amount]));
+	}, [savingsData]);
 
-	const sortedData = sortReferralVolume({ referralVolume: [...data], headers, tab, reverse });
+	const interestMap = useMemo(() => {
+		const items = interestData?.savingsInterestMappings?.items as InterestItem[] | undefined;
+		if (!items) return new Map<string, string>();
+		return new Map(items.map((item) => [item.id.toLowerCase(), item.amount]));
+	}, [interestData]);
+
+	const data: ReferralData[] = useMemo(() => {
+		const referralVolume = (referralData?.frontendRewardsVolumeMappings?.items as FrontendRewardsItem[] | undefined) || [];
+
+		return referralVolume.map((item: FrontendRewardsItem) => {
+			const dateArr: string[] = new Date(item.timestamp * 1000).toDateString().split(" ");
+			const dateStr: string = `${dateArr[2]} ${dateArr[1]} ${dateArr[3]}`;
+			const bonusAmount = BigInt(item.volume);
+
+			const savingsAmount = savingsMap.get(item.referred.toLowerCase()) || "0";
+			const historicalInterest = BigInt(interestMap.get(item.referred.toLowerCase()) || "0");
+			const currentAccruedInterest = accruedInterests.get(item.referred.toLowerCase()) || 0n;
+
+			const totalInterest = historicalInterest + currentAccruedInterest;
+
+			return {
+				volume: savingsAmount,
+				interest: totalInterest.toString(),
+				interestPaid: historicalInterest.toString(),
+				bonus: bonusAmount.toString(),
+				date: dateStr,
+				address: item.referred,
+			};
+		});
+	}, [referralData, savingsMap, interestMap, accruedInterests]);
+
+	const sortedData = useMemo(() => sortReferralVolume({ referralVolume: data, headers, tab, reverse }), [data, headers, tab, reverse]);
 
 	return (
 		<div className="flex flex-col gap-2 sm:gap-0">
 			<SectionTitle>{t("referrals.your_referrals")}</SectionTitle>
 			<Table>
 				<div className="items-center justify-between rounded-t-xl bg-table-header-primary py-3 px-5 pr-3 sm:py-5 sm:px-8 md:flex">
-					<div className="max-md:hidden flex-grow grid" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
+					<div className="max-md:hidden flex-grow grid" style={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))" }}>
 						{headers.map((header, i) => (
 							<div
 								className={`text-text-header ${i >= 1 ? "text-right" : "text-left"}`}
@@ -198,7 +226,9 @@ export default function YourReferralsTable() {
 							>
 								<span
 									className={`text-base font-extrabold transition-colors duration-200 cursor-pointer ${
-										tab === header ? "text-table-header-active font-bold" : "text-table-header-default hover:text-table-header-hover"
+										tab === header
+											? "text-table-header-active font-bold"
+											: "text-table-header-default hover:text-table-header-hover"
 									}`}
 								>
 									{header}
@@ -214,12 +244,7 @@ export default function YourReferralsTable() {
 						))}
 					</div>
 					<div className="md:hidden">
-						<SortBySelect
-							headers={headers}
-							tab={tab}
-							reverse={reverse}
-							tabOnChange={handleTabOnChange}
-						/>
+						<SortBySelect headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} />
 					</div>
 				</div>
 				<TableBody>
@@ -228,13 +253,27 @@ export default function YourReferralsTable() {
 							<TableRowEmpty>{t("referrals.no_referrals_yet")}</TableRowEmpty>
 						) : (
 							sortedData.slice(0, isShowMore ? sortedData.length : 3).map((row, i) => (
-								<div key={i} className="bg-table-row-primary cursor-default px-5 py-5 sm:px-8 sm:py-4 border-t border-table-row-hover sm:first:rounded-t-none last:rounded-b-xl duration-300">
+								<div
+									key={i}
+									className="bg-table-row-primary cursor-default px-5 py-5 sm:px-8 sm:py-4 border-t border-table-row-hover sm:first:rounded-t-none last:rounded-b-xl duration-300"
+								>
 									<div className="flex flex-col justify-between gap-y-5 md:flex-row">
-										<div className="max-md:hidden grid font-medium flex-grow items-center" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
-											<div className="text-base sm:font-medium leading-tight text-left">{formatCurrency(formatUnits(BigInt(row.volume), 18), 0, 5)}</div>
-											<div className="text-base sm:font-medium leading-tight text-right">{formatCurrency(formatUnits(BigInt(row.interest), 18), 0, 5)}</div>
-											<div className="text-base sm:font-medium leading-tight text-right">{formatCurrency(formatUnits(BigInt(row.interestPaid), 18), 0, 5)}</div>
-											<div className="text-base sm:font-medium leading-tight text-right">{formatCurrency(formatUnits(BigInt(row.bonus), 18), 0, 5)}</div>
+										<div
+											className="max-md:hidden grid font-medium flex-grow items-center"
+											style={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))" }}
+										>
+											<div className="text-base sm:font-medium leading-tight text-left">
+												{formatCurrency(formatUnits(BigInt(row.volume), 18), 0, 5)}
+											</div>
+											<div className="text-base sm:font-medium leading-tight text-right">
+												{formatCurrency(formatUnits(BigInt(row.interest), 18), 0, 5)}
+											</div>
+											<div className="text-base sm:font-medium leading-tight text-right">
+												{formatCurrency(formatUnits(BigInt(row.interestPaid), 18), 0, 5)}
+											</div>
+											<div className="text-base sm:font-medium leading-tight text-right">
+												{formatCurrency(formatUnits(BigInt(row.bonus), 18), 0, 5)}
+											</div>
 											<div className="text-right">
 												<Link
 													href={ContractUrl(row.address as `0x${string}`)}
@@ -295,21 +334,22 @@ export default function YourReferralsTable() {
 	);
 }
 
-
-function sortReferralVolume(params: { referralVolume: ReferralData[], headers: string[], tab: string, reverse: boolean }): ReferralData[] {
+function sortReferralVolume(params: { referralVolume: ReferralData[]; headers: string[]; tab: string; reverse: boolean }): ReferralData[] {
 	const { referralVolume, headers, tab, reverse } = params;
 
-	if (tab === headers[0]) { // current savings balance
-		referralVolume.sort((a, b) => Number(b.volume) - Number(a.volume));
-	} else if (tab === headers[1]) { // total interest generated
-		referralVolume.sort((a, b) => Number(b.interest) - Number(a.interest));
-	} else if (tab === headers[2]) { // total interest paid
-		referralVolume.sort((a, b) => Number(b.interestPaid) - Number(a.interestPaid));
-	} else if (tab === headers[3]) { // bonus
-		referralVolume.sort((a, b) => Number(b.bonus) - Number(a.bonus));
-	} else if (tab === headers[4]) { // address
-		referralVolume.sort((a, b) => a.address.localeCompare(b.address));
+	const sorted = [...referralVolume];
+
+	if (tab === headers[0]) {
+		sorted.sort((a, b) => Number(b.volume) - Number(a.volume));
+	} else if (tab === headers[1]) {
+		sorted.sort((a, b) => Number(b.interest) - Number(a.interest));
+	} else if (tab === headers[2]) {
+		sorted.sort((a, b) => Number(b.interestPaid) - Number(a.interestPaid));
+	} else if (tab === headers[3]) {
+		sorted.sort((a, b) => Number(b.bonus) - Number(a.bonus));
+	} else if (tab === headers[4]) {
+		sorted.sort((a, b) => a.address.localeCompare(b.address));
 	}
 
-	return reverse ? referralVolume.reverse() : referralVolume;
+	return reverse ? sorted.reverse() : sorted;
 }
