@@ -1,11 +1,12 @@
 import { ContractUrl, shortenAddress, formatCurrency } from "@utils";
 import Table from "../Table";
 import TableBody from "../Table/TableBody";
+import TableHeader from "../Table/TableHead";
+import TableRow from "../Table/TableRow";
 import TableRowEmpty from "../Table/TableRowEmpty";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpRightFromSquare, faMinus, faPlus, faArrowDownWideShort, faArrowUpShortWide } from "@fortawesome/free-solid-svg-icons";
-import SortBySelect from "@components/Input/SortBySelect";
+import { faArrowUpRightFromSquare, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect, useMemo } from "react";
 import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import { SectionTitle } from "@components/SectionTitle";
@@ -216,105 +217,43 @@ export default function YourReferralsTable() {
 		<div className="flex flex-col gap-2 sm:gap-0">
 			<SectionTitle>{t("referrals.your_referrals")}</SectionTitle>
 			<Table>
-				<div className="items-center justify-between rounded-t-xl bg-table-header-primary py-3 px-5 pr-3 sm:py-5 sm:px-8 md:flex">
-					<div className="max-md:hidden flex-grow grid" style={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))" }}>
-						{headers.map((header, i) => (
-							<div
-								className={`text-text-header ${i >= 1 ? "text-right" : "text-left"}`}
-								key={`table-header-${i}`}
-								onClick={(e) => handleTabOnChange(header)}
-							>
-								<span
-									className={`text-base font-extrabold transition-colors duration-200 cursor-pointer ${
-										tab === header
-											? "text-table-header-active font-bold"
-											: "text-table-header-default hover:text-table-header-hover"
-									}`}
-								>
-									{header}
-								</span>
-								{tab === header ? (
-									<FontAwesomeIcon
-										icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
-										className="ml-2 cursor-pointer text-table-header-active"
-										color="#092f62"
-									/>
-								) : null}
-							</div>
-						))}
-					</div>
-					<div className="md:hidden">
-						<SortBySelect headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} />
-					</div>
-				</div>
+				<TableHeader 
+					headers={headers} 
+					tab={tab} 
+					tabOnChange={handleTabOnChange} 
+					reverse={reverse}
+					colSpan={5}
+					headerClassNames={["text-left", "text-right", "text-right", "text-right", "text-right"]}
+				/>
 				<TableBody>
 					<>
 						{sortedData.length === 0 ? (
 							<TableRowEmpty>{t("referrals.no_referrals_yet")}</TableRowEmpty>
 						) : (
 							sortedData.slice(0, isShowMore ? sortedData.length : 3).map((row, i) => (
-								<div
-									key={i}
-									className="bg-table-row-primary cursor-default px-5 py-5 sm:px-8 sm:py-4 border-t border-table-row-hover sm:first:rounded-t-none last:rounded-b-xl duration-300"
-								>
-									<div className="flex flex-col justify-between gap-y-5 md:flex-row">
-										<div
-											className="max-md:hidden grid font-medium flex-grow items-center"
-											style={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))" }}
-										>
-											<div className="text-base sm:font-medium leading-tight text-left">
-												{formatCurrency(formatUnits(BigInt(row.volume), 18), 0, 5)}
-											</div>
-											<div className="text-base sm:font-medium leading-tight text-right">
-												{formatCurrency(formatUnits(BigInt(row.interest), 18), 0, 5)}
-											</div>
-											<div className="text-base sm:font-medium leading-tight text-right">
-												{formatCurrency(formatUnits(BigInt(row.interestPaid), 18), 0, 5)}
-											</div>
-											<div className="text-base sm:font-medium leading-tight text-right">
-												{formatCurrency(formatUnits(BigInt(row.bonus), 18), 0, 5)}
-											</div>
-											<div className="text-right">
-												<Link
-													href={ContractUrl(row.address as `0x${string}`)}
-													className="text-base sm:font-medium leading-tight"
-												>
-													<span>{shortenAddress(row.address as `0x${string}`)}</span>
-													<FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 ml-2" />
-												</Link>
-											</div>
-										</div>
-										{/* Mobile view */}
-										<div className="md:hidden grid-cols-1 flex-1">
-											<div className="grid grid-cols-2 gap-2 mb-2">
-												<span className="font-medium">{headers[0]}:</span>
-												<span>{formatCurrency(formatUnits(BigInt(row.volume), 18), 0, 5)}</span>
-											</div>
-											<div className="grid grid-cols-2 gap-2 mb-2">
-												<span className="font-medium">{headers[1]}:</span>
-												<span>{formatCurrency(formatUnits(BigInt(row.interest), 18), 0, 5)}</span>
-											</div>
-											<div className="grid grid-cols-2 gap-2 mb-2">
-												<span className="font-medium">{headers[2]}:</span>
-												<span>{formatCurrency(formatUnits(BigInt(row.interestPaid), 18), 0, 5)}</span>
-											</div>
-											<div className="grid grid-cols-2 gap-2 mb-2">
-												<span className="font-medium">{headers[3]}:</span>
-												<span>{formatCurrency(formatUnits(BigInt(row.bonus), 18), 0, 5)}</span>
-											</div>
-											<div className="grid grid-cols-2 gap-2">
-												<span className="font-medium">{headers[4]}:</span>
-												<Link
-													href={ContractUrl(row.address as `0x${string}`)}
-													className="text-base sm:font-medium leading-tight"
-												>
-													<span>{shortenAddress(row.address as `0x${string}`)}</span>
-													<FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 ml-2" />
-												</Link>
-											</div>
-										</div>
+								<TableRow key={i} headers={headers} tab={tab} colSpan={5}>
+									<div className="text-base sm:font-medium leading-tight text-left">
+										{formatCurrency(formatUnits(BigInt(row.volume), 18), 0, 5)}
 									</div>
-								</div>
+									<div className="text-base sm:font-medium leading-tight">
+										{formatCurrency(formatUnits(BigInt(row.interest), 18), 0, 5)}
+									</div>
+									<div className="text-base sm:font-medium leading-tight">
+										{formatCurrency(formatUnits(BigInt(row.interestPaid), 18), 0, 5)}
+									</div>
+									<div className="text-base sm:font-medium leading-tight">
+										{formatCurrency(formatUnits(BigInt(row.bonus), 18), 0, 5)}
+									</div>
+									<div>
+										<Link
+											href={ContractUrl(row.address as `0x${string}`)}
+											className="text-base sm:font-medium leading-tight"
+										>
+											<span>{shortenAddress(row.address as `0x${string}`)}</span>
+											<FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 ml-2" />
+										</Link>
+									</div>
+								</TableRow>
 							))
 						)}
 						{sortedData.length > 3 && (
