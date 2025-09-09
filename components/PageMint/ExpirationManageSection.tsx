@@ -77,15 +77,14 @@ export const ExpirationManageSection = () => {
 	const url = useContractUrl(position?.position || "");
 
 	useEffect(() => {
-		if (position && expirationDate === undefined) {
-			// Set to max date if available, otherwise use current expiration
+		if (position) {
 			if (targetPosition?.expiration) {
-				setExpirationDate(new Date(targetPosition.expiration * 1000));
+				setExpirationDate((date) => date ?? new Date(targetPosition.expiration * 1000));
 			} else {
-				setExpirationDate(new Date(position.expiration * 1000));
+				setExpirationDate((date) => date ?? new Date(position.expiration * 1000));
 			}
 		}
-	}, [position, targetPosition, expirationDate]);
+	}, [position, targetPosition]);
 
 	if (!position) {
 		return (
@@ -263,7 +262,7 @@ export const ExpirationManageSection = () => {
 				</Button>
 			) : (
 				<>
-					{targetPosition && expirationDate && (
+					{targetPosition && expirationDate && expirationDate.getTime() > currentExpirationDate.getTime() && (
 						<div className="text-sm font-medium text-center">
 							Extending by {Math.ceil((expirationDate.getTime() - currentExpirationDate.getTime()) / (1000 * 60 * 60 * 24))} days
 						</div>
@@ -272,7 +271,7 @@ export const ExpirationManageSection = () => {
 						className="text-lg leading-snug !font-extrabold"
 						onClick={handleExtendExpiration}
 						isLoading={isTxOnGoing}
-						disabled={isTxOnGoing || !targetPosition}
+						disabled={isTxOnGoing || !targetPosition || !expirationDate || expirationDate.getTime() <= currentExpirationDate.getTime()}
 					>
 						{t("mint.extend_roll_borrowing")}
 					</Button>
