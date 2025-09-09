@@ -98,8 +98,6 @@ export const CollateralManageSection = () => {
 	const allowance = position ? balancesByAddress[position.collateral as Address]?.allowance?.[position.position] || 0n : 0n;
 
 	// Calculate maxToRemove for validation (will be 0 if position is undefined)
-	// Fix: Scale up debt before division to avoid truncation
-	// Price is in 10^(36-collateralDecimals) format, so we scale debt by 10^18 to get collateral in smallest units
 	const maxToRemoveThreshold = position
 		? balanceOf - (debt * 10n ** 18n) / price - BigInt(position.minimumCollateral)
 		: 0n;
