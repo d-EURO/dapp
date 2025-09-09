@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { RootState } from "../../redux/redux.store";
 import { useSelector } from "react-redux";
 import { Address, formatUnits, zeroAddress } from "viem";
-import { formatBigInt, formatCurrency, shortenAddress } from "@utils";
+import { formatCurrency, shortenAddress } from "@utils";
 import { useChainId, useReadContracts } from "wagmi";
 import { writeContract } from "wagmi/actions";
 import { PositionV2ABI } from "@deuro/eurocoin";
@@ -94,18 +94,31 @@ export const PriceManageSection = () => {
 		const bounds = principal + availableForMinting;
 		const maxByBounds = collateralBalance > 0n ? (bounds * 10n ** 18n) / collateralBalance : 0n;
 		const maxBy2x = startTime > 0n && BigInt(Math.floor(Date.now() / 1000)) >= startTime ? currentPrice * 2n : maxByBounds;
+		
+		// Take minimum of bounds and 2x limit
 		maxPrice = maxByBounds < maxBy2x ? maxByBounds : maxBy2x;
+		
+		// Cap at market value to prevent undercollateralization
+		if (collateralPrice > 0) {
+			const maxByMarketValue = BigInt(Math.floor(collateralPrice * 10 ** priceDecimals));
+			if (maxByMarketValue < maxPrice) maxPrice = maxByMarketValue;
+		}
 	}
 
-	// Initialize price on position load
+	// Initialize price only once per position
+	const [initializedPosition, setInitializedPosition] = useState<string | null>(null);
 	useEffect(() => {
 		if (!position) return;
+		
+		// Only initialize if this is a different position or first load
+		if (initializedPosition === position.position) return;
 		
 		if (minPrice > 0 && minPrice <= maxPrice) {
 			const initialPrice = currentPrice > minPrice ? currentPrice : minPrice;
 			setNewPrice(initialPrice.toString());
+			setInitializedPosition(position.position);
 		}
-	}, [currentPrice, minPrice, maxPrice, position]);
+	}, [currentPrice, minPrice, maxPrice, position, initializedPosition]);
 
 	// Validate price input
 	useEffect(() => {

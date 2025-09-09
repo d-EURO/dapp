@@ -9,7 +9,7 @@ import { ADDRESS, PositionRollerABI, PositionV2ABI } from "@deuro/eurocoin";
 import { useRouter } from "next/router";
 import { writeContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
-import { useBlock, useChainId, useReadContracts } from "wagmi";
+import { useChainId, useReadContracts } from "wagmi";
 import { Address } from "viem/accounts";
 import { getCarryOnQueryParams, shortenAddress, toDate, toQueryString, toTimestamp } from "@utils";
 import { toast } from "react-toastify";
@@ -73,7 +73,7 @@ export const ExpirationManageSection = () => {
 
 	const collateralAllowance = position ? balancesByAddress[position.collateral]?.allowance?.[ADDRESS[chainId].roller] : undefined;
 	const deuroAllowance = position ? balancesByAddress[position.deuro]?.allowance?.[ADDRESS[chainId].roller] : undefined;
-	const deuroBalance = position ? balancesByAddress[position.deuro]?.balance : 0n;
+	const deuroBalance = position ? balancesByAddress[position.deuro]?.balanceOf : 0n;
 
 	const url = useContractUrl(position?.position || "");
 	
