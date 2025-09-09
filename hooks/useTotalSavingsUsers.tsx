@@ -4,7 +4,7 @@ import { CONFIG } from "../app.config";
 
 // Create a separate Apollo Client for Ponder endpoint
 const ponderClient = new ApolloClient({
-	uri: CONFIG.ponderFallback || "https://dev.ponder.deuro.com",
+	uri: CONFIG.ponder,
 	cache: new InMemoryCache(),
 });
 
