@@ -5,11 +5,11 @@ import { useTranslation } from "next-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { renderErrorTxToast } from "@components/TxToast";
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { ADDRESS, PositionRollerABI } from "@deuro/eurocoin";
+import { ADDRESS, PositionRollerABI, PositionV2ABI } from "@deuro/eurocoin";
 import { useRouter } from "next/router";
 import { writeContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
-import { useBlock, useChainId } from "wagmi";
+import { useChainId, useReadContracts } from "wagmi";
 import { Address } from "viem/accounts";
 import { getCarryOnQueryParams, shortenAddress, toDate, toQueryString, toTimestamp } from "@utils";
 import { toast } from "react-toastify";
@@ -73,14 +73,40 @@ export const ExpirationManageSection = () => {
 
 	const collateralAllowance = position ? balancesByAddress[position.collateral]?.allowance?.[ADDRESS[chainId].roller] : undefined;
 	const deuroAllowance = position ? balancesByAddress[position.deuro]?.allowance?.[ADDRESS[chainId].roller] : undefined;
+	const deuroBalance = position ? balancesByAddress[position.deuro]?.balanceOf : 0n;
 
 	const url = useContractUrl(position?.position || "");
+	
+	// Fetch principal and debt from smart contract
+	const { data: contractData } = useReadContracts({
+		contracts: position ? [
+			{
+				chainId,
+				address: position.position,
+				abi: PositionV2ABI,
+				functionName: "principal",
+			},
+			{
+				chainId,
+				address: position.position,
+				abi: PositionV2ABI,
+				functionName: "getDebt",
+			},
+		] : [],
+	});
+	
+	const principal = contractData?.[0]?.result || 0n;
+	const currentDebt = contractData?.[1]?.result || 0n;
 
 	useEffect(() => {
 		if (position) {
-			setExpirationDate(new Date(position.expiration * 1000));
+			if (targetPosition?.expiration) {
+				setExpirationDate((date) => date ?? new Date(targetPosition.expiration * 1000));
+			} else {
+				setExpirationDate((date) => date ?? new Date(position.expiration * 1000));
+			}
 		}
-	}, [position]);
+	}, [position, targetPosition]);
 
 	if (!position) {
 		return (
@@ -200,10 +226,43 @@ export const ExpirationManageSection = () => {
 	const collateralPrice = prices?.[position.collateral.toLowerCase() as Address]?.price?.usd || 0;
 	const loanDetails = getLoanDetailsByCollateralAndLiqPrice(position, BigInt(position?.collateralBalance), BigInt(position.price));
 
+	const currentExpirationDate = position ? new Date(position.expiration * 1000) : new Date();
+	const daysUntilExpiration = Math.ceil((currentExpirationDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+	
+	// Calculate interest amount to be paid using smart contract data
+	const interest = currentDebt > principal ? currentDebt - principal : 0n;
+	
+	// Check if user has enough dEURO balance to pay interest
+	const hasInsufficientBalance = interest > 0n && BigInt(deuroBalance || 0) < interest;
+	
+	// Format number with commas
+	const formatNumber = (value: bigint, decimals: number = 18): string => {
+		const num = Number(value) / Math.pow(10, decimals);
+		return new Intl.NumberFormat('en-US', { 
+			minimumFractionDigits: 2, 
+			maximumFractionDigits: 2 
+		}).format(num);
+	};
+
 	return (
 		<div className="flex flex-col gap-y-8">
 			<div className="flex flex-col gap-y-1.5">
 				<div className="text-lg font-extrabold leading-[1.4375rem]">{t("mint.current_expiration_date")}</div>
+				<div className="text-base font-medium">
+					{currentExpirationDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+					{' - '}
+					{daysUntilExpiration > 0 
+						? `${daysUntilExpiration} days until expiration`
+						: daysUntilExpiration === 0 
+						? 'Expires today'
+						: `Expired ${Math.abs(daysUntilExpiration)} days ago`}
+				</div>
+				<div className="text-xs font-medium">
+					{t("mint.extend_roll_borrowing_description")}
+				</div>
+			</div>
+			<div className="flex flex-col gap-y-1.5">
+				<div className="text-lg font-extrabold leading-[1.4375rem]">{t("mint.newly_selected_expiration_date")}</div>
 				<DateInputOutlined
 					maxDate={targetPosition?.expiration ? new Date(targetPosition.expiration * 1000) : undefined}
 					value={expirationDate}
@@ -213,13 +272,12 @@ export const ExpirationManageSection = () => {
 					rightAdornment={
 						<MaxButton
 							className="h-full py-3.5 px-3"
-							onClick={handleExtendExpiration}
-							disabled={isTxOnGoing || !targetPosition}
-							label={t("mint.extend_roll_borrowing")}
+							onClick={() => setExpirationDate(targetPosition?.expiration ? new Date(targetPosition.expiration * 1000) : undefined)}
+							disabled={!targetPosition}
+							label={t("common.max")}
 						/>
 					}
 				/>
-				<span className="text-xs font-medium leading-[1rem]">{t("mint.extend_roll_borrowing_description")}</span>
 			</div>
 			{!collateralAllowance ? (
 				<Button
@@ -239,7 +297,51 @@ export const ExpirationManageSection = () => {
 				>
 					{t("common.approve")} {position.deuroSymbol}
 				</Button>
-			) : null}
+			) : (
+				<>
+					{targetPosition && expirationDate && expirationDate.getTime() > currentExpirationDate.getTime() && (
+						<div className="text-sm font-medium text-center mb-4">
+							Extending by {Math.ceil((expirationDate.getTime() - currentExpirationDate.getTime()) / (1000 * 60 * 60 * 24))} days
+						</div>
+					)}
+					{interest > 0n && (
+						<div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
+							<div className="flex justify-between items-center">
+								<span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+									Outstanding Interest to Pay:
+								</span>
+								<span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+									{formatNumber(interest)} {position.deuroSymbol}
+								</span>
+							</div>
+							<div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+								Current debt: {formatNumber(currentDebt)} {position.deuroSymbol} 
+								{' '}(Original: {formatNumber(principal)} {position.deuroSymbol})
+							</div>
+							{hasInsufficientBalance && (
+								<div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+									<div className="text-xs font-medium text-red-600 dark:text-red-400">
+										Insufficient {position.deuroSymbol} balance
+									</div>
+									<div className="text-xs text-red-500 dark:text-red-500 mt-1">
+										You have: {formatNumber(BigInt(deuroBalance || 0))} {position.deuroSymbol}
+										<br />
+										You need: {formatNumber(interest)} {position.deuroSymbol}
+									</div>
+								</div>
+							)}
+						</div>
+					)}
+					<Button
+						className="text-lg leading-snug !font-extrabold"
+						onClick={handleExtendExpiration}
+						isLoading={isTxOnGoing}
+						disabled={isTxOnGoing || !targetPosition || !expirationDate || expirationDate.getTime() <= currentExpirationDate.getTime() || hasInsufficientBalance}
+					>
+						{t("mint.extend_roll_borrowing")}
+					</Button>
+				</>
+			)}
 
 			<DetailsExpandablePanel
 				loanDetails={loanDetails}
