@@ -238,7 +238,7 @@ export const ExpirationManageSection = () => {
 	// Format number with commas
 	const formatNumber = (value: bigint, decimals: number = 18): string => {
 		const num = Number(value) / Math.pow(10, decimals);
-		return new Intl.NumberFormat('en-US', { 
+		return new Intl.NumberFormat(router?.locale || 'en', { 
 			minimumFractionDigits: 2, 
 			maximumFractionDigits: 2 
 		}).format(num);
@@ -249,13 +249,13 @@ export const ExpirationManageSection = () => {
 			<div className="flex flex-col gap-y-1.5">
 				<div className="text-lg font-extrabold leading-[1.4375rem]">{t("mint.current_expiration_date")}</div>
 				<div className="text-base font-medium">
-					{currentExpirationDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+					{currentExpirationDate.toLocaleDateString(router?.locale || 'en', { year: 'numeric', month: 'long', day: 'numeric' })}
 					{' - '}
 					{daysUntilExpiration > 0 
-						? `${daysUntilExpiration} days until expiration`
+						? t('mint.days_until_expiration', { days: daysUntilExpiration })
 						: daysUntilExpiration === 0 
-						? 'Expires today'
-						: `Expired ${Math.abs(daysUntilExpiration)} days ago`}
+						? t('mint.expires_today')
+						: t('mint.expired_days_ago', { days: Math.abs(daysUntilExpiration) })}
 				</div>
 				<div className="text-xs font-medium">
 					{t("mint.extend_roll_borrowing_description")}
@@ -301,32 +301,32 @@ export const ExpirationManageSection = () => {
 				<>
 					{targetPosition && expirationDate && expirationDate.getTime() > currentExpirationDate.getTime() && (
 						<div className="text-sm font-medium text-center mb-4">
-							Extending by {Math.ceil((expirationDate.getTime() - currentExpirationDate.getTime()) / (1000 * 60 * 60 * 24))} days
+							{t('mint.extending_by_days', { days: Math.ceil((expirationDate.getTime() - currentExpirationDate.getTime()) / (1000 * 60 * 60 * 24)) })}
 						</div>
 					)}
 					{interest > 0n && (
 						<div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
 							<div className="flex justify-between items-center">
 								<span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-									Outstanding Interest to Pay:
+									{t('mint.outstanding_interest')}
 								</span>
 								<span className="text-lg font-bold text-gray-900 dark:text-gray-100">
 									{formatNumber(interest)} {position.deuroSymbol}
 								</span>
 							</div>
 							<div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-								Current debt: {formatNumber(currentDebt)} {position.deuroSymbol} 
-								{' '}(Original: {formatNumber(principal)} {position.deuroSymbol})
+								{t('mint.current_debt', { amount: formatNumber(currentDebt), symbol: position.deuroSymbol })} 
+								{' '}{t('mint.original_amount', { amount: formatNumber(principal), symbol: position.deuroSymbol })}
 							</div>
 							{hasInsufficientBalance && (
 								<div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
 									<div className="text-xs font-medium text-red-600 dark:text-red-400">
-										Insufficient {position.deuroSymbol} balance
+										{t('mint.insufficient_balance', { symbol: position.deuroSymbol })}
 									</div>
 									<div className="text-xs text-red-500 dark:text-red-500 mt-1">
-										You have: {formatNumber(BigInt(deuroBalance || 0))} {position.deuroSymbol}
+										{t('mint.you_have', { amount: formatNumber(BigInt(deuroBalance || 0)), symbol: position.deuroSymbol })}
 										<br />
-										You need: {formatNumber(interest)} {position.deuroSymbol}
+										{t('mint.you_need', { amount: formatNumber(interest), symbol: position.deuroSymbol })}
 									</div>
 								</div>
 							)}
