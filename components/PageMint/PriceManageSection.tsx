@@ -233,14 +233,16 @@ export const PriceManageSection = () => {
 				<span>{collateralizationPercentage} %</span>
 			</div>
 
-			<Button
-				className="text-lg leading-snug !font-extrabold"
-				onClick={handleAdjustPrice}
-				isLoading={isTxOnGoing}
-				disabled={Boolean(error) || !newPrice || newPrice === currentPrice.toString()}
-			>
-				{t("mint.adjust_price")}
-			</Button>
+			{minPrice !== maxPrice && (
+				<Button
+					className="text-lg leading-snug !font-extrabold"
+					onClick={handleAdjustPrice}
+					isLoading={isTxOnGoing}
+					disabled={Boolean(error) || !newPrice || newPrice === currentPrice.toString()}
+				>
+					{t("mint.adjust_price")}
+				</Button>
+			)}
 
 			<DetailsExpandablePanel
 				loanDetails={loanDetails}
