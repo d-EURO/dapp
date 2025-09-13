@@ -8,8 +8,8 @@ import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { RootState, store } from "../../redux/redux.store";
 import { useSelector } from "react-redux";
-import { Address, erc20Abi, formatUnits, maxUint256, zeroAddress } from "viem";
-import { formatBigInt, formatCurrency, shortenAddress } from "@utils";
+import { Address, erc20Abi, formatUnits, zeroAddress } from "viem";
+import { formatCurrency, shortenAddress } from "@utils";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { useChainId, useReadContracts } from "wagmi";
 import { writeContract } from "wagmi/actions";
@@ -78,12 +78,6 @@ export const CollateralManageSection = () => {
 				address: position.position,
 				functionName: "getDebt",
 			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "getCollateralRequirement",
-			},
 		] : [],
 	});
 
@@ -91,17 +85,25 @@ export const CollateralManageSection = () => {
 	const price = data?.[1]?.result || 1n;
 	const balanceOf = data?.[2]?.result || 0n; // collateral reserve
 	const debt = data?.[3]?.result || 0n;
-	const collateralRequirement = data?.[4]?.result || 0n;
 	const collateralPrice = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
 	const collateralValuation = collateralPrice * Number(formatUnits(balanceOf, position?.collateralDecimals || 18));
 	const walletBalance = position ? balancesByAddress[position.collateral as Address]?.balanceOf || 0n : 0n;
 	const allowance = position ? balancesByAddress[position.collateral as Address]?.allowance?.[position.position] || 0n : 0n;
 
 	// Calculate maxToRemove for validation (will be 0 if position is undefined)
-	const maxToRemoveThreshold = position
-		? balanceOf - (debt * 10n ** 18n) / price - BigInt(position.minimumCollateral)
+	// The smart contract's adjust function validates against principal,
+	// but we also need to ensure there's enough collateral for the actual debt
+	// Use the maximum of principal and debt to be safe
+	const effectiveDebt = debt > principal ? debt : principal;
+
+	const requiredCollateral = effectiveDebt > 0n && price > 0n
+		? (effectiveDebt * 10n ** 18n) / price
 		: 0n;
-	const maxToRemove = debt > 0n ? (maxToRemoveThreshold > 0n ? maxToRemoveThreshold : 0n) : balanceOf;
+
+	const maxToRemoveThreshold = position
+		? balanceOf - requiredCollateral - BigInt(position.minimumCollateral)
+		: 0n;
+	const maxToRemove = effectiveDebt > 0n ? (maxToRemoveThreshold > 0n ? maxToRemoveThreshold : 0n) : balanceOf;
 
 	// Error validation only for adding collateral
 	useEffect(() => {
