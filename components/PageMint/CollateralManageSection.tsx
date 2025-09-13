@@ -78,6 +78,12 @@ export const CollateralManageSection = () => {
 				address: position.position,
 				functionName: "getDebt",
 			},
+			{
+				chainId,
+				abi: PositionV2ABI,
+				address: position.position,
+				functionName: "getCollateralRequirement",
+			},
 		] : [],
 	});
 
@@ -85,25 +91,21 @@ export const CollateralManageSection = () => {
 	const price = data?.[1]?.result || 1n;
 	const balanceOf = data?.[2]?.result || 0n; // collateral reserve
 	const debt = data?.[3]?.result || 0n;
+	const collateralRequirement = data?.[4]?.result || 0n;
 	const collateralPrice = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
 	const collateralValuation = collateralPrice * Number(formatUnits(balanceOf, position?.collateralDecimals || 18));
 	const walletBalance = position ? balancesByAddress[position.collateral as Address]?.balanceOf || 0n : 0n;
 	const allowance = position ? balancesByAddress[position.collateral as Address]?.allowance?.[position.position] || 0n : 0n;
 
 	// Calculate maxToRemove for validation (will be 0 if position is undefined)
-	// The smart contract's adjust function validates against principal,
-	// but we also need to ensure there's enough collateral for the actual debt
-	// Use the maximum of principal and debt to be safe
-	const effectiveDebt = debt > principal ? debt : principal;
+	const debtBasedRequirement = (collateralRequirement * 10n ** 18n) / price;
+	const minimumCollateralBigInt = BigInt(position?.minimumCollateral || 0);
+	const requiredCollateral = debtBasedRequirement > minimumCollateralBigInt
+		? debtBasedRequirement
+		: minimumCollateralBigInt;
 
-	const requiredCollateral = effectiveDebt > 0n && price > 0n
-		? (effectiveDebt * 10n ** 18n) / price
-		: 0n;
-
-	const maxToRemoveThreshold = position
-		? balanceOf - requiredCollateral - BigInt(position.minimumCollateral)
-		: 0n;
-	const maxToRemove = effectiveDebt > 0n ? (maxToRemoveThreshold > 0n ? maxToRemoveThreshold : 0n) : balanceOf;
+	const maxToRemoveThreshold = position ? balanceOf - requiredCollateral : 0n;
+	const maxToRemove = debt > 0n ? (maxToRemoveThreshold > 0n ? maxToRemoveThreshold : 0n) : balanceOf;
 
 	// Error validation only for adding collateral
 	useEffect(() => {
