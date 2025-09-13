@@ -87,8 +87,8 @@ export const PriceManageSection = () => {
 	let maxPrice = 0n;
 	if (position) {
 		const minimumCollateral = BigInt(position.minimumCollateral || "0");
-		if (collateralBalance >= minimumCollateral && collateralBalance > 0n) {
-			minPrice = (collateralRequirement * 10n ** 18n) / collateralBalance;
+		if (collateralBalance >= minimumCollateral && collateralBalance > 0n && principal > 0n) {
+			minPrice = (principal * 10n ** 18n) / collateralBalance;
 		}
 		
 		const bounds = principal + availableForMinting;
@@ -194,6 +194,7 @@ export const PriceManageSection = () => {
 	};
 
 	const loanDetails = getLoanDetailsByCollateralAndLiqPrice(position, collateralBalance, BigInt(newPrice || currentPrice.toString()));
+	const isMintingExhausted = availableForMinting === 0n && principal > 0n;
 
 	return (
 		<div className="flex flex-col gap-y-3">
@@ -201,6 +202,14 @@ export const PriceManageSection = () => {
 				<div className="text-lg font-extrabold leading-[1.4375rem]">{t("mint.current_price")}</div>
 				<div className="text-base font-medium">{formatCurrency(formatUnits(currentPrice, priceDecimals))} EUR</div>
 			</div>
+
+			{isMintingExhausted && minPrice === maxPrice && (
+				<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+					<div className="text-sm text-yellow-800">
+						{t("mint.minting_limit_exhausted_info")}
+					</div>
+				</div>
+			)}
 
 			<SliderInputOutlined
 				value={newPrice}
@@ -227,7 +236,7 @@ export const PriceManageSection = () => {
 				className="text-lg leading-snug !font-extrabold"
 				onClick={handleAdjustPrice}
 				isLoading={isTxOnGoing}
-				disabled={Boolean(error) || !newPrice || newPrice === currentPrice.toString()}
+				disabled={Boolean(error) || !newPrice || newPrice === currentPrice.toString() || minPrice === maxPrice}
 			>
 				{t("mint.adjust_price")}
 			</Button>
