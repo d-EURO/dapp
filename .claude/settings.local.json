@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run build:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git commit:*)",
+      "Bash(yarn dev)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(git show:*)",
+      "Bash(sed:*)",
+      "Bash(node:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(gh pr close:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

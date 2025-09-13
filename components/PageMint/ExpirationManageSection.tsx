@@ -306,6 +306,13 @@ export const ExpirationManageSection = () => {
 				</Button>
 			) : (
 				<>
+					{!targetPosition && (
+						<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+							<div className="text-sm text-yellow-800">
+								{t("mint.no_extension_target_available")}
+							</div>
+						</div>
+					)}
 					{targetPosition && expirationDate && expirationDate.getTime() > currentExpirationDate.getTime() && (
 						<div className="text-sm font-medium text-center mb-4">
 							{t('mint.extending_by_days', { days: Math.ceil((expirationDate.getTime() - currentExpirationDate.getTime()) / (1000 * 60 * 60 * 24)) })}
