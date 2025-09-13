@@ -87,10 +87,10 @@ export const PriceManageSection = () => {
 	let maxPrice = 0n;
 	if (position) {
 		const minimumCollateral = BigInt(position.minimumCollateral || "0");
-		if (collateralBalance >= minimumCollateral && collateralBalance > 0n && principal > 0n) {
-			minPrice = (principal * 10n ** 18n) / collateralBalance;
+		if (collateralBalance >= minimumCollateral && collateralBalance > 0n) {
+			minPrice = (collateralRequirement * 10n ** 18n) / collateralBalance;
 		}
-		
+
 		const bounds = principal + availableForMinting;
 		const maxByBounds = collateralBalance > 0n ? (bounds * 10n ** 18n) / collateralBalance : 0n;
 		const maxBy2x = startTime > 0n && BigInt(Math.floor(Date.now() / 1000)) >= startTime ? currentPrice * 2n : maxByBounds;
