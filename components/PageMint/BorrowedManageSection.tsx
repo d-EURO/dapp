@@ -269,22 +269,74 @@ export const BorrowedManageSection = () => {
 		try {
 			setIsTxOnGoing(true);
 
-			// Use one-click repay with permit + multicall
-			const payBackHash = await executeOneClickRepay({
-				userAddress: userAddress as Address,
-				positionAddress: position.position,
-				deuroAddress: position.deuro as Address,
-				deuroSymbol: position.deuroSymbol,
-				repayAmount: BigInt(amount),
-				totalDebt: debt,
-				walletBalance,
-				principal,
-				interest,
-				reserveContribution: BigInt(position.reserveContribution),
-				fixedAnnualRatePPM,
-				chainId,
-				positionPrice: BigInt(position.price),
-			})
+			let payBackHash: `0x${string}`;
+
+			// Try one-click repay with permit + multicall
+			// If it fails, fall back to classic two-step approach
+			try {
+				payBackHash = await executeOneClickRepay({
+					userAddress: userAddress as Address,
+					positionAddress: position.position,
+					deuroAddress: position.deuro as Address,
+					deuroSymbol: position.deuroSymbol,
+					repayAmount: BigInt(amount),
+					totalDebt: debt,
+					walletBalance,
+					principal,
+					interest,
+					reserveContribution: BigInt(position.reserveContribution),
+					fixedAnnualRatePPM,
+					chainId,
+					positionPrice: BigInt(position.price),
+				});
+			} catch (permitError: any) {
+				// If user rejected permit or multicall failed, fall back to classic approach
+				console.log("One-click repay failed, falling back to classic approach:", permitError);
+
+				// Check if we need approval first
+				if (allowance < BigInt(amount)) {
+					// Need to approve first
+					try {
+						const approveHash = await writeContract(WAGMI_CONFIG, {
+							address: position.deuro as Address,
+							abi: erc20Abi,
+							functionName: "approve",
+							args: [position.position, BigInt(amount)],
+						});
+
+						await waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveHash, confirmations: 1 });
+						await refetchBalances();
+					} catch (approveError) {
+						throw approveError;
+					}
+				}
+
+				// Now execute the repay
+				if (amount.toString() === debt.toString()) {
+					payBackHash = await writeContract(WAGMI_CONFIG, {
+						address: position.position,
+						abi: PositionV2ABI,
+						functionName: "adjust",
+						args: [BigInt(0), BigInt(0), BigInt(position.price)],
+					});
+				} else {
+					const optimalRepayAmount = calculateOptimalRepayAmount({
+						userInputAmount: BigInt(amount),
+						currentInterest: interest,
+						walletBalance,
+						reserveContribution: BigInt(position.reserveContribution),
+						principal: principal,
+						fixedAnnualRatePPM: fixedAnnualRatePPM
+					});
+
+					payBackHash = await writeContract(WAGMI_CONFIG, {
+						address: position.position,
+						abi: PositionV2ABI,
+						functionName: "repay",
+						args: [optimalRepayAmount],
+					});
+				}
+			}
 
 			const toastContent = [
 				{
