@@ -450,16 +450,22 @@ export default function PositionCreate({}) {
 		}
 	};
 
-	const handleWrapETH = async () => {
+	const handleWrapETHAndMint = async () => {
 		try {
-			setIsApproving(true);
+			if (!selectedPosition || !loanDetails || !expirationDate) return;
+
+			setIsOpenBorrowingDEUROModal(true);
+			setIsCloneLoading(true);
+			setIsCloneSuccess(false);
+
 			const wethAddress = getWETHAddress(chainId);
 			if (!wethAddress) {
 				toast.error("WETH not supported on this network");
+				setIsOpenBorrowingDEUROModal(false);
 				return;
 			}
 
-			// First, wrap ETH to WETH
+			// Step 1: Wrap ETH to WETH
 			const wrapHash = await writeContract(WAGMI_CONFIG, {
 				address: wethAddress,
 				abi: WETH_ABI,
@@ -487,7 +493,7 @@ export default function PositionCreate({}) {
 				},
 			});
 
-			// Then approve WETH for spending
+			// Step 2: Approve WETH for spending
 			const approveHash = await writeContract(WAGMI_CONFIG, {
 				address: wethAddress,
 				abi: erc20Abi,
@@ -518,10 +524,68 @@ export default function PositionCreate({}) {
 					render: <TxToast title={t("common.txs.success", { symbol: "WETH" })} rows={approveToastContent} />,
 				},
 			});
+
+			// Step 3: Clone position and mint dEURO
+			let txHash = null;
+			const cloneWriteHash = await writeContract(WAGMI_CONFIG, {
+				address: ADDRESS[chainId].mintingHubGateway,
+				abi: MintingHubGatewayABI,
+				functionName: "clone",
+				args: [
+					selectedPosition.position,
+					BigInt(collateralAmount),
+					loanDetails.loanAmount,
+					toTimestamp(expirationDate),
+					frontendCode,
+				],
+			});
+			txHash = cloneWriteHash;
+
+			const toastContent = [
+				{
+					title: t("common.txs.amount"),
+					value: formatBigInt(loanDetails.loanAmount) + ` ${TOKEN_SYMBOL}`,
+				},
+				{
+					title: t("common.txs.collateral"),
+					value: formatBigInt(BigInt(collateralAmount), 18) + " ETH (via WETH)",
+				},
+				{
+					title: t("common.txs.transaction"),
+					hash: cloneWriteHash,
+				},
+			];
+
+			const receipt: TransactionReceipt = await waitForTransactionReceipt(WAGMI_CONFIG, { hash: cloneWriteHash, confirmations: 1 });
+
+			if (BigInt(liquidationPrice) !== BigInt(selectedPosition?.price)) {
+				const newPositionAddress = parseCloneEventLogs(receipt.logs);
+				const adjustPriceHash = await writeContract(WAGMI_CONFIG, {
+					address: newPositionAddress as Address,
+					abi: PositionV2ABI,
+					functionName: "adjustPrice",
+					args: [(BigInt(liquidationPrice) * 10001n) / 10000n],
+				});
+				txHash = adjustPriceHash;
+			}
+
+			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: txHash, confirmations: 1 }), {
+				pending: {
+					render: <TxToast title={t("mint.txs.minting", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
+				},
+				success: {
+					render: <TxToast title={t("mint.txs.minting_success", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
+				},
+			});
+
+			store.dispatch(fetchPositionsList());
+			setIsCloneSuccess(true);
+			await refetchBalances();
 		} catch (error) {
 			toast.error(renderErrorTxToast(error));
+			setIsOpenBorrowingDEUROModal(false);
 		} finally {
-			setIsApproving(false);
+			setIsCloneLoading(false);
 			refetchBalances();
 		}
 	};
@@ -656,15 +720,23 @@ export default function PositionCreate({}) {
 							>
 								{t("common.receive") + " 0.00 " + TOKEN_SYMBOL}
 							</Button>
-						) : selectedCollateral.symbol === 'ETH' && userAllowance < BigInt(collateralAmount) ? (
-							// Special handling for ETH - needs wrapping and approval
+						) : selectedCollateral.symbol === 'ETH' ? (
+							// Special handling for ETH - wrap, approve and mint in one click
 							<Button
 								className="!p-4 text-lg font-extrabold leading-none"
-								onClick={handleWrapETH}
-								isLoading={isApproving}
-								disabled={!!collateralError || isMaxedOut || userBalance < BigInt(collateralAmount)}
+								onClick={handleWrapETHAndMint}
+								disabled={
+									!selectedPosition ||
+									!selectedCollateral ||
+									isLiquidationPriceTooHigh ||
+									!!collateralError ||
+									isMaxedOut ||
+									userBalance < BigInt(collateralAmount)
+								}
 							>
-								{"Wrap ETH & Approve"}
+								{isLiquidationPriceTooHigh
+									? t("mint.your_liquidation_price_is_too_high")
+									: t("common.receive") + " " + formatCurrency(formatUnits(BigInt(borrowedAmount), 18), 2) + " " + TOKEN_SYMBOL}
 							</Button>
 						) : userAllowance >= BigInt(collateralAmount) ? (
 							<Button
