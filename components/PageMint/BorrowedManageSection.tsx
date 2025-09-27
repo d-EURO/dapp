@@ -27,6 +27,7 @@ import { SvgIconButton } from "./PlusMinusButtons";
 import Link from "next/link";
 import { useContractUrl } from "../../hooks/useContractUrl";
 import { calculateOptimalRepayAmount, calculateTimeBuffer } from "../../utils/dynamicRepayCalculations";
+import { executeOneClickRepay } from "../../utils/oneClickRepay";
 
 export const BorrowedManageSection = () => {
 	const [amount, setAmount] = useState("");
@@ -268,35 +269,22 @@ export const BorrowedManageSection = () => {
 		try {
 			setIsTxOnGoing(true);
 
-			let payBackHash: `0x${string}` = zeroAddress as `0x${string}`;
-
-			if (amount.toString() === debt.toString()) {
-				payBackHash = await writeContract(WAGMI_CONFIG, {
-					address: position.position,
-					abi: PositionV2ABI,
-					functionName: "adjust",
-					args: [BigInt(0), BigInt(0), BigInt(position.price)],
-				});
-			} else {
-				const userInputAmount = BigInt(amount);
-				const currentInterest = interest;
-				
-				const optimalRepayAmount = calculateOptimalRepayAmount({
-					userInputAmount,
-					currentInterest, 
-					walletBalance,
-					reserveContribution: BigInt(position.reserveContribution),
-					principal: principal,
-					fixedAnnualRatePPM: fixedAnnualRatePPM
-				});
-				
-				payBackHash = await writeContract(WAGMI_CONFIG, {
-					address: position.position,
-					abi: PositionV2ABI,
-					functionName: "repay",
-					args: [optimalRepayAmount],
-				});
-			}
+			// Use one-click repay with permit + multicall
+			const payBackHash = await executeOneClickRepay({
+				userAddress: userAddress as Address,
+				positionAddress: position.position,
+				deuroAddress: position.deuro as Address,
+				deuroSymbol: position.deuroSymbol,
+				repayAmount: BigInt(amount),
+				totalDebt: debt,
+				walletBalance,
+				principal,
+				interest,
+				reserveContribution: BigInt(position.reserveContribution),
+				fixedAnnualRatePPM,
+				chainId,
+				positionPrice: BigInt(position.price),
+			})
 
 			const toastContent = [
 				{
@@ -381,26 +369,24 @@ export const BorrowedManageSection = () => {
 					<span>{collateralizationPercentage} %</span>
 				</div>
 			</div>
-			{allowance < BigInt(amount) && !isBorrowMore ? (
+			{isBorrowMore ? (
 				<Button
 					className="text-lg leading-snug !font-extrabold"
-					onClick={handleApprove}
+					onClick={handleBorrowMore}
 					isLoading={isTxOnGoing}
-					disabled={isTxOnGoing}
+					disabled={!amount || !BigInt(amount) || Boolean(error)}
 				>
-					{t("common.approve")}
+					{t("mint.borrow_more")}
 				</Button>
 			) : (
 				<Button
 					className="text-lg leading-snug !font-extrabold"
-					onClick={isBorrowMore ? handleBorrowMore : handlePayBack}
+					onClick={handlePayBack}
 					isLoading={isTxOnGoing}
 					disabled={!amount || !BigInt(amount) || Boolean(error)}
 				>
 					{t(
-						isBorrowMore
-							? "mint.borrow_more"
-							: amount && BigInt(amount) && amount.toString() === debt.toString()
+						amount && BigInt(amount) && amount.toString() === debt.toString()
 							? "mint.pay_back_and_close"
 							: "mint.pay_back"
 					)}
