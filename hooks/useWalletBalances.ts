@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Abi, Address, erc20Abi } from "viem";
-import { useAccount, useReadContracts } from "wagmi";
+import { useAccount, useReadContracts, useBalance } from "wagmi";
 import { WAGMI_CHAIN } from "../app.config";
 
 
@@ -68,11 +68,20 @@ export function useWalletERC20Balances(tokenList: TokenDescriptor[] = [], { acco
 	const { address } = useAccount();
 	const account = accountAddress || address;
 
+	// Get native ETH balance
+	const { data: ethBalanceData } = useBalance({
+		address: account,
+	});
+
 	const chainId = WAGMI_CHAIN.id as number;
+
+	// Filter out ETH from the token list for ERC20 queries
+	const erc20TokenList = tokenList.filter((token) => token.symbol !== 'ETH');
+	const ethToken = tokenList.find((token) => token.symbol === 'ETH');
 
 	const query = useMemo(
 		() =>
-			tokenList
+			erc20TokenList
 				.map((token) => [
 					{
 						chainId: chainId,
@@ -108,7 +117,7 @@ export function useWalletERC20Balances(tokenList: TokenDescriptor[] = [], { acco
 					})) || []),
 				])
 				.flat(),
-		[tokenList, address, chainId]
+		[erc20TokenList, address, chainId]
 	);
 
 	const { data, isLoading, refetch } = useReadContracts({
@@ -116,8 +125,22 @@ export function useWalletERC20Balances(tokenList: TokenDescriptor[] = [], { acco
 	}) ?? { data: [], isLoading: true };
 
 	const responseMappedByAddress = useMemo(() => {
-		return getMappedResponseByAddress(query, tokenList, data as any[]);
-	}, [query, data, isLoading]);
+		const erc20Balances = getMappedResponseByAddress(query, erc20TokenList, data as any[]);
+
+		// Add ETH balance if ETH token is in the list
+		if (ethToken) {
+			erc20Balances[ethToken.address] = {
+				address: ethToken.address,
+				symbol: 'ETH',
+				name: 'Ethereum',
+				decimals: 18,
+				balanceOf: ethBalanceData?.value ?? 0n,
+				allowance: {},
+			};
+		}
+
+		return erc20Balances;
+	}, [query, data, isLoading, ethToken, ethBalanceData]);
 
 	return { balances: Object.values(responseMappedByAddress), balancesByAddress: responseMappedByAddress, isLoading, refetchBalances: refetch };
 }

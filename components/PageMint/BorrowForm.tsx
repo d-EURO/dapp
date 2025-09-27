@@ -95,12 +95,28 @@ export default function PositionCreate({}) {
 				position: p.position,
 			});
 		});
-		return Array.from(uniqueTokens.values()).sort((a, b) => {
+
+		const tokens = Array.from(uniqueTokens.values()).sort((a, b) => {
 			const posA = WHITELISTED_POSITIONS.findIndex((p) => p.toLowerCase() === a.position.toLowerCase());
 			const posB = WHITELISTED_POSITIONS.findIndex((p) => p.toLowerCase() === b.position.toLowerCase());
 			if (posA === -1 || posB === -1) return 0;
 			return posA - posB;
 		});
+
+		// Check if WETH is in the list and add ETH option
+		const wethToken = tokens.find(t => t.symbol.toLowerCase() === 'weth');
+		if (wethToken) {
+			// Add ETH as the first option when WETH is available
+			const ethToken = {
+				...wethToken,
+				symbol: 'ETH',
+				name: 'Ethereum',
+				isNative: true,  // Flag to identify native ETH
+			};
+			tokens.unshift(ethToken);
+		}
+
+		return tokens;
 	}, [elegiblePositions, isApproving]);
 
 	const { balances, balancesByAddress, refetchBalances } = useWalletERC20Balances(collateralTokenList);
@@ -108,11 +124,22 @@ export default function PositionCreate({}) {
 	const { t } = useTranslation();
 
 	useEffect(() => {
-		if (query?.collateral && collateralTokenList.length > 0 && !selectedCollateral) {
-			const queryCollateral = Array.isArray(query.collateral) ? query.collateral[0] : query.collateral;
-			const collateralToken = collateralTokenList.find((b) => b.symbol.toLowerCase() === queryCollateral?.toLowerCase());
-			if (collateralToken) {
-				handleOnSelectedToken(collateralToken);
+		if (collateralTokenList.length > 0 && !selectedCollateral) {
+			if (query?.collateral) {
+				// If collateral is specified in URL, use it
+				const queryCollateral = Array.isArray(query.collateral) ? query.collateral[0] : query.collateral;
+				const collateralToken = collateralTokenList.find((b) => b.symbol.toLowerCase() === queryCollateral?.toLowerCase());
+				if (collateralToken) {
+					handleOnSelectedToken(collateralToken);
+				}
+			} else {
+				// If no collateral specified, prefer ETH if available, otherwise first token
+				const ethToken = collateralTokenList.find((b) => b.symbol === 'ETH');
+				if (ethToken) {
+					handleOnSelectedToken(ethToken);
+				} else if (collateralTokenList.length > 0) {
+					handleOnSelectedToken(collateralTokenList[0]);
+				}
 			}
 		}
 	}, [query?.collateral, collateralTokenList.length, selectedCollateral]);
