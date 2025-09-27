@@ -35,6 +35,7 @@ import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { MaxButton } from "@components/Input/MaxButton";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { WETH_ABI, getWETHAddress } from "../../utils/wethHelpers";
 
 export default function PositionCreate({}) {
 	const [selectedCollateral, setSelectedCollateral] = useState<TokenBalance | null | undefined>(null);
@@ -201,8 +202,18 @@ export default function PositionCreate({}) {
 		: 0;
 	const maxLiquidationPrice = selectedPosition ? BigInt(selectedPosition.price) : 0n;
 	const isLiquidationPriceTooHigh = selectedPosition ? BigInt(liquidationPrice) > maxLiquidationPrice : false;
-	const collateralUserBalance = balances.find((b) => b.address == selectedCollateral?.address);
-	const userAllowance = collateralUserBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n;
+	// For ETH, we check ETH balance directly. For other tokens, use the normal ERC20 balance
+	const isETH = selectedCollateral?.symbol === 'ETH';
+	const collateralUserBalance = isETH
+		? balances.find((b) => b.symbol === 'ETH')
+		: balances.find((b) => b.address == selectedCollateral?.address);
+
+	// For ETH, we check WETH allowance after wrapping. Initially it's 0.
+	const wethAddress = getWETHAddress(chainId);
+	const wethBalance = balances.find((b) => b.address.toLowerCase() === wethAddress?.toLowerCase());
+	const userAllowance = isETH
+		? (wethBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n)
+		: (collateralUserBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n);
 	const userBalance = collateralUserBalance?.balanceOf || 0n;
 	const selectedBalance = Boolean(selectedCollateral) ? balancesByAddress[selectedCollateral?.address as Address] : null;
 	const usdLiquidationPrice = formatCurrency(
@@ -439,6 +450,82 @@ export default function PositionCreate({}) {
 		}
 	};
 
+	const handleWrapETH = async () => {
+		try {
+			setIsApproving(true);
+			const wethAddress = getWETHAddress(chainId);
+			if (!wethAddress) {
+				toast.error("WETH not supported on this network");
+				return;
+			}
+
+			// First, wrap ETH to WETH
+			const wrapHash = await writeContract(WAGMI_CONFIG, {
+				address: wethAddress,
+				abi: WETH_ABI,
+				functionName: "deposit",
+				value: BigInt(collateralAmount),
+			});
+
+			const wrapToastContent = [
+				{
+					title: t("common.txs.amount"),
+					value: formatCurrency(formatUnits(BigInt(collateralAmount), 18)) + " ETH → WETH",
+				},
+				{
+					title: t("common.txs.transaction"),
+					hash: wrapHash,
+				},
+			];
+
+			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: wrapHash, confirmations: 1 }), {
+				pending: {
+					render: <TxToast title="Wrapping ETH to WETH" rows={wrapToastContent} />,
+				},
+				success: {
+					render: <TxToast title="Successfully wrapped ETH to WETH" rows={wrapToastContent} />,
+				},
+			});
+
+			// Then approve WETH for spending
+			const approveHash = await writeContract(WAGMI_CONFIG, {
+				address: wethAddress,
+				abi: erc20Abi,
+				functionName: "approve",
+				args: [ADDRESS[chainId].mintingHubGateway, BigInt(collateralAmount)],
+			});
+
+			const approveToastContent = [
+				{
+					title: t("common.txs.amount"),
+					value: formatCurrency(formatUnits(BigInt(collateralAmount), 18)) + " WETH",
+				},
+				{
+					title: t("common.txs.spender"),
+					value: shortenAddress(ADDRESS[chainId].mintingHubGateway),
+				},
+				{
+					title: t("common.txs.transaction"),
+					hash: approveHash,
+				},
+			];
+
+			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveHash, confirmations: 1 }), {
+				pending: {
+					render: <TxToast title={t("common.txs.title", { symbol: "WETH" })} rows={approveToastContent} />,
+				},
+				success: {
+					render: <TxToast title={t("common.txs.success", { symbol: "WETH" })} rows={approveToastContent} />,
+				},
+			});
+		} catch (error) {
+			toast.error(renderErrorTxToast(error));
+		} finally {
+			setIsApproving(false);
+			refetchBalances();
+		}
+	};
+
 	return (
 		<div className="md:mt-8 flex justify-center">
 			<div className="max-w-lg w-[32rem]">
@@ -568,6 +655,16 @@ export default function PositionCreate({}) {
 								disabled={!selectedPosition || !selectedCollateral || isLiquidationPriceTooHigh || isMaxedOut}
 							>
 								{t("common.receive") + " 0.00 " + TOKEN_SYMBOL}
+							</Button>
+						) : selectedCollateral.symbol === 'ETH' && userAllowance < BigInt(collateralAmount) ? (
+							// Special handling for ETH - needs wrapping and approval
+							<Button
+								className="!p-4 text-lg font-extrabold leading-none"
+								onClick={handleWrapETH}
+								isLoading={isApproving}
+								disabled={!!collateralError || isMaxedOut || userBalance < BigInt(collateralAmount)}
+							>
+								{"Wrap ETH & Approve"}
 							</Button>
 						) : userAllowance >= BigInt(collateralAmount) ? (
 							<Button
