@@ -127,7 +127,7 @@ export function useWalletERC20Balances(tokenList: TokenDescriptor[] = [], { acco
 	const responseMappedByAddress = useMemo(() => {
 		const erc20Balances = getMappedResponseByAddress(query, erc20TokenList, data as any[]);
 
-		// Add ETH balance if ETH token is in the list
+		// Add ETH balance if ETH token is in the list (ETH uses zero address as identifier)
 		if (ethToken) {
 			erc20Balances[ethToken.address] = {
 				address: ethToken.address,

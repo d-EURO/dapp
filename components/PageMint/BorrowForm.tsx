@@ -108,10 +108,12 @@ export default function PositionCreate({}) {
 		const wethToken = tokens.find(t => t.symbol.toLowerCase() === 'weth');
 		if (wethToken) {
 			// Add ETH as the first option when WETH is available
+			// Use a special ETH address (0x0) to distinguish it from WETH
 			const ethToken = {
 				...wethToken,
 				symbol: 'ETH',
 				name: 'Ethereum',
+				address: '0x0000000000000000000000000000000000000000' as Address, // Use zero address for ETH
 				isNative: true,  // Flag to identify native ETH
 			};
 			tokens.unshift(ethToken);
@@ -231,13 +233,18 @@ export default function PositionCreate({}) {
 			query: currentQuery,
 		});
 
-		const selectedPosition = elegiblePositions.find((p) => p.collateral.toLowerCase() == token.address.toLowerCase());
+		// For ETH, we need to find the WETH position since ETH uses WETH internally
+		const isETH = token.symbol === 'ETH';
+		const selectedPosition = isETH
+			? elegiblePositions.find((p) => p.collateralSymbol.toLowerCase() === 'weth')
+			: elegiblePositions.find((p) => p.collateral.toLowerCase() == token.address.toLowerCase());
 		if (!selectedPosition) return;
 		const liqPrice = BigInt(selectedPosition.price);
 
 		setSelectedPosition(selectedPosition);
 
 		// Calculate max collateral respecting minting limit
+		// For ETH, we use the special zero address balance, for others use normal address
 		const tokenBalance = balancesByAddress[token.address]?.balanceOf || 0n;
 		const maxAmount = getMaxCollateralAmount(tokenBalance, BigInt(selectedPosition.availableForClones), liqPrice);
 		const defaultAmount =
