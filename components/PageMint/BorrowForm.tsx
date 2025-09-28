@@ -36,6 +36,7 @@ import { MaxButton } from "@components/Input/MaxButton";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { WETH_ABI, getWETHAddress } from "../../utils/wethHelpers";
+import { lendWithCoin, isCoinLendingGatewayAvailable } from "../../utils/coinLendingGateway";
 
 export default function PositionCreate({}) {
 	const [selectedCollateral, setSelectedCollateral] = useState<TokenBalance | null | undefined>(null);
@@ -465,125 +466,168 @@ export default function PositionCreate({}) {
 			setIsCloneLoading(true);
 			setIsCloneSuccess(false);
 
-			const wethAddress = getWETHAddress(chainId);
-			if (!wethAddress) {
-				toast.error("WETH not supported on this network");
-				setIsOpenBorrowingDEUROModal(false);
-				return;
-			}
-
-			// Step 1: Wrap ETH to WETH
-			const wrapHash = await writeContract(WAGMI_CONFIG, {
-				address: wethAddress,
-				abi: WETH_ABI,
-				functionName: "deposit",
-				value: BigInt(collateralAmount),
-			});
-
-			const wrapToastContent = [
-				{
-					title: t("common.txs.amount"),
-					value: formatCurrency(formatUnits(BigInt(collateralAmount), 18)) + " ETH → WETH",
-				},
-				{
-					title: t("common.txs.transaction"),
-					hash: wrapHash,
-				},
-			];
-
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: wrapHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title="Wrapping ETH to WETH" rows={wrapToastContent} />,
-				},
-				success: {
-					render: <TxToast title="Successfully wrapped ETH to WETH" rows={wrapToastContent} />,
-				},
-			});
-
-			// Step 2: Approve WETH for spending
-			const approveHash = await writeContract(WAGMI_CONFIG, {
-				address: wethAddress,
-				abi: erc20Abi,
-				functionName: "approve",
-				args: [ADDRESS[chainId].mintingHubGateway, BigInt(collateralAmount)],
-			});
-
-			const approveToastContent = [
-				{
-					title: t("common.txs.amount"),
-					value: formatCurrency(formatUnits(BigInt(collateralAmount), 18)) + " WETH",
-				},
-				{
-					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].mintingHubGateway),
-				},
-				{
-					title: t("common.txs.transaction"),
-					hash: approveHash,
-				},
-			];
-
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title={t("common.txs.title", { symbol: "WETH" })} rows={approveToastContent} />,
-				},
-				success: {
-					render: <TxToast title={t("common.txs.success", { symbol: "WETH" })} rows={approveToastContent} />,
-				},
-			});
-
-			// Step 3: Clone position and mint dEURO
-			let txHash = null;
-			const cloneWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].mintingHubGateway,
-				abi: MintingHubGatewayABI,
-				functionName: "clone",
-				args: [
-					selectedPosition.position,
-					BigInt(collateralAmount),
-					loanDetails.loanAmount,
-					toTimestamp(expirationDate),
+			// Check if CoinLendingGateway is available on this chain
+			if (isCoinLendingGatewayAvailable(chainId)) {
+				// Use the new 1-click solution with CoinLendingGateway
+				const { hash, positionAddress } = await lendWithCoin({
+					parentPosition: selectedPosition.position as Address,
+					collateralAmount: formatUnits(BigInt(collateralAmount), 18),
+					mintAmount: loanDetails.loanAmount,
+					expiration: toTimestamp(expirationDate),
 					frontendCode,
-				],
-			});
-			txHash = cloneWriteHash;
-
-			const toastContent = [
-				{
-					title: t("common.txs.amount"),
-					value: formatBigInt(loanDetails.loanAmount) + ` ${TOKEN_SYMBOL}`,
-				},
-				{
-					title: t("common.txs.collateral"),
-					value: formatBigInt(BigInt(collateralAmount), 18) + " ETH (via WETH)",
-				},
-				{
-					title: t("common.txs.transaction"),
-					hash: cloneWriteHash,
-				},
-			];
-
-			const receipt: TransactionReceipt = await waitForTransactionReceipt(WAGMI_CONFIG, { hash: cloneWriteHash, confirmations: 1 });
-
-			if (BigInt(liquidationPrice) !== BigInt(selectedPosition?.price)) {
-				const newPositionAddress = parseCloneEventLogs(receipt.logs);
-				const adjustPriceHash = await writeContract(WAGMI_CONFIG, {
-					address: newPositionAddress as Address,
-					abi: PositionV2ABI,
-					functionName: "adjustPrice",
-					args: [(BigInt(liquidationPrice) * 10001n) / 10000n],
+					liquidationPrice: BigInt(liquidationPrice),
+					chainId
 				});
-				txHash = adjustPriceHash;
-			}
 
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: txHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title={t("mint.txs.minting", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
-				},
-				success: {
-					render: <TxToast title={t("mint.txs.minting_success", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
-				},
-			});
+				const toastContent = [
+					{
+						title: t("common.txs.amount"),
+						value: formatBigInt(loanDetails.loanAmount) + ` ${TOKEN_SYMBOL}`,
+					},
+					{
+						title: t("common.txs.collateral"),
+						value: formatBigInt(BigInt(collateralAmount), 18) + " ETH",
+					},
+					{
+						title: t("common.txs.transaction"),
+						hash,
+					},
+				];
+
+				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash, confirmations: 1 }), {
+					pending: {
+						render: <TxToast title={t("mint.txs.minting", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
+					},
+					success: {
+						render: <TxToast title={t("mint.txs.minting_success", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
+					},
+				});
+
+				if (positionAddress) {
+					console.log("New position created:", positionAddress);
+				}
+			} else {
+				// Fallback to the old 3-transaction approach
+				const wethAddress = getWETHAddress(chainId);
+				if (!wethAddress) {
+					toast.error("WETH not supported on this network");
+					setIsOpenBorrowingDEUROModal(false);
+					return;
+				}
+
+				// Step 1: Wrap ETH to WETH
+				const wrapHash = await writeContract(WAGMI_CONFIG, {
+					address: wethAddress,
+					abi: WETH_ABI,
+					functionName: "deposit",
+					value: BigInt(collateralAmount),
+				});
+
+				const wrapToastContent = [
+					{
+						title: t("common.txs.amount"),
+						value: formatCurrency(formatUnits(BigInt(collateralAmount), 18)) + " ETH → WETH",
+					},
+					{
+						title: t("common.txs.transaction"),
+						hash: wrapHash,
+					},
+				];
+
+				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: wrapHash, confirmations: 1 }), {
+					pending: {
+						render: <TxToast title="Wrapping ETH to WETH" rows={wrapToastContent} />,
+					},
+					success: {
+						render: <TxToast title="Successfully wrapped ETH to WETH" rows={wrapToastContent} />,
+					},
+				});
+
+				// Step 2: Approve WETH for spending
+				const approveHash = await writeContract(WAGMI_CONFIG, {
+					address: wethAddress,
+					abi: erc20Abi,
+					functionName: "approve",
+					args: [ADDRESS[chainId].mintingHubGateway, BigInt(collateralAmount)],
+				});
+
+				const approveToastContent = [
+					{
+						title: t("common.txs.amount"),
+						value: formatCurrency(formatUnits(BigInt(collateralAmount), 18)) + " WETH",
+					},
+					{
+						title: t("common.txs.spender"),
+						value: shortenAddress(ADDRESS[chainId].mintingHubGateway),
+					},
+					{
+						title: t("common.txs.transaction"),
+						hash: approveHash,
+					},
+				];
+
+				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveHash, confirmations: 1 }), {
+					pending: {
+						render: <TxToast title={t("common.txs.title", { symbol: "WETH" })} rows={approveToastContent} />,
+					},
+					success: {
+						render: <TxToast title={t("common.txs.success", { symbol: "WETH" })} rows={approveToastContent} />,
+					},
+				});
+
+				// Step 3: Clone position and mint dEURO
+				let txHash = null;
+				const cloneWriteHash = await writeContract(WAGMI_CONFIG, {
+					address: ADDRESS[chainId].mintingHubGateway,
+					abi: MintingHubGatewayABI,
+					functionName: "clone",
+					args: [
+						selectedPosition.position,
+						BigInt(collateralAmount),
+						loanDetails.loanAmount,
+						toTimestamp(expirationDate),
+						frontendCode,
+					],
+				});
+				txHash = cloneWriteHash;
+
+				const toastContent = [
+					{
+						title: t("common.txs.amount"),
+						value: formatBigInt(loanDetails.loanAmount) + ` ${TOKEN_SYMBOL}`,
+					},
+					{
+						title: t("common.txs.collateral"),
+						value: formatBigInt(BigInt(collateralAmount), 18) + " ETH (via WETH)",
+					},
+					{
+						title: t("common.txs.transaction"),
+						hash: cloneWriteHash,
+					},
+				];
+
+				const receipt: TransactionReceipt = await waitForTransactionReceipt(WAGMI_CONFIG, { hash: cloneWriteHash, confirmations: 1 });
+
+				if (BigInt(liquidationPrice) !== BigInt(selectedPosition?.price)) {
+					const newPositionAddress = parseCloneEventLogs(receipt.logs);
+					const adjustPriceHash = await writeContract(WAGMI_CONFIG, {
+						address: newPositionAddress as Address,
+						abi: PositionV2ABI,
+						functionName: "adjustPrice",
+						args: [(BigInt(liquidationPrice) * 10001n) / 10000n],
+					});
+					txHash = adjustPriceHash;
+				}
+
+				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: txHash, confirmations: 1 }), {
+					pending: {
+						render: <TxToast title={t("mint.txs.minting", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
+					},
+					success: {
+						render: <TxToast title={t("mint.txs.minting_success", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
+					},
+				});
+			}
 
 			store.dispatch(fetchPositionsList());
 			setIsCloneSuccess(true);
