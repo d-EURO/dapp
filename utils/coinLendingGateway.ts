@@ -1,4 +1,4 @@
-import { Address, parseEther } from "viem";
+import { Address, parseEther, keccak256, toHex } from "viem";
 import { writeContract, waitForTransactionReceipt } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../app.config";
 
@@ -35,7 +35,7 @@ export const COIN_LENDING_GATEWAY_ABI = [
 
 // Contract addresses per chain
 export const COIN_LENDING_GATEWAY_ADDRESSES: Record<number, Address> = {
-  1: "0x0000000000000000000000000000000000000000", // TODO: Deploy and add mainnet address
+  1: "0x1da37d613fb590eed37520b72e9c6f0f6eee89d2", // Mainnet CoinLendingGateway
   137: "0x0000000000000000000000000000000000000000", // TODO: Deploy and add Polygon address
   42161: "0x0000000000000000000000000000000000000000", // TODO: Deploy and add Arbitrum address
   8453: "0x0000000000000000000000000000000000000000", // TODO: Deploy and add Base address
@@ -100,10 +100,10 @@ export async function lendWithCoin({
 
   // Extract the new position address from events
   // The PositionCreatedWithCoin event contains the position address
+  // event PositionCreatedWithCoin(address indexed owner, address indexed position, uint256 coinAmount, uint256 mintAmount, uint256 liquidationPrice)
+  const eventSignature = keccak256(toHex("PositionCreatedWithCoin(address,address,uint256,uint256,uint256)"));
   const positionCreatedEvent = receipt.logs.find(log => {
-    // Check for PositionCreatedWithCoin event signature
-    // event PositionCreatedWithCoin(address indexed owner, address indexed position, uint256 coinAmount, uint256 mintAmount, uint256 liquidationPrice)
-    return log.topics[0] === "0x..." // TODO: Add actual event signature
+    return log.topics[0] === eventSignature;
   });
 
   let positionAddress: Address | undefined;
