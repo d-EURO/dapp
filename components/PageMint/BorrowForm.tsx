@@ -383,7 +383,7 @@ export default function PositionCreate({}) {
 			setIsCloneSuccess(true);
 			await refetchBalances();
 		} catch (error) {
-			toast.error(renderErrorTxToast(error)); // TODO: add error translation
+			toast.error(renderErrorTxToast(error, t));
 			setIsOpenBorrowingDEUROModal(false);
 		} finally {
 			setIsCloneLoading(false);
@@ -451,7 +451,7 @@ export default function PositionCreate({}) {
 				},
 			});
 		} catch (error) {
-			toast.error(renderErrorTxToast(error)); // TODO: add error translation
+			toast.error(renderErrorTxToast(error, t));
 		} finally {
 			setIsApproving(false);
 			refetchBalances();

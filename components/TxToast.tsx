@@ -2,12 +2,14 @@ import Link from "next/link";
 import { shortenHash, transactionLink } from "@utils";
 import { Hash } from "viem";
 import { WAGMI_CHAIN } from "../app.config";
+import { useTranslation } from "react-i18next";
 
-export const renderErrorToast = (error: string | string[]) => {
+export const renderErrorToast = (error: string | string[], t?: any) => {
 	error = typeof error == "string" ? [error] : error;
+	const title = t ? t("common.txs.failed") : "Transaction Failed";
 	return (
 		<TxToast
-			title="Transaction Failed!"
+			title={title}
 			rows={error.map((e) => {
 				return { title: e };
 			})}
@@ -15,15 +17,16 @@ export const renderErrorToast = (error: string | string[]) => {
 	);
 };
 
-export const renderErrorTxToast = (error: any) => {
+export const renderErrorTxToast = (error: any, t?: any) => {
 	const errorLines: string[] = error.message.split("\n");
-	return renderErrorTxStackToast(error, 2);
+	return renderErrorTxStackToast(error, 2, t);
 };
-export const renderErrorTxStackToast = (error: any, limit: number) => {
+export const renderErrorTxStackToast = (error: any, limit: number, t?: any) => {
 	const errorLines: string[] = error.message.split("\n");
+	const title = t ? t("common.txs.failed") : "Transaction Failed";
 	return (
 		<TxToast
-			title="Transaction Failed!"
+			title={title}
 			rows={errorLines.slice(0, limit == 0 ? errorLines.length : limit).map((line) => {
 				return {
 					title: "",
