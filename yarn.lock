@@ -296,11 +296,12 @@
     ts-node "^10.9.1"
     typescript "^5.2.2"
 
-"@deuro/eurocoin@^1.0.14":
-  version "1.0.14"
-  resolved "https://registry.yarnpkg.com/@deuro/eurocoin/-/eurocoin-1.0.14.tgz#ccd1d6e659ea607106bef959fd999ddf62870f56"
-  integrity sha512-x6Yw2WLMHlVsbL38jMENByTO7MWu5x/TzlxcwpJvB0DyHzCwEK1oYI3r4+hsFnuCe+NJJN2g1GFWyYJOxW0KPA==
+"@deuro/eurocoin@^1.0.13", "@deuro/eurocoin@^1.0.15":
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/@deuro/eurocoin/-/eurocoin-1.0.15.tgz#b135928d6457707537736ae1cd8c0df6310096e5"
+  integrity sha512-oGwKnYbyQbPpDtbEu1lImph2n8GdxThXkWYecBNL0n7pDw9OkwL1Ytjxh2eGdl5FCn2x5bJAjzltDw2sWTJLNw==
   dependencies:
+    "@deuro/eurocoin" "^1.0.13"
     "@flashbots/ethers-provider-bundle" "^1.0.0"
     hardhat-abi-exporter "^2.10.0"
     hardhat-contract-sizer "^2.5.1"
