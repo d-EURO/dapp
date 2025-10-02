@@ -668,7 +668,7 @@ export default function PositionCreate({}) {
 			setIsCloneSuccess(true);
 			await refetchBalances();
 		} catch (error) {
-			toast.error(renderErrorTxToast(error));
+			toast.error(renderErrorTxToast(error, t));
 			setIsOpenBorrowingDEUROModal(false);
 		} finally {
 			setIsCloneLoading(false);
