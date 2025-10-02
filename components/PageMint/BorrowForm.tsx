@@ -18,7 +18,7 @@ import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalan
 import { RootState, store } from "../../redux/redux.store";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { useTranslation } from "next-i18next";
-import { ADDRESS, MintingHubGatewayABI, PositionV2ABI } from "@deuro/eurocoin";
+import { ADDRESS, MintingHubGatewayABI, PositionV2ABI, CoinLendingGatewayABI } from "@deuro/eurocoin";
 import { useAccount, useBlock, useChainId } from "wagmi";
 import { WAGMI_CONFIG } from "../../app.config";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -36,7 +36,6 @@ import { MaxButton } from "@components/Input/MaxButton";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { WETH_ABI, getWETHAddress } from "../../utils/wethHelpers";
-import { lendWithCoin, isCoinLendingGatewayAvailable } from "../../utils/coinLendingGateway";
 
 export default function PositionCreate({}) {
 	const [selectedCollateral, setSelectedCollateral] = useState<TokenBalance | null | undefined>(null);
@@ -462,21 +461,37 @@ export default function PositionCreate({}) {
 		try {
 			if (!selectedPosition || !loanDetails || !expirationDate) return;
 
+			// Validate inputs
+			if (BigInt(collateralAmount) <= 0n) {
+				toast.error("Collateral amount must be greater than 0");
+				return;
+			}
+
+			if (userBalance < BigInt(collateralAmount)) {
+				toast.error("Insufficient ETH balance");
+				return;
+			}
+
 			setIsOpenBorrowingDEUROModal(true);
 			setIsCloneLoading(true);
 			setIsCloneSuccess(false);
 
 			// Check if CoinLendingGateway is available on this chain
-			if (isCoinLendingGatewayAvailable(chainId)) {
-				// Use the new 1-click solution with CoinLendingGateway
-				const { hash, positionAddress } = await lendWithCoin({
-					parentPosition: selectedPosition.position as Address,
-					collateralAmount: formatUnits(BigInt(collateralAmount), 18),
-					mintAmount: loanDetails.loanAmount,
-					expiration: toTimestamp(expirationDate),
-					frontendCode,
-					liquidationPrice: BigInt(liquidationPrice),
-					chainId
+			const gatewayAddress = ADDRESS[chainId]?.coinLendingGateway;
+			if (gatewayAddress && gatewayAddress !== zeroAddress) {
+				// Use the 1-click solution with CoinLendingGateway
+				const hash = await writeContract(WAGMI_CONFIG, {
+					address: gatewayAddress,
+					abi: CoinLendingGatewayABI,
+					functionName: "lendWithCoin",
+					args: [
+						selectedPosition.position as Address,
+						loanDetails.loanAmount,
+						toTimestamp(expirationDate),
+						frontendCode,
+						BigInt(liquidationPrice)
+					],
+					value: BigInt(collateralAmount)
 				});
 
 				const toastContent = [
@@ -494,7 +509,7 @@ export default function PositionCreate({}) {
 					},
 				];
 
-				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash, confirmations: 1 }), {
+				const receipt = await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash, confirmations: 1 }), {
 					pending: {
 						render: <TxToast title={t("mint.txs.minting", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
 					},
@@ -503,8 +518,28 @@ export default function PositionCreate({}) {
 					},
 				});
 
-				if (positionAddress) {
-					console.log("New position created:", positionAddress);
+				// Extract position address from PositionCreatedWithCoin event
+				try {
+					for (const log of receipt.logs) {
+						try {
+							const decodedLog = decodeEventLog({
+								abi: CoinLendingGatewayABI,
+								data: log.data,
+								topics: log.topics,
+							});
+
+							if (decodedLog.eventName === "PositionCreatedWithCoin") {
+								const positionAddress = (decodedLog.args as any).position as Address;
+								console.log("New position created via CoinLendingGateway:", positionAddress);
+								break;
+							}
+						} catch (e) {
+							// Skip logs that don't match our ABI
+							continue;
+						}
+					}
+				} catch (error) {
+					console.warn("Could not extract position address from event logs:", error);
 				}
 			} else {
 				// Fallback to the old 3-transaction approach
