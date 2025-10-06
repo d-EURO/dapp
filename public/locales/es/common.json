@@ -66,7 +66,8 @@
             "collateral": "Colateral:",
             "price": "Precio:",
             "receive": "Recibir:",
-            "shares": "Acciones:"
+            "shares": "Acciones:",
+            "failed": "Transacción fallida"
         },
         "error": {
             "insufficient_balance": "No hay suficientes {{symbol}} en su monedero.",
