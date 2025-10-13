@@ -197,10 +197,6 @@ export default function Swap() {
 			setError(t("swap.error.insufficient_bridge", { symbol: toSymbol }));
 		} else if (isMinting && amount * backwardCoefficient > fromTokenData.remaining * forwardCoefficient) {
 			setError(t("swap.error.exceeds_limit"));
-		} else if (isVaultDeposit && amount === 0n) {
-			setError(t("swap.error.amount_required"));
-		} else if (isVaultRedeem && amount === 0n) {
-			setError(t("swap.error.amount_required"));
 		} else {
 			setError("");
 		}
