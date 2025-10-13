@@ -2,7 +2,7 @@ import { useAccount, useReadContracts } from "wagmi";
 import { decodeBigIntCall } from "@utils";
 import { Address, erc20Abi } from "viem";
 import { WAGMI_CHAIN } from "../app.config";
-import { ADDRESS, StablecoinBridgeABI } from "@deuro/eurocoin";
+import { ADDRESS, StablecoinBridgeABI, SavingsVaultDEUROABI } from "@deuro/eurocoin";
 
 const getTokenContractBasics = (chainId: number, address: Address, account: Address, bridgeAddress: Address) => {
 	return [
@@ -164,10 +164,57 @@ export const useSwapStats = () => {
 				functionName: "allowance",
 				args: [account, ADDRESS[chainId].bridgeEURA],
 			},
+			{
+				chainId,
+				address: ADDRESS[chainId].decentralizedEURO,
+				abi: erc20Abi,
+				functionName: "allowance",
+				args: [account, ADDRESS[chainId].savingsVaultDEURO],
+			},
 			...getTokenContractBasics(chainId, ADDRESS[chainId].eurr, account, ADDRESS[chainId].bridgeEURR),
 			...getTokenContractBasics(chainId, ADDRESS[chainId].europ, account, ADDRESS[chainId].bridgeEUROP),
 			...getTokenContractBasics(chainId, ADDRESS[chainId].euri, account, ADDRESS[chainId].bridgeEURI),
 			...getTokenContractBasics(chainId, ADDRESS[chainId].eure, account, ADDRESS[chainId].bridgeEURE),
+
+			// svdEURO Vault Calls
+			{
+				chainId,
+				address: ADDRESS[chainId].savingsVaultDEURO,
+				abi: erc20Abi,
+				functionName: "balanceOf",
+				args: [account],
+			},
+			{
+				chainId,
+				address: ADDRESS[chainId].savingsVaultDEURO,
+				abi: erc20Abi,
+				functionName: "symbol",
+			},
+			{
+				chainId,
+				address: ADDRESS[chainId].savingsVaultDEURO,
+				abi: erc20Abi,
+				functionName: "allowance",
+				args: [account, ADDRESS[chainId].savingsVaultDEURO],
+			},
+			{
+				chainId,
+				address: ADDRESS[chainId].savingsVaultDEURO,
+				abi: erc20Abi,
+				functionName: "decimals",
+			},
+			{
+				chainId,
+				address: ADDRESS[chainId].savingsVaultDEURO,
+				abi: SavingsVaultDEUROABI,
+				functionName: "totalAssets",
+			},
+			{
+				chainId,
+				address: ADDRESS[chainId].savingsVaultDEURO,
+				abi: SavingsVaultDEUROABI,
+				functionName: "totalSupply",
+			},
 		],
 	});
 
@@ -215,32 +262,48 @@ export const useSwapStats = () => {
 			EURI: data ? decodeBigIntCall(data[44]) : BigInt(0),
 			EURE: data ? decodeBigIntCall(data[45]) : BigInt(0),
 			EURA: data ? decodeBigIntCall(data[46]) : BigInt(0),
+			svdEURO: data ? decodeBigIntCall(data[47]) : BigInt(0),
 		},
 		contractAddress: ADDRESS[chainId].decentralizedEURO,
 	};
 
 	const eurr = {
-		...parseStablecoinStats(data, 47),
+		...parseStablecoinStats(data, 48),
 		contractAddress: ADDRESS[chainId].eurr,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEURR,
 	};
 
 	const europ = {
-		...parseStablecoinStats(data, 54),
+		...parseStablecoinStats(data, 55),
 		contractAddress: ADDRESS[chainId].europ,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEUROP,
 	};
 
 	const euri = {
-		...parseStablecoinStats(data, 61),
+		...parseStablecoinStats(data, 62),
 		contractAddress: ADDRESS[chainId].euri,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEURI,
 	};
 
 	const eure = {
-		...parseStablecoinStats(data, 68),
+		...parseStablecoinStats(data, 69),
 		contractAddress: ADDRESS[chainId].eure,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEURE,
+	};
+
+	const svdEURO = {
+		userBal: data ? decodeBigIntCall(data[76]) : BigInt(0),
+		symbol: data ? String(data[77].result) : "",
+		userAllowance: data ? decodeBigIntCall(data[78]) : BigInt(0),
+		decimals: data ? decodeBigIntCall(data[79]) : BigInt(0),
+		totalAssets: data ? decodeBigIntCall(data[80]) : BigInt(0),
+		totalSupply: data ? decodeBigIntCall(data[81]) : BigInt(0),
+		contractAddress: ADDRESS[chainId].savingsVaultDEURO,
+		contractBridgeAddress: ADDRESS[chainId].savingsVaultDEURO, // Vault acts as its own "bridge"
+		bridgeBal: BigInt(0),
+		limit: BigInt(0),
+		minted: BigInt(0),
+		remaining: BigInt(0),
 	};
 
 	return {
@@ -256,6 +319,7 @@ export const useSwapStats = () => {
 		europ,
 		euri,
 		eure,
+		svdEURO,
 		refetch,
 	};
 };

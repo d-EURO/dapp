@@ -10,7 +10,13 @@ interface Props {
 
 export default function TokenLogo({ currency, size = 8, chain }: Props) {
 	const [imgExist, setImgExist] = useState(true);
-	const [src, setSrc] = useState(`/coin/${currency?.toLowerCase()}.svg`);
+
+	// Map svdEURO to use dEURO logo
+	const getCurrencyForLogo = (curr: string) => {
+		return curr?.toLowerCase() === 'svdeuro' ? 'deuro' : curr?.toLowerCase();
+	};
+
+	const [src, setSrc] = useState(`/coin/${getCurrencyForLogo(currency)}.svg`);
 	const onImageError = (e: any) => {
 		const src = e.target.src;
 		if (src.includes(".svg")) {
@@ -23,7 +29,7 @@ export default function TokenLogo({ currency, size = 8, chain }: Props) {
 	};
 
 	useEffect(() => {
-		setSrc(`/coin/${currency?.toLowerCase()}.svg`);
+		setSrc(`/coin/${getCurrencyForLogo(currency)}.svg`);
 		setImgExist(true);
 	}, [currency]);
 
