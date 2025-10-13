@@ -494,11 +494,14 @@ export default function Swap() {
 		// Formula: shares = (assets * totalSupply) / totalAssets
 		const totalAssets = swapStats.svdEURO.totalAssets || 0n;
 		const totalSupply = swapStats.svdEURO.totalSupply || 0n;
-		if (totalAssets > 0n && amount > 0n) {
+		// If vault is empty or has negligible assets, use 1:1 ratio
+		if (totalSupply === 0n || totalAssets < 1000000000000000n) {
+			// First deposit or empty vault: 1:1 ratio
+			rebasedOutputAmount = amount;
+		} else if (amount > 0n) {
 			rebasedOutputAmount = (amount * totalSupply) / totalAssets;
 		} else {
-			// First deposit: 1:1 ratio
-			rebasedOutputAmount = amount;
+			rebasedOutputAmount = 0n;
 		}
 	} else {
 		// Regular bridge operations: simple decimal conversion
