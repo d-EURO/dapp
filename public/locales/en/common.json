@@ -84,8 +84,7 @@
         "vault_assets_approx": "dEURO (amount varies by price)",
         "error": {
             "insufficient_bridge": "Not enough {{symbol}} available to swap.",
-            "exceeds_limit": "Amount exceeds the swap limit.",
-            "amount_required": "Please enter an amount."
+            "exceeds_limit": "Amount exceeds the swap limit."
         },
         "swap_tx": {
             "amount_from": "{{symbol}} Amount:",

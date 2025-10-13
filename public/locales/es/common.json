@@ -84,8 +84,7 @@
         "vault_assets_approx": "dEURO (la cantidad varía según el precio)",
         "error": {
             "insufficient_bridge": "Fondos {{symbol}} insuficientes para el intercambio.",
-            "exceeds_limit": "La cantidad excede el límite de intercambio.",
-            "amount_required": "Por favor ingrese una cantidad."
+            "exceeds_limit": "La cantidad excede el límite de intercambio."
         },
         "swap_tx": {
             "amount_from": "Cantidad {{symbol}} :",
