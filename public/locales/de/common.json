@@ -80,6 +80,8 @@
         "placeholder": "Tauschbetrag",
         "swap": "Tauschen",
         "select_stablecoin": "Besicherungsasset auswählen",
+        "vault_shares_approx": "Vault-Anteile (Betrag variiert je nach Preis)",
+        "vault_assets_approx": "dEURO (Betrag variiert je nach Preis)",
         "error": {
             "insufficient_bridge": "Nicht genügend {{symbol}} zum Tauschen verfügbar.",
             "exceeds_limit": "Betrag überschreitet das Tauschlimit."

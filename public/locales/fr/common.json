@@ -79,6 +79,8 @@
         "placeholder": "Montant à échanger",
         "swap": "Échanger",
         "select_stablecoin": "Sélectionner un actif",
+        "vault_shares_approx": "Parts de Vault (le montant varie selon le prix)",
+        "vault_assets_approx": "dEURO (le montant varie selon le prix)",
         "error": {
             "insufficient_bridge": "Quantité insuffisante de {{symbol}} disponible pour l'échange.",
             "exceeds_limit": "Montant dépassant la limite d'échange."

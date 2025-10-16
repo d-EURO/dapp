@@ -80,6 +80,8 @@
         "placeholder": "Swap Amount",
         "swap": "Swap",
         "select_stablecoin": "Select Asset",
+        "vault_shares_approx": "Vault shares (amount varies by price)",
+        "vault_assets_approx": "dEURO (amount varies by price)",
         "error": {
             "insufficient_bridge": "Not enough {{symbol}} available to swap.",
             "exceeds_limit": "Amount exceeds the swap limit."
