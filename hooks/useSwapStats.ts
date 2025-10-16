@@ -1,6 +1,6 @@
 import { useAccount, useReadContracts } from "wagmi";
 import { decodeBigIntCall } from "@utils";
-import { Address, erc20Abi } from "viem";
+import { Address, erc20Abi, maxUint256 } from "viem";
 import { WAGMI_CHAIN } from "../app.config";
 import { ADDRESS, StablecoinBridgeABI, SavingsVaultDEUROABI } from "@deuro/eurocoin";
 
@@ -194,13 +194,6 @@ export const useSwapStats = () => {
 				chainId,
 				address: ADDRESS[chainId].savingsVaultDEURO,
 				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].savingsVaultDEURO],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].savingsVaultDEURO,
-				abi: erc20Abi,
 				functionName: "decimals",
 			},
 			{
@@ -294,10 +287,10 @@ export const useSwapStats = () => {
 	const svdEURO = {
 		userBal: data ? decodeBigIntCall(data[76]) : BigInt(0),
 		symbol: data ? String(data[77].result) : "",
-		userAllowance: data ? decodeBigIntCall(data[78]) : BigInt(0),
-		decimals: data ? decodeBigIntCall(data[79]) : BigInt(0),
-		totalAssets: data ? decodeBigIntCall(data[80]) : BigInt(0),
-		totalSupply: data ? decodeBigIntCall(data[81]) : BigInt(0),
+		userAllowance: maxUint256, // No approval needed for redeem when owner == msg.sender
+		decimals: data ? decodeBigIntCall(data[78]) : BigInt(0),
+		totalAssets: data ? decodeBigIntCall(data[79]) : BigInt(0),
+		totalSupply: data ? decodeBigIntCall(data[80]) : BigInt(0),
 		contractAddress: ADDRESS[chainId].savingsVaultDEURO,
 		contractBridgeAddress: ADDRESS[chainId].savingsVaultDEURO, // Vault acts as its own "bridge"
 		bridgeBal: BigInt(0),

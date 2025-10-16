@@ -14,7 +14,7 @@ import { WAGMI_CONFIG } from "../app.config";
 import AppCard from "@components/AppCard";
 import { StablecoinBridgeABI, SavingsVaultDEUROABI, ADDRESS } from "@deuro/eurocoin";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { useChainId } from "wagmi";
+import { useChainId, useReadContract } from "wagmi";
 import { useTranslation } from "next-i18next";
 import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutlined";
 import { InputTitle } from "@components/Input/InputTitle";
@@ -68,6 +68,37 @@ export default function Swap() {
 	const { t } = useTranslation();
 	const chainId = useChainId();
 	const { address } = useAccount();
+
+	// Dynamic preview calls for vault operations (ERC-4626 standard)
+	const { data: previewShares } = useReadContract({
+		address: ADDRESS[chainId]?.savingsVaultDEURO,
+		abi: SavingsVaultDEUROABI,
+		functionName: 'previewDeposit',
+		args: [amount],
+		query: {
+			enabled: Boolean(
+				amount > 0n &&
+				fromSymbol === TOKEN_SYMBOL &&
+				toSymbol === "svdEURO" &&
+				ADDRESS[chainId]?.savingsVaultDEURO
+			),
+		},
+	});
+
+	const { data: previewAssets } = useReadContract({
+		address: ADDRESS[chainId]?.savingsVaultDEURO,
+		abi: SavingsVaultDEUROABI,
+		functionName: 'previewRedeem',
+		args: [amount],
+		query: {
+			enabled: Boolean(
+				amount > 0n &&
+				fromSymbol === "svdEURO" &&
+				toSymbol === TOKEN_SYMBOL &&
+				ADDRESS[chainId]?.savingsVaultDEURO
+			),
+		},
+	});
 
 	const getSelectedStablecoinSymbol = useCallback(() => {
 		return fromSymbol === TOKEN_SYMBOL ? toSymbol : fromSymbol;
@@ -365,7 +396,6 @@ export default function Swap() {
 			});
 
 			const fromDecimals = getTokenMetaBySymbol(fromSymbol).decimals;
-			const toDecimals = getTokenMetaBySymbol(toSymbol).decimals;
 
 			const toastContent = [
 				{
@@ -415,7 +445,6 @@ export default function Swap() {
 			});
 
 			const fromDecimals = getTokenMetaBySymbol(fromSymbol).decimals;
-			const toDecimals = getTokenMetaBySymbol(toSymbol).decimals;
 
 			const toastContent = [
 				{
@@ -477,34 +506,37 @@ export default function Swap() {
 	const isVaultOperation = (fromSymbol === "svdEURO" || toSymbol === "svdEURO");
 	const limit = fromSymbol === TOKEN_SYMBOL ? stablecoinMeta.bridgeBal : stablecoinMeta.remaining;
 
-	// Calculate output amount based on operation type
+	// Calculate output amount: uses ERC-4626 preview functions for vault, simple decimals for bridge
 	let rebasedOutputAmount: bigint;
 	if (fromSymbol === "svdEURO" && toSymbol === TOKEN_SYMBOL) {
-		// Redeeming svdEURO for dEURO: use vault exchange rate
-		// Formula: assets = (shares * totalAssets) / totalSupply
-		const totalAssets = swapStats.svdEURO.totalAssets || 0n;
-		const totalSupply = swapStats.svdEURO.totalSupply || 0n;
-		if (totalSupply > 0n && amount > 0n) {
-			rebasedOutputAmount = (amount * totalAssets) / totalSupply;
+		// Vault redeem: use on-chain preview or fallback calculation
+		if (previewAssets !== undefined) {
+			rebasedOutputAmount = previewAssets as bigint;
 		} else {
-			rebasedOutputAmount = 0n;
+			const totalAssets = swapStats.svdEURO.totalAssets || 0n;
+			const totalSupply = swapStats.svdEURO.totalSupply || 0n;
+			if (totalSupply > 0n && amount > 0n) {
+				rebasedOutputAmount = (amount * totalAssets) / totalSupply;
+			} else {
+				rebasedOutputAmount = 0n;
+			}
 		}
 	} else if (fromSymbol === TOKEN_SYMBOL && toSymbol === "svdEURO") {
-		// Depositing dEURO for svdEURO: use vault exchange rate
-		// Formula: shares = (assets * totalSupply) / totalAssets
-		const totalAssets = swapStats.svdEURO.totalAssets || 0n;
-		const totalSupply = swapStats.svdEURO.totalSupply || 0n;
-		// If vault is empty or has negligible assets, use 1:1 ratio
-		if (totalSupply === 0n || totalAssets < 1000000000000000n) {
-			// First deposit or empty vault: 1:1 ratio
-			rebasedOutputAmount = amount;
-		} else if (amount > 0n) {
-			rebasedOutputAmount = (amount * totalSupply) / totalAssets;
+		// Vault deposit: use on-chain preview or fallback calculation
+		if (previewShares !== undefined) {
+			rebasedOutputAmount = previewShares as bigint;
 		} else {
-			rebasedOutputAmount = 0n;
+			const totalAssets = swapStats.svdEURO.totalAssets || 0n;
+			const totalSupply = swapStats.svdEURO.totalSupply || 0n;
+			if (totalSupply === 0n) {
+				rebasedOutputAmount = amount; // First deposit: 1:1 ratio
+			} else if (amount > 0n && totalAssets > 0n) {
+				rebasedOutputAmount = (amount * totalSupply) / totalAssets;
+			} else {
+				rebasedOutputAmount = 0n;
+			}
 		}
 	} else {
-		// Regular bridge operations: simple decimal conversion
 		rebasedOutputAmount = rebaseDecimals(amount, fromTokenMeta.decimals, toTokenMeta.decimals);
 	}
 
