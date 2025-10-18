@@ -42,6 +42,7 @@ export default function EquityNativePoolShareDetailsCard() {
 	const profit = earnings?.profit ?? "-";
 	const loss = earnings?.loss ?? "-";
 	const unrealizedProfit = earnings?.unrealizedProfit ?? "-";
+	const directTransfers = earnings?.directTransfers ?? "-";
 	const { trades } = useTradeQuery();
 	const { t } = useTranslation();
 	const startTrades = getStartTimestampByTimeframe(timeframe);
@@ -200,10 +201,9 @@ export default function EquityNativePoolShareDetailsCard() {
 				<div className="flex flex-row justify-between">
 					<div className="text-sm font-medium leading-relaxed">{t("equity.total_income")}</div>
 					<div className="text-sm font-medium leading-tight ">
-						{typeof profit === "number" && typeof unrealizedProfit === "number" && typeof loss === "number"
-							? formatCurrency(profit + unrealizedProfit - loss + 300000, 2, 2) + ` ${TOKEN_SYMBOL}`
+						{typeof profit === "number" && typeof unrealizedProfit === "number" && typeof loss === "number" && typeof directTransfers === "number"
+							? formatCurrency(profit + unrealizedProfit - loss + directTransfers, 2, 2) + ` ${TOKEN_SYMBOL}`
 							: "-"}{" "}
-						{/* 300k was sent directly to Equity contract */}
 					</div>
 				</div>
 			</div>
