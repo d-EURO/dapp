@@ -1,4 +1,4 @@
-name: dEURO dApp DEV CI/CD
+name: JuiceDollar dApp DEV CI/CD
 
 on:
   push:
@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_TAGS: dfxswiss/deuro-dapp:beta
+  DOCKER_TAGS: dfxswiss/juicedollar-dapp:beta
   AZURE_RESOURCE_GROUP: rg-dfx-api-dev
-  AZURE_CONTAINER_APP: ca-dfx-ded-dev
+  AZURE_CONTAINER_APP: ca-dfx-jdtd-dev
   DEPLOY_INFO: ${{ github.ref_name }}-${{ github.sha }}
 
 jobs:
