@@ -4,7 +4,7 @@ import {
 	ApiPriceERC20Mapping,
 	ApiPriceMapping,
 	PriceQueryCurrencies,
-} from "@deuro/api";
+} from "@juicedollar/api";
 
 // --------------------------------------------------------------------------------
 export type PricesState = {

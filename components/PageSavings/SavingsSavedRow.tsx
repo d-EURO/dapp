@@ -1,6 +1,6 @@
 import { AddressLabelSimple, TxLabelSimple } from "@components/AddressLabel";
 import TableRow from "@components/Table/TableRow";
-import { SavingsSavedQuery } from "@deuro/api";
+import { SavingsSavedQuery } from "@juicedollar/api";
 import { formatCurrency, TOKEN_SYMBOL } from "@utils";
 import { formatUnits, Hash } from "viem";
 

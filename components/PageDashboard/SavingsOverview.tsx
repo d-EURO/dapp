@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
-import { ADDRESS, ERC20ABI } from "@deuro/eurocoin";
+import { ADDRESS, JuiceDollarABI } from "@juicedollar/jusd";
 import { useChainId, useReadContract } from "wagmi";
 import { formatCurrency, shortenAddress } from "@utils";
 import { formatUnits } from "@ethersproject/units";
@@ -32,8 +32,8 @@ const SavingsOverview = () => {
 	const { t } = useTranslation();
 
 	const { data: totalSavings = 0n } = useReadContract({
-		address: ADDRESS[chainId].decentralizedEURO,
-		abi: ERC20ABI,
+		address: ADDRESS[chainId].juiceDollar,
+		abi: JuiceDollarABI,
 		functionName: "balanceOf",
 		args: [ADDRESS[chainId].savingsGateway],
 	});

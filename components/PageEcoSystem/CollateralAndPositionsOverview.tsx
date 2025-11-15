@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
-import { PositionQuery, PriceQueryObjectArray } from "@deuro/api";
+import { PositionQuery, PriceQueryObjectArray } from "@juicedollar/api";
 import TokenLogo from "../TokenLogo";
 import { formatCurrency } from "../../utils/format";
 import { Address } from "viem/accounts";
@@ -13,7 +13,7 @@ export function calcOverviewStats(listByCollateral: PositionQuery[][], prices: P
 		if (!original) continue;
 		
 		const collateral = prices[original.collateral.toLowerCase() as Address];
-		const mint = prices[original.deuro.toLowerCase() as Address];
+		const mint = prices[original.stablecoinAddress.toLowerCase() as Address];
 
 		if (!collateral || !mint) continue;
 
@@ -24,8 +24,8 @@ export function calcOverviewStats(listByCollateral: PositionQuery[][], prices: P
 		for (let pos of positions) {
 			balance += parseInt(pos.collateralBalance);
 			if (pos.isOriginal) {
-				limitForClones += parseInt(pos.limitForClones) / 10 ** pos.deuroDecimals;
-				availableForClones += parseInt(pos.availableForClones) / 10 ** pos.deuroDecimals;
+				limitForClones += parseInt(pos.limitForClones) / 10 ** pos.stablecoinDecimals;
+				availableForClones += parseInt(pos.availableForClones) / 10 ** pos.stablecoinDecimals;
 			}
 		}
 

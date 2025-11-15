@@ -1,4 +1,4 @@
-import { MinterQuery } from "@deuro/api";
+import { MinterQuery } from "@juicedollar/api";
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
@@ -9,7 +9,7 @@ import { useAccount } from "wagmi";
 import Button from "@components/Button";
 import { Address } from "viem";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
-import { ADDRESS, DecentralizedEUROABI } from "@deuro/eurocoin";
+import { ADDRESS, JuiceDollarABI } from "@juicedollar/jusd";
 
 interface Props {
 	minter: MinterQuery;
@@ -34,8 +34,8 @@ export default function GovernanceMintersAction({ minter, disabled }: Props) {
 			setVetoing(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: DecentralizedEUROABI,
+				address: ADDRESS[chainId].juiceDollar,
+				abi: JuiceDollarABI,
 				functionName: "denyMinter",
 				args: [m, h, msg],
 			});

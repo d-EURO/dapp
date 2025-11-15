@@ -13,7 +13,7 @@ import { NormalInputOutlined } from "@components/Input/NormalInputOutlined";
 import Button from "@components/Button";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { useAccount, useChainId } from "wagmi";
-import { ADDRESS, SavingsGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, SavingsGatewayABI } from "@juicedollar/jusd";
 import { useSavingsInterest } from "../../hooks/useSavingsInterest";
 import { useTranslation } from "next-i18next";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
@@ -33,18 +33,18 @@ export default function SavingsInteractionSection() {
 	const account = useAccount();
 	const chainId = useChainId();
 
-	const dEuroAddress = ADDRESS[chainId].decentralizedEURO;
+	const juiceDollarAddress = ADDRESS[chainId].juiceDollar;
 	const savingsGatewayAddress = ADDRESS[chainId].savingsGateway;
 	const { balancesByAddress, refetchBalances } = useWalletERC20Balances([
 		{
-			address: dEuroAddress,
+			address: juiceDollarAddress,
 			symbol: TOKEN_SYMBOL,
 			name: TOKEN_SYMBOL,
 			allowance: [savingsGatewayAddress],
 		},
 	]);
 
-	const deuroWalletDetails = balancesByAddress?.[dEuroAddress];
+	const deuroWalletDetails = balancesByAddress?.[juiceDollarAddress];
 	const userBalance = deuroWalletDetails?.balanceOf || 0n;
 	const userAllowance = deuroWalletDetails?.allowance?.[savingsGatewayAddress] || 0n;
 
@@ -53,7 +53,7 @@ export default function SavingsInteractionSection() {
 			setIsTxOnGoing(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: dEuroAddress,
+				address: juiceDollarAddress,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [ADDRESS[chainId].savingsGateway, maxUint256],

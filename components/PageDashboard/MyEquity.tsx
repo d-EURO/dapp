@@ -2,10 +2,10 @@ import TokenLogo from "@components/TokenLogo";
 import { useTranslation } from "next-i18next";
 import { HeaderCell, LinkTitle, NoDataRow } from "./SectionTable";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
-import { formatCurrency, NATIVE_POOL_SHARE_TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL } from "@utils";
-import { ADDRESS, EquityABI } from "@deuro/eurocoin";
+import { formatCurrency, POOL_SHARE_TOKEN_SYMBOL } from "@utils";
+import { ADDRESS, EquityABI } from "@juicedollar/jusd";
 import { useChainId, useReadContract } from "wagmi";
-import { formatUnits, zeroAddress } from "viem";
+import { formatUnits } from "viem";
 import { useRouter } from "next/router";
 import { getPublicViewAddress } from "../../utils/url";
 
@@ -39,18 +39,16 @@ export const MyEquity = () => {
 	const router = useRouter();
 	const overwrite = getPublicViewAddress(router);
 
-	const { balancesByAddress } = useWalletERC20Balances([
-		{
-			name: NATIVE_POOL_SHARE_TOKEN_SYMBOL,
-			symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL,
-			address: ADDRESS[chainId].equity,
-		},
-		{
-			name: POOL_SHARE_TOKEN_SYMBOL,
-			symbol: POOL_SHARE_TOKEN_SYMBOL,
-			address: ADDRESS[chainId].DEPSwrapper,
-		},
-	], { accountAddress: overwrite as `0x${string}` });
+	const { balancesByAddress } = useWalletERC20Balances(
+		[
+			{
+				name: POOL_SHARE_TOKEN_SYMBOL,
+				symbol: POOL_SHARE_TOKEN_SYMBOL,
+				address: ADDRESS[chainId].equity,
+			},
+		],
+		{ accountAddress: overwrite as `0x${string}` }
+	);
 
 	const { data: deuroNative = 0n } = useReadContract({
 		address: ADDRESS[chainId].equity,
@@ -63,19 +61,14 @@ export const MyEquity = () => {
 		address: ADDRESS[chainId].equity,
 		abi: EquityABI,
 		functionName: "calculateProceeds",
-		args: [balancesByAddress[ADDRESS[chainId].DEPSwrapper]?.balanceOf || 0n],
+		args: [balancesByAddress[ADDRESS[chainId].equity]?.balanceOf || 0n],
 	});
 
 	const equityData = [
 		{
-			symbol: "nDEPS",
+			symbol: POOL_SHARE_TOKEN_SYMBOL,
 			currentInvestment: formatCurrency(formatUnits(balancesByAddress[ADDRESS[chainId].equity]?.balanceOf || 0n, 18)) as string,
 			amount: formatCurrency(formatUnits(deuroNative, 18)) as string,
-		},
-		{
-			symbol: "DEPS",
-			currentInvestment: formatCurrency(formatUnits(balancesByAddress[ADDRESS[chainId].DEPSwrapper]?.balanceOf || 0n, 18)) as string,
-			amount: formatCurrency(formatUnits(deuroWrapped, 18)) as string,
 		},
 	];
 

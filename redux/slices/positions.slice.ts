@@ -1,4 +1,4 @@
-import { PositionQuery, ApiPositionsListing, ApiPositionsOwners, ApiPositionsMapping } from "@deuro/api";
+import { PositionQuery, ApiPositionsListing, ApiPositionsOwners, ApiPositionsMapping } from "@juicedollar/api";
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
 import { uniqueValues } from "@utils";
 import { DEURO_API_CLIENT } from "../../app.config";

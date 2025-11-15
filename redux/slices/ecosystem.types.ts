@@ -1,10 +1,10 @@
 import {
 	ApiEcosystemCollateralPositions,
 	ApiEcosystemCollateralStats,
-	ApiEcosystemDepsInfo,
+	ApiEcosystemPoolSharesInfo,
 	ApiEcosystemStablecoinInfo,
 	ApiMinterListing,
-} from "@deuro/api";
+} from "@juicedollar/api";
 
 // --------------------------------------------------------------------------------
 export type EcosystemState = {
@@ -13,7 +13,7 @@ export type EcosystemState = {
 
 	collateralPositions: ApiEcosystemCollateralPositions | undefined;
 	collateralStats: ApiEcosystemCollateralStats | undefined;
-	depsInfo: ApiEcosystemDepsInfo | undefined;
+	depsInfo: ApiEcosystemPoolSharesInfo | undefined;
 	stablecoinInfo: ApiEcosystemStablecoinInfo | undefined;
 	stablecoinMinters: ApiMinterListing | undefined;
 };
@@ -36,7 +36,7 @@ export type DispatchApiEcosystemCollateralStats = {
 
 export type DispatchApiEcosystemNativePoolShareInfo = {
 	type: string;
-	payload: ApiEcosystemDepsInfo | undefined;
+	payload: ApiEcosystemPoolSharesInfo | undefined;
 };
 
 export type DispatchApiEcosystemStablecoinInfo = {

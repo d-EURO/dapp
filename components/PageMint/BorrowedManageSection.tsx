@@ -11,7 +11,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { Address, formatUnits, maxUint256, zeroAddress } from "viem";
-import { PositionV2ABI } from "@deuro/eurocoin";
+import { PositionV2ABI } from "@juicedollar/jusd";
 import { erc20Abi } from "viem";
 import { useAccount, useChainId } from "wagmi";
 import { useReadContracts } from "wagmi";
@@ -46,9 +46,9 @@ export const BorrowedManageSection = () => {
 	const { balancesByAddress, refetchBalances } = useWalletERC20Balances(
 		position ? [
 			{
-				symbol: position.deuroSymbol,
-				address: position.deuro,
-				name: position.deuroName,
+				symbol: position.stablecoinSymbol,
+				address: position.stablecoinAddress,
+				name: position.stablecoinName,
 				allowance: [position.position],
 			},
 		] : []
@@ -108,8 +108,8 @@ export const BorrowedManageSection = () => {
 	const fixedAnnualRatePPM = Number(data?.[5]?.result || 0n);
 	const amountBorrowed = reserveContribution ? BigInt(principal) - (BigInt(principal) * BigInt(reserveContribution)) / 1_000_000n : 0n;
 	const debt = amountBorrowed + interest;
-	const walletBalance = position ? balancesByAddress?.[position.deuro as Address]?.balanceOf || 0n : 0n;
-	const allowance = position ? balancesByAddress?.[position.deuro as Address]?.allowance?.[position.position] || 0n : 0n;
+	const walletBalance = position ? balancesByAddress?.[position.stablecoinAddress as Address]?.balanceOf || 0n : 0n;
+	const allowance = position ? balancesByAddress?.[position.stablecoinAddress as Address]?.allowance?.[position.position] || 0n : 0n;
 
 	const collBalancePosition: number = position ? Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100 : 0;
 	const collTokenPriceMarket = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
@@ -133,7 +133,7 @@ export const BorrowedManageSection = () => {
 			setError(
 				t("mint.error.minting_limit_exceeded", {
 					amount: formatCurrency(formatUnits(maxBeforeAddingMoreCollateral, 18)),
-					symbol: position.deuroSymbol,
+					symbol: position.stablecoinSymbol,
 				})
 			);
 		} else {
@@ -148,10 +148,10 @@ export const BorrowedManageSection = () => {
 		if (!amount) {
 			setError(null);
 		} else if (BigInt(amount) > walletBalance) {
-			setError(t("common.error.insufficient_balance", { symbol: position.deuroSymbol }));
+			setError(t("common.error.insufficient_balance", { symbol: position.stablecoinSymbol }));
 		} else if (BigInt(amount) > debt) {
 			setError(
-				t("mint.error.amount_greater_than_debt", { amount: formatCurrency(formatUnits(debt, 18)), symbol: position.deuroSymbol })
+				t("mint.error.amount_greater_than_debt", { amount: formatCurrency(formatUnits(debt, 18)), symbol: position.stablecoinSymbol })
 			);
 		} else {
 			setError(null);
@@ -196,7 +196,7 @@ export const BorrowedManageSection = () => {
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: formatCurrency(formatUnits(BigInt(amount), position.deuroDecimals)) + ` ${position.deuroSymbol}`,
+					value: formatCurrency(formatUnits(BigInt(amount), position.stablecoinDecimals)) + ` ${position.stablecoinSymbol}`,
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -206,10 +206,10 @@ export const BorrowedManageSection = () => {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: borrowMoreHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("mint.txs.minting", { symbol: position.deuroSymbol })} rows={toastContent} />,
+					render: <TxToast title={t("mint.txs.minting", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title={t("mint.txs.minting_success", { symbol: position.deuroSymbol })} rows={toastContent} />,
+					render: <TxToast title={t("mint.txs.minting_success", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
 				},
 			});
 			setAmount("");
@@ -227,7 +227,7 @@ export const BorrowedManageSection = () => {
 			setIsTxOnGoing(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: position.deuro as Address,
+				address: position.stablecoinAddress as Address,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [position.position, maxUint256],
@@ -236,7 +236,7 @@ export const BorrowedManageSection = () => {
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: "infinite " + position.deuroSymbol,
+					value: "infinite " + position.stablecoinSymbol,
 				},
 				{
 					title: t("common.txs.spender"),
@@ -250,10 +250,10 @@ export const BorrowedManageSection = () => {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={`${t("common.txs.title", { symbol: position.deuroSymbol })}`} rows={toastContent} />,
+					render: <TxToast title={`${t("common.txs.title", { symbol: position.stablecoinSymbol })}`} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title={`${t("common.txs.success", { symbol: position.deuroSymbol })}`} rows={toastContent} />,
+					render: <TxToast title={`${t("common.txs.success", { symbol: position.stablecoinSymbol })}`} rows={toastContent} />,
 				},
 			});
 			await refetchBalances();
@@ -301,7 +301,7 @@ export const BorrowedManageSection = () => {
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: formatCurrency(formatUnits(BigInt(amount), position.deuroDecimals)) + ` ${position.deuroSymbol}`,
+					value: formatCurrency(formatUnits(BigInt(amount), position.stablecoinDecimals)) + ` ${position.stablecoinSymbol}`,
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -311,10 +311,10 @@ export const BorrowedManageSection = () => {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: payBackHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("mint.txs.pay_back", { symbol: position.deuroSymbol })} rows={toastContent} />,
+					render: <TxToast title={t("mint.txs.pay_back", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title={t("mint.txs.pay_back_success", { symbol: position.deuroSymbol })} rows={toastContent} />,
+					render: <TxToast title={t("mint.txs.pay_back_success", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
 				},
 			});
 			setAmount("");

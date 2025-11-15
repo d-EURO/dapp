@@ -1,14 +1,14 @@
 import { useAccount, useChainId, useReadContracts } from "wagmi";
 import { decodeBigIntCall } from "@utils";
-import { ADDRESS, EquityABI, DecentralizedEUROABI } from "@deuro/eurocoin";
+import { ADDRESS, EquityABI, JuiceDollarABI } from "@juicedollar/jusd";
 
 export const useUserBalance = () => {
 	const chainId = useChainId();
 	const { address } = useAccount();
 
 	const deuroContract = {
-		address: ADDRESS[chainId].decentralizedEURO,
-		abi: DecentralizedEUROABI,
+		address: ADDRESS[chainId].juiceDollar,
+		abi: JuiceDollarABI,
 	} as const;
 
 	const equityContract = {

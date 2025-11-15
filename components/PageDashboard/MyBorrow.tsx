@@ -147,7 +147,7 @@ export const MyBorrow = () => {
 	const borrowData = ownedPositions.map((position) => {
 		const { principal, reserveContribution, collateralBalance, collateralDecimals, collateralSymbol } = position;
 		const amountBorrowed = formatCurrency(
-			formatUnits(BigInt(principal) - (BigInt(principal) * BigInt(reserveContribution)) / 1_000_000n, position.deuroDecimals)
+			formatUnits(BigInt(principal) - (BigInt(principal) * BigInt(reserveContribution)) / 1_000_000n, position.stablecoinDecimals)
 		) as string;	
 
 		const collBalancePosition: number = Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100;

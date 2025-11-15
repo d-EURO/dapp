@@ -7,9 +7,9 @@ import {
 	ZERO_FRONTEND_CODE,
 } from "@utils";
 import { useRouter } from "next/router";
-import { FrontendGatewayABI } from "@deuro/eurocoin";
+import { FrontendGatewayABI } from "@juicedollar/jusd";
 import { zeroAddress } from "viem";
-import { ADDRESS } from "@deuro/eurocoin";
+import { ADDRESS } from "@juicedollar/jusd";
 import { readContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../app.config";
 import { useAccount, useChainId } from "wagmi";

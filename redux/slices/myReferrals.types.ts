@@ -1,4 +1,4 @@
-import { ERC20Info, ApiPriceERC20 } from "@deuro/api";
+import { ERC20Info, ApiPriceERC20 } from "@juicedollar/api";
 
 export type ReferralsState = {
   error: string | null;

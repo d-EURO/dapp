@@ -1,4 +1,4 @@
-import { PositionQuery, ApiPositionsListing, ApiPositionsOwners, ApiPositionsMapping } from "@deuro/api";
+import { PositionQuery, ApiPositionsListing, ApiPositionsOwners, ApiPositionsMapping } from "@juicedollar/api";
 import { Address } from "viem";
 
 // --------------------------------------------------------------------------------

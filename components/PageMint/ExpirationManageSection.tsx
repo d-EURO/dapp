@@ -5,7 +5,7 @@ import { useTranslation } from "next-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { renderErrorTxToast } from "@components/TxToast";
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { ADDRESS, PositionRollerABI, PositionV2ABI } from "@deuro/eurocoin";
+import { ADDRESS, PositionRollerABI, PositionV2ABI } from "@juicedollar/jusd";
 import { useRouter } from "next/router";
 import { writeContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
@@ -63,17 +63,17 @@ export const ExpirationManageSection = () => {
 				allowance: [ADDRESS[chainId].roller],
 			},
 			{
-				symbol: position.deuroSymbol,
-				address: position.deuro,
-				name: position.deuroSymbol,
+				symbol: position.stablecoinSymbol,
+				address: position.stablecoinAddress,
+				name: position.stablecoinSymbol,
 				allowance: [ADDRESS[chainId].roller],
 			},
 		] : []
 	);
 
 	const collateralAllowance = position ? balancesByAddress[position.collateral]?.allowance?.[ADDRESS[chainId].roller] : undefined;
-	const deuroAllowance = position ? balancesByAddress[position.deuro]?.allowance?.[ADDRESS[chainId].roller] : undefined;
-	const deuroBalance = position ? balancesByAddress[position.deuro]?.balanceOf : 0n;
+	const deuroAllowance = position ? balancesByAddress[position.stablecoinAddress]?.allowance?.[ADDRESS[chainId].roller] : undefined;
+	const deuroBalance = position ? balancesByAddress[position.stablecoinAddress]?.balanceOf : 0n;
 
 	const url = useContractUrl(position?.position || "");
 	
@@ -193,7 +193,7 @@ export const ExpirationManageSection = () => {
 			setIsTxOnGoing(true);
 
 			const approvingHash = await writeContract(WAGMI_CONFIG, {
-				address: position.deuro,
+				address: position.stablecoinAddress,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [ADDRESS[chainId].roller, maxUint256],
@@ -208,10 +208,10 @@ export const ExpirationManageSection = () => {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approvingHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("common.txs.title", { symbol: position.deuroSymbol })} rows={toastContent} />,
+					render: <TxToast title={t("common.txs.title", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title={t("common.txs.success", { symbol: position.deuroSymbol })} rows={toastContent} />,
+					render: <TxToast title={t("common.txs.success", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
 				},
 			});
 
@@ -302,7 +302,7 @@ export const ExpirationManageSection = () => {
 					isLoading={isTxOnGoing}
 					disabled={isTxOnGoing || !targetPosition}
 				>
-					{t("common.approve")} {position.deuroSymbol}
+					{t("common.approve")} {position.stablecoinSymbol}
 				</Button>
 			) : (
 				<>
@@ -318,22 +318,22 @@ export const ExpirationManageSection = () => {
 									{t('mint.outstanding_interest')}
 								</span>
 								<span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-									{formatNumber(interest)} {position.deuroSymbol}
+									{formatNumber(interest)} {position.stablecoinSymbol}
 								</span>
 							</div>
 							<div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-								{t('mint.current_debt', { amount: formatNumber(currentDebt), symbol: position.deuroSymbol })} 
-								{' '}{t('mint.original_amount', { amount: formatNumber(principal), symbol: position.deuroSymbol })}
+								{t('mint.current_debt', { amount: formatNumber(currentDebt), symbol: position.stablecoinSymbol })} 
+								{' '}{t('mint.original_amount', { amount: formatNumber(principal), symbol: position.stablecoinSymbol })}
 							</div>
 							{hasInsufficientBalance && (
 								<div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
 									<div className="text-xs font-medium text-red-600 dark:text-red-400">
-										{t('mint.insufficient_balance', { symbol: position.deuroSymbol })}
+										{t('mint.insufficient_balance', { symbol: position.stablecoinSymbol })}
 									</div>
 									<div className="text-xs text-red-500 dark:text-red-500 mt-1">
-										{t('mint.you_have', { amount: formatNumber(BigInt(deuroBalance || 0)), symbol: position.deuroSymbol })}
+										{t('mint.you_have', { amount: formatNumber(BigInt(deuroBalance || 0)), symbol: position.stablecoinSymbol })}
 										<br />
-										{t('mint.you_need', { amount: formatNumber(interest), symbol: position.deuroSymbol })}
+										{t('mint.you_need', { amount: formatNumber(interest), symbol: position.stablecoinSymbol })}
 									</div>
 								</div>
 							)}

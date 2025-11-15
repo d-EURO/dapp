@@ -5,7 +5,7 @@ import {
 	ApiChallengesMapping,
 	ApiChallengesPositions,
 	ApiChallengesPrices,
-} from "@deuro/api";
+} from "@juicedollar/api";
 import { DEURO_API_CLIENT } from "../../app.config";
 import {
 	ChallengesState,

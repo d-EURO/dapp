@@ -9,7 +9,7 @@ import { DateInputOutlined } from "@components/Input/DateInputOutlined";
 import { SliderInputOutlined } from "@components/Input/SliderInputOutlined";
 import { DetailsExpandablePanel } from "@components/PageMint/DetailsExpandablePanel";
 import { NormalInputOutlined } from "@components/Input/NormalInputOutlined";
-import { PositionQuery } from "@deuro/api";
+import { PositionQuery } from "@juicedollar/api";
 import { SelectCollateralModal } from "./SelectCollateralModal";
 import { BorrowingDEUROModal } from "@components/PageMint/BorrowingDEUROModal";
 import { InputTitle } from "@components/Input/InputTitle";
@@ -18,7 +18,7 @@ import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalan
 import { RootState, store } from "../../redux/redux.store";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { useTranslation } from "next-i18next";
-import { ADDRESS, MintingHubGatewayABI, PositionV2ABI, CoinLendingGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, MintingHubGatewayABI, PositionV2ABI, CoinLendingGatewayABI } from "@juicedollar/jusd";
 import { useAccount, useBlock, useChainId } from "wagmi";
 import { WAGMI_CONFIG } from "../../app.config";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -76,7 +76,7 @@ export default function PositionCreate({}) {
 	const elegiblePositions = useMemo(() => {
 		const blockTimestamp = latestBlock?.timestamp || new Date().getTime() / 1000;
 		return positions
-			.filter((p) => WHITELISTED_POSITIONS.includes(p.position))
+			.filter((p) => WHITELISTED_POSITIONS.includes(p.position as `0x${string}`))
 			.filter((p) => BigInt(p.availableForClones) > 0n)
 			.filter((p) => !p.closed)
 			.filter((p) => blockTimestamp > toTimestamp(toDate(p.cooldown)))

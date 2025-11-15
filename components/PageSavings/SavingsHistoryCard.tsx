@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { formatUnits } from "viem";
 import { SegmentedControlButton } from "@components/Button";
 import { useTotalSavingsQuery } from "../../hooks/useTotalSavingsQuery";
-import { ADDRESS, ERC20ABI } from "@deuro/eurocoin";
+import { ADDRESS, ERC20ABI } from "@juicedollar/jusd";
 import { useChainId, useReadContract } from "wagmi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
@@ -56,7 +56,7 @@ export default function SavingsHistoryCard() {
 	const addressSavingsGateway = useContractUrl(ADDRESS[chainId].savingsGateway);
 
 	const { data: current = 0n } = useReadContract({
-		address: ADDRESS[chainId].decentralizedEURO,
+		address: ADDRESS[chainId].juiceDollar,
 		abi: ERC20ABI,
 		functionName: "balanceOf",
 		args: [ADDRESS[chainId].savingsGateway],

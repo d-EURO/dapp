@@ -17,7 +17,7 @@ import NormalInput from "@components/Input/NormalInput";
 import AddressInput from "@components/Input/AddressInput";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../app.config";
-import { ADDRESS, MintingHubGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, MintingHubGatewayABI } from "@juicedollar/jusd";
 import { useTranslation, Trans } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
@@ -54,7 +54,7 @@ export default function PositionCreate({}) {
 	const collTokenData = useTokenData(collateralAddress);
 	const userBalance = useUserBalance();
 
-	const { allowance: deuroAllowance, refetch: refetchDeuroAllowance } = useTokenData(ADDRESS[WAGMI_CHAIN.id].decentralizedEURO);
+	const { allowance: deuroAllowance, refetch: refetchDeuroAllowance } = useTokenData(ADDRESS[WAGMI_CHAIN.id].juiceDollar);
 
 	const { t } = useTranslation();
 
@@ -258,7 +258,7 @@ export default function PositionCreate({}) {
 			setIsConfirming("approveDeuro");
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].decentralizedEURO,
+				address: ADDRESS[chainId].juiceDollar,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [ADDRESS[chainId].mintingHubGateway, maxUint256],

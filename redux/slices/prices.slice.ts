@@ -1,6 +1,6 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
 import { PricesState, DispatchBoolean, DispatchApiPriceMapping, DispatchApiPriceERC20Mapping, DispatchApiPriceERC20, DispatchPriceQueryCurrencies } from "./prices.types";
-import { ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping, PriceQueryCurrencies } from "@deuro/api";
+import { ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping, PriceQueryCurrencies } from "@juicedollar/api";
 import { DEURO_API_CLIENT } from "../../app.config";
 import { zeroAddress } from "viem";
 import { logApiError } from "../../utils/errorLogger";

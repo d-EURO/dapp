@@ -51,7 +51,6 @@ export const CONFIG: ConfigEnv = {
 	api: process.env.NEXT_PUBLIC_API_URL ?? "https://api.deuro.com",
 	ponder: process.env.NEXT_PUBLIC_PONDER_URL ?? "https://ponder.deuro.com",
 	wagmiId: process.env.NEXT_PUBLIC_WAGMI_ID ?? "",
-	alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ?? "",
 	chain: process.env.NEXT_PUBLIC_CHAIN_NAME ?? "mainnet",
 	network: {
 		mainnet: process.env.NEXT_PUBLIC_RPC_URL_MAINNET ?? "https://eth-mainnet.g.alchemy.com/v2",

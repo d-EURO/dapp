@@ -2,7 +2,7 @@ import { useReadContracts } from "wagmi";
 import { NativePSHolder } from "./useNativePSHolders";
 import { decodeBigIntCall } from "../utils/format";
 import { WAGMI_CHAIN } from "../app.config";
-import { ADDRESS, EquityABI } from "@deuro/eurocoin";
+import { ADDRESS, EquityABI } from "@juicedollar/jusd";
 
 type VotesData = {
 	holder: `0x${string}`;

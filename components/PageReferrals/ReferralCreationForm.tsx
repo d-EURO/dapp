@@ -5,7 +5,7 @@ import { faCheck, faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "next-i18next";
 import { zeroAddress } from "viem";
-import { ADDRESS, FrontendGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, FrontendGatewayABI } from "@juicedollar/jusd";
 import { useChainId } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";

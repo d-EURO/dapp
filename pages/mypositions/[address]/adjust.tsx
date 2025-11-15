@@ -13,8 +13,8 @@ import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
-import { PositionQuery } from "@deuro/api";
-import { ADDRESS, PositionV2ABI } from "@deuro/eurocoin";
+import { PositionQuery } from "@juicedollar/api";
+import { ADDRESS, PositionV2ABI } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
@@ -47,13 +47,13 @@ export default function PositionAdjust() {
 	// ---------------------------------------------------------------------------
 	useEffect(() => {
 		const acc: Address | undefined = account.address;
-		const fc: Address = ADDRESS[WAGMI_CHAIN.id].decentralizedEURO;
+		const fc: Address = ADDRESS[WAGMI_CHAIN.id].juiceDollar;
 		if (!position || !position.collateral) return;
 
 		const fetchAsync = async function () {
 			if (acc !== undefined) {
 				const _balanceFrank = await readContract(WAGMI_CONFIG, {
-					address: ADDRESS[WAGMI_CHAIN.id].decentralizedEURO,
+					address: ADDRESS[WAGMI_CHAIN.id].juiceDollar,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					args: [acc],

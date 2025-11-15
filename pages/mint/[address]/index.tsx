@@ -17,7 +17,7 @@ import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import Link from "next/link";
-import { ADDRESS, MintingHubGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, MintingHubGatewayABI } from "@juicedollar/jusd";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import { useFrontendCode } from "../../../hooks/useFrontendCode";

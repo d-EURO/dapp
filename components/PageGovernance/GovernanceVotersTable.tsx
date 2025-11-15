@@ -11,7 +11,7 @@ import GovernanceVotersRow from "./GovernanceVotersRow";
 import { useAccount } from "wagmi";
 import { readContract } from "wagmi/actions";
 import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../app.config";
-import { ADDRESS, EquityABI } from "@deuro/eurocoin";
+import { ADDRESS, EquityABI } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
 
 export type VoteData = {

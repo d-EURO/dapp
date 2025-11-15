@@ -4,7 +4,7 @@ import { RootState } from "../../redux/redux.store";
 import { useSelector } from "react-redux";
 import { useRouter as useNavigation } from "next/navigation";
 import { formatCurrency } from "../../utils/format";
-import { PositionQuery } from "@deuro/api";
+import { PositionQuery } from "@juicedollar/api";
 import DisplayCollateralBorrowTable from "./DisplayCollateralBorrowTable";
 import Button from "@components/Button";
 import AppBox from "@components/AppBox";
@@ -24,13 +24,13 @@ export default function BorrowRow({ headers, position, tab }: Props) {
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
 	const collTokenPrice = prices[position.collateral.toLowerCase() as Address]?.price?.usd;
-	const deuroPrice = eurPrice || prices[position.deuro.toLowerCase() as Address]?.price?.usd;
+	const deuroPrice = eurPrice || prices[position.stablecoinAddress.toLowerCase() as Address]?.price?.usd;
 	if (!collTokenPrice || !deuroPrice) return null;
 
 	const interest: number = Math.round((position.annualInterestPPM / 10 ** 4) * 100) / 100;
 	const reserve: number = Math.round((position.reserveContribution / 10 ** 4) * 100) / 100;
 
-	const available: number = Math.round((parseInt(position.availableForClones) / 10 ** position.deuroDecimals) * 100) / 100;
+	const available: number = Math.round((parseInt(position.availableForClones) / 10 ** position.stablecoinDecimals) * 100) / 100;
 	const price: number = Math.round((parseInt(position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100;
 	const expirationStr = new Date(position.expiration * 1000).toDateString().split(" ");
 	const expirationString: string = `${expirationStr[2]} ${expirationStr[1]} ${expirationStr[3]}`;

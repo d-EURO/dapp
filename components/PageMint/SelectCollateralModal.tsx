@@ -1,6 +1,6 @@
 import { formatUnits } from "viem";
 import { useSelector } from "react-redux";
-import { PriceQuery } from "@deuro/api";
+import { PriceQuery } from "@juicedollar/api";
 import { useTranslation } from "next-i18next";
 import { RootState } from "../../redux/redux.store";
 import { formatCurrency } from "@utils";

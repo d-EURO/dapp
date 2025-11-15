@@ -4,9 +4,9 @@ import { ApolloClient, InMemoryCache, createHttpLink, from } from "@apollo/clien
 import { onError } from "@apollo/client/link/error";
 import { cookieStorage, createConfig, createStorage, http } from "@wagmi/core";
 import { injected, coinbaseWallet, walletConnect } from "@wagmi/connectors";
-import { mainnet, polygon, Chain } from "@wagmi/core/chains";
+import { testnet, mainnet } from "./chains";
 import axios from "axios";
-import { Address } from "viem";
+import { Address, Chain } from "viem";
 
 export type ConfigEnv = {
 	landing: string;
@@ -15,11 +15,10 @@ export type ConfigEnv = {
 	ponder: string;
 	ponderFallback: string;
 	wagmiId: string;
-	alchemyApiKey: string;
 	chain: string;
 	network: {
 		mainnet: string;
-		polygon: string;
+		testnet: string;
 	};
 };
 
@@ -31,52 +30,29 @@ export type ConfigEnv = {
 
 // Config
 export const CONFIG: ConfigEnv = {
-	landing: process.env.NEXT_PUBLIC_LANDINGPAGE_URL ?? "https://deuro.com",
-	app: process.env.NEXT_PUBLIC_APP_URL ?? "https://app.deuro.com",
-	api: process.env.NEXT_PUBLIC_API_URL ?? "https://api.deuro.com",
-	ponder: process.env.NEXT_PUBLIC_PONDER_URL ?? "https://ponder.deuro.com",
-	ponderFallback: process.env.NEXT_PUBLIC_PONDER_FALLBACK_URL ?? "https://dev.ponder.deuro.com/",
+	landing: process.env.NEXT_PUBLIC_LANDINGPAGE_URL ?? "",
+	app: process.env.NEXT_PUBLIC_APP_URL ?? "",
+	api: process.env.NEXT_PUBLIC_API_URL!,
+	ponder: process.env.NEXT_PUBLIC_PONDER_URL!,
+	ponderFallback: process.env.NEXT_PUBLIC_PONDER_FALLBACK_URL ?? process.env.NEXT_PUBLIC_PONDER_URL!,
 	wagmiId: process.env.NEXT_PUBLIC_WAGMI_ID ?? "",
-	alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ?? "",
-	chain: process.env.NEXT_PUBLIC_CHAIN_NAME ?? "mainnet",
+	chain: process.env.NEXT_PUBLIC_CHAIN_NAME ?? testnet.id.toString(),
 	network: {
-		mainnet: process.env.NEXT_PUBLIC_RPC_URL_MAINNET ?? "https://eth-mainnet.g.alchemy.com/v2",
-		polygon: process.env.NEXT_PUBLIC_RPC_URL_POLYGON ?? "https://polygon-mainnet.g.alchemy.com/v2",
+		mainnet: process.env.NEXT_PUBLIC_RPC_URL_MAINNET ?? "https://rpc.testnet.juiceswap.com/",
+		testnet: process.env.NEXT_PUBLIC_RPC_URL_TESTNET ?? "https://rpc.testnet.juiceswap.com/",
 	},
 };
 
-const PRINT_CONFIG = (): ConfigEnv => {
-	const printConfig = { ...CONFIG };
-
-	printConfig.wagmiId = TRUNCATE_STRING(printConfig.wagmiId, 5, 5);
-	printConfig.alchemyApiKey = TRUNCATE_STRING(printConfig.alchemyApiKey, 5, 5);
-
-	return printConfig;
-};
-
-const TRUNCATE_STRING = (text: string, startCount: number, endCount: number): string => {
-	if (text.length <= startCount + endCount) return text;
-
-	const first = text.slice(0, startCount);
-	const last = text.slice(-endCount);
-
-	return `${first}...${last}`;
-};
-
-// PRINT CONFIGURATION PROFILE
-console.log("YOU ARE USING THIS CONFIG PROFILE:");
-console.log(PRINT_CONFIG());
-
 // CONFIG CHAIN
 export const CONFIG_CHAIN = (): Chain => {
-	return CONFIG.chain === "polygon" ? polygon : mainnet;
+	return CONFIG.chain === "testnet" ? testnet : mainnet;
 };
 
 // CONFIG RPC
 export const CONFIG_RPC = (): string => {
-	return CONFIG.chain === "polygon"
-		? `${CONFIG.network.polygon}/${CONFIG.alchemyApiKey}`
-		: `${CONFIG.network.mainnet}/${CONFIG.alchemyApiKey}`;
+	return CONFIG.chain === "testnet"
+		? CONFIG.network.testnet
+		: CONFIG.network.mainnet;
 };
 
 // Ponder fallback mechanism
@@ -159,9 +135,10 @@ export const WAGMI_METADATA = {
 	icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
 export const WAGMI_CONFIG = createConfig({
-	chains: [WAGMI_CHAIN],
+	chains: [testnet, mainnet] as const,
 	transports: {
-		[WAGMI_CHAIN.id]: http(CONFIG_RPC()),
+		[testnet.id]: http(CONFIG.network.testnet),
+		[mainnet.id]: http(CONFIG.network.mainnet),
 	},
 	batch: {
 		multicall: {
@@ -183,7 +160,7 @@ export const WAGMI_CONFIG = createConfig({
 });
 
 // MINT POSITION BLACKLIST
-export const MINT_POSITION_BLACKLIST: Address[] = ["0x98725eE62833096C1c9bE26001F3cDA9a6241EF3"];
+export const MINT_POSITION_BLACKLIST: Address[] = [];
 export const POSITION_NOT_BLACKLISTED = (addr: Address): boolean => {
 	const r = MINT_POSITION_BLACKLIST.filter((p) => {
 		return p.toLowerCase() === addr.toLowerCase();
