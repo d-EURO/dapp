@@ -4,7 +4,7 @@ import Table from "../Table";
 import TableRowEmpty from "../Table/TableRowEmpty";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
-import { PositionQuery, PriceQueryObjectArray } from "@deuro/api";
+import { PositionQuery, PriceQueryObjectArray } from "@juicedollar/api";
 import { Address, formatUnits } from "viem";
 import MonitoringRow from "./MonitoringRow";
 import { useState } from "react";

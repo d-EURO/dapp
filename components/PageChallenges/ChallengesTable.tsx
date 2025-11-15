@@ -13,7 +13,7 @@ import {
 	PositionQuery,
 	PositionsQueryObjectArray,
 	PriceQueryObjectArray,
-} from "@deuro/api";
+} from "@juicedollar/api";
 import { Address, formatUnits } from "viem";
 import { useTranslation } from "next-i18next";
 

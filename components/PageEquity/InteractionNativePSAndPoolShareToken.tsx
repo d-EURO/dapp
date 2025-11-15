@@ -13,7 +13,7 @@ import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
-import { ADDRESS, EquityABI, DEPSWrapperABI } from "@deuro/eurocoin";
+import { ADDRESS, EquityABI } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
 import { TokenBalance } from "../../hooks/useWalletBalances";
 import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutlined";
@@ -73,7 +73,7 @@ export default function InteractionNativePSAndPoolShareToken({
 					address: ADDRESS[chainId].equity,
 					abi: erc20Abi,
 					functionName: "allowance",
-					args: [account, ADDRESS[chainId].DEPSwrapper],
+					args: [account, ADDRESS[chainId].equity],
 				});
 				setNativePSAllowance(_nativePSAllowance);
 
@@ -94,7 +94,7 @@ export default function InteractionNativePSAndPoolShareToken({
 				setNativePSHolding(_nativePSHolding);
 
 				const _psTokenBalance = await readContract(WAGMI_CONFIG, {
-					address: ADDRESS[chainId].DEPSwrapper,
+					address: ADDRESS[chainId].equity,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					args: [account],
@@ -106,7 +106,7 @@ export default function InteractionNativePSAndPoolShareToken({
 				address: ADDRESS[chainId].equity,
 				abi: EquityABI,
 				functionName: "holdingDuration",
-				args: [ADDRESS[chainId].DEPSwrapper],
+				args: [ADDRESS[chainId].equity],
 			});
 			setPsTokenHolding(_psTokenHolding);
 		};
@@ -122,7 +122,7 @@ export default function InteractionNativePSAndPoolShareToken({
 				address: ADDRESS[chainId].equity,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].DEPSwrapper, amount],
+				args: [ADDRESS[chainId].equity, amount],
 			});
 
 			const toastContent = [
@@ -132,7 +132,7 @@ export default function InteractionNativePSAndPoolShareToken({
 				},
 				{
 					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].DEPSwrapper),
+					value: shortenAddress(ADDRESS[chainId].equity),
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -162,9 +162,10 @@ export default function InteractionNativePSAndPoolShareToken({
 			setWrapping(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].DEPSwrapper,
-				abi: DEPSWrapperABI,
-				functionName: "depositFor",
+				address: ADDRESS[chainId].equity,
+				abi: EquityABI,
+				// @ts-ignore TODO: see what's going on
+				functionName: "depositFor", // TODO: see what's going on
 				args: [account, amount],
 			});
 
@@ -206,8 +207,9 @@ export default function InteractionNativePSAndPoolShareToken({
 			setUnwrapping(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].DEPSwrapper,
-				abi: DEPSWrapperABI,
+				address: ADDRESS[chainId].equity,
+				abi: EquityABI,
+				// @ts-ignore TODO: see what's going on
 				functionName: "withdrawTo",
 				args: [account, amount],
 			});

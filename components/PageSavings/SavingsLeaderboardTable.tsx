@@ -11,7 +11,7 @@ import TableBody from "../Table/TableBody";
 import Table from "../Table";
 import TableRowEmpty from "../Table/TableRowEmpty";
 import { RootState } from "../../redux/redux.store";
-import { ApiSavingsUserLeaderboard } from "@deuro/api";
+import { ApiSavingsUserLeaderboard } from "@juicedollar/api";
 import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { faMinus } from "@fortawesome/free-solid-svg-icons";

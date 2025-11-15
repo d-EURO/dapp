@@ -12,11 +12,10 @@ import {
 import {
 	ApiEcosystemCollateralPositions,
 	ApiEcosystemCollateralStats,
-	ApiEcosystemDepsInfo,
+	ApiEcosystemPoolSharesInfo,
 	ApiEcosystemStablecoinInfo,
 	ApiMinterListing,
-} from "@deuro/api";
-import { zeroAddress } from "viem";
+} from "@juicedollar/api";
 import { logApiError } from "../../utils/errorLogger";
 
 // --------------------------------------------------------------------------------
@@ -60,7 +59,7 @@ export const slice = createSlice({
 		},
 
 		// SET Deps Info
-		setDepsInfo: (state, action: { payload: ApiEcosystemDepsInfo | undefined }) => {
+		setDepsInfo: (state, action: { payload: ApiEcosystemPoolSharesInfo | undefined }) => {
 			state.depsInfo = action.payload;
 		},
 
@@ -105,7 +104,7 @@ export const fetchEcosystem =
 			dispatch(slice.actions.setCollateralStats(response2.data as ApiEcosystemCollateralStats));
 
 			const response3 = await DEURO_API_CLIENT.get("/ecosystem/deps/info");
-			dispatch(slice.actions.setDepsInfo(response3.data as ApiEcosystemDepsInfo));
+			dispatch(slice.actions.setDepsInfo(response3.data as ApiEcosystemPoolSharesInfo));
 
 			const response4 = await DEURO_API_CLIENT.get("/ecosystem/stablecoin/info");
 			dispatch(slice.actions.setStablecoinInfo(response4.data as ApiEcosystemStablecoinInfo));

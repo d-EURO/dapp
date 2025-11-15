@@ -19,7 +19,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import Link from "next/link";
 import { useRouter as useNavigation } from "next/navigation";
-import { ADDRESS, MintingHubV2ABI } from "@deuro/eurocoin";
+import { ADDRESS, MintingHubV2ABI } from "@juicedollar/jusd";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
@@ -51,7 +51,7 @@ export default function PositionChallenge() {
 	// ---------------------------------------------------------------------------
 	useEffect(() => {
 		const acc: Address | undefined = account.address;
-		const fc: Address = ADDRESS[WAGMI_CHAIN.id].decentralizedEURO;
+		const fc: Address = ADDRESS[WAGMI_CHAIN.id].juiceDollar;
 		if (acc === undefined) return;
 		if (!position || !position.collateral) return;
 
@@ -222,7 +222,7 @@ export default function PositionChallenge() {
 									amount={BigInt(position.virtualPrice)}
 									currency={TOKEN_SYMBOL}
 									digits={36 - position.collateralDecimals}
-									address={ADDRESS[chainId].decentralizedEURO}
+									address={ADDRESS[chainId].juiceDollar}
 									className="mt-2"
 								/>
 							</AppBox>
@@ -232,7 +232,7 @@ export default function PositionChallenge() {
 									amount={(BigInt(position.price) * amount * 2n) / 100n}
 									currency={TOKEN_SYMBOL}
 									digits={36}
-									address={ADDRESS[chainId].decentralizedEURO}
+									address={ADDRESS[chainId].juiceDollar}
 									className="mt-2"
 								/>
 							</AppBox>

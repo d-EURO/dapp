@@ -1,4 +1,4 @@
-import { ChallengesQueryItem, PositionQuery, PositionsQueryObjectArray } from "@deuro/api";
+import { ChallengesQueryItem, PositionQuery, PositionsQueryObjectArray } from "@juicedollar/api";
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { Address } from "viem";
 import { useAccount } from "wagmi";
 import Button from "@components/Button";
-import { ADDRESS, MintingHubV2ABI } from "@deuro/eurocoin";
+import { ADDRESS, MintingHubV2ABI } from "@juicedollar/jusd";
 
 interface Props {
 	challenge: ChallengesQueryItem;

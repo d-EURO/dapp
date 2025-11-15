@@ -20,7 +20,7 @@ import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useRouter as useNavigation } from "next/navigation";
-import { ADDRESS, DecentralizedEUROABI, MintingHubV2ABI } from "@deuro/eurocoin";
+import { ADDRESS, JuiceDollarABI, MintingHubV2ABI } from "@juicedollar/jusd";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
@@ -52,8 +52,8 @@ export default function MonitoringForceSell() {
 		const fetchAsync = async function () {
 			if (acc !== undefined) {
 				const _balance = await readContract(WAGMI_CONFIG, {
-					address: ADDR.decentralizedEURO,
-					abi: DecentralizedEUROABI,
+					address: ADDR.juiceDollar,
+					abi: JuiceDollarABI,
 					functionName: "balanceOf",
 					args: [acc],
 				});
@@ -201,7 +201,7 @@ export default function MonitoringForceSell() {
 								<DisplayAmount
 									amount={auctionPrice}
 									digits={36 - position.collateralDecimals}
-									address={ADDRESS[chainId].decentralizedEURO}
+									address={ADDRESS[chainId].juiceDollar}
 									currency={TOKEN_SYMBOL}
 									className="mt-4"
 								/>

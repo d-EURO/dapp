@@ -16,7 +16,7 @@ import { RootState } from "../../redux/redux.store";
 import { gql, useQuery } from "@apollo/client";
 import { formatUnits } from "viem";
 import { useChainId } from "wagmi";
-import { ADDRESS, SavingsGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, SavingsGatewayABI } from "@juicedollar/jusd";
 import { readContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
 

@@ -20,8 +20,8 @@ import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useRouter as useNavigation } from "next/navigation";
-import { ADDRESS, DecentralizedEUROABI, MintingHubV2ABI } from "@deuro/eurocoin";
-import { ChallengesId } from "@deuro/api";
+import { ADDRESS, JuiceDollarABI, MintingHubV2ABI } from "@juicedollar/jusd";
+import { ChallengesId } from "@juicedollar/api";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
@@ -61,15 +61,15 @@ export default function ChallengePlaceBid() {
 		const fetchAsync = async function () {
 			if (acc !== undefined) {
 				const _balance = await readContract(WAGMI_CONFIG, {
-					address: ADDR.decentralizedEURO,
-					abi: DecentralizedEUROABI,
+					address: ADDR.juiceDollar,
+					abi: JuiceDollarABI,
 					functionName: "balanceOf",
 					args: [acc],
 				});
 				setUserBalance(_balance);
 
 				const _allowance = await readContract(WAGMI_CONFIG, {
-					address: ADDR.decentralizedEURO,
+					address: ADDR.juiceDollar,
 					abi: erc20Abi,
 					functionName: "allowance",
 					args: [acc, ADDR.mintingHubGateway],
@@ -144,7 +144,7 @@ export default function ChallengePlaceBid() {
 			setIsApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].decentralizedEURO,
+				address: ADDRESS[chainId].juiceDollar,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [ADDRESS[chainId].mintingHubGateway, maxUint256],
@@ -270,7 +270,7 @@ export default function ChallengePlaceBid() {
 								<DisplayAmount
 									amount={auctionPrice}
 									digits={36 - position.collateralDecimals}
-									address={ADDRESS[chainId].decentralizedEURO}
+									address={ADDRESS[chainId].juiceDollar}
 									currency={TOKEN_SYMBOL}
 									className="mt-4"
 								/>

@@ -1,4 +1,4 @@
-import { ApiBidsBidders, ApiBidsChallenges, ApiBidsListing, ApiBidsMapping, ApiBidsPositions } from "@deuro/api";
+import { ApiBidsBidders, ApiBidsChallenges, ApiBidsListing, ApiBidsMapping, ApiBidsPositions } from "@juicedollar/api";
 
 // --------------------------------------------------------------------------------
 export type BidsState = {

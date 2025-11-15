@@ -1,6 +1,6 @@
 import { Hash, zeroAddress } from "viem";
 import TableRow from "../Table/TableRow";
-import { MinterQuery } from "@deuro/api";
+import { MinterQuery } from "@juicedollar/api";
 import { useContractUrl } from "@hooks";
 import GovernanceMintersAction from "./GovernanceMintersAction";
 import { AddressLabelSimple, TxLabelSimple } from "@components/AddressLabel";

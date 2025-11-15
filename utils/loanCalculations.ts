@@ -1,4 +1,4 @@
-import { PositionQuery } from "@deuro/api";
+import { PositionQuery } from "@juicedollar/api";
 import { toDate } from "./format";
 
 export type LoanDetails = {

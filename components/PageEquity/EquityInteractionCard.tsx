@@ -4,9 +4,9 @@ import { useChainId } from "wagmi";
 import InteractionStablecoinAndNativePS from "./InteractionStablecoinAndNativePS";
 import InteractionNativePSAndPoolShareToken from "./InteractionNativePSAndPoolShareToken";
 import InteractionPoolShareTokenRedeem from "./InteractionPoolShareTokenRedeem";
-import { ADDRESS } from "@deuro/eurocoin";
+import { ADDRESS } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
-import { useWalletERC20Balances, TokenBalance } from "../../hooks/useWalletBalances";
+import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { SelectAssetModal } from "./SelectAssetModal";
 
 export enum TokenInteractionSide {
@@ -16,8 +16,6 @@ export enum TokenInteractionSide {
 
 export const EquityTokenSelectorMapping: { [key: string]: string[] } = {
 	[TOKEN_SYMBOL]: [NATIVE_POOL_SHARE_TOKEN_SYMBOL],
-	[NATIVE_POOL_SHARE_TOKEN_SYMBOL]: [TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL],
-	[POOL_SHARE_TOKEN_SYMBOL]: [NATIVE_POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL],
 };
 
 export default function EquityInteractionCard() {
@@ -35,17 +33,12 @@ export default function EquityInteractionCard() {
 		{
 			symbol: TOKEN_SYMBOL,
 			name: TOKEN_SYMBOL,
-			address: ADDRESS[chainId].decentralizedEURO,
-		},
-		{
-			symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL,
-			name: NATIVE_POOL_SHARE_TOKEN_SYMBOL,
-			address: ADDRESS[chainId].equity,
+			address: ADDRESS[chainId].juiceDollar,
 		},
 		{
 			symbol: POOL_SHARE_TOKEN_SYMBOL,
 			name: POOL_SHARE_TOKEN_SYMBOL,
-			address: ADDRESS[chainId].DEPSwrapper,
+			address: ADDRESS[chainId].equity,
 		},
 	]);
 
@@ -89,13 +82,13 @@ export default function EquityInteractionCard() {
 			<div className="bg-card-body-primary shadow-card rounded-xl p-4 flex flex-col gap-8">
 				<div className="justify-center items-center gap-1.5 inline-flex">
 					<div className="text-text-title text-xl font-black ">
-						{t("equity.pool_shares_title", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })}
+						{t("equity.pool_shares_title", { symbol: POOL_SHARE_TOKEN_SYMBOL })}
 					</div>
 				</div>
 
 				{/* Load modules dynamically */}
-				{(tokenFromTo.from === TOKEN_SYMBOL && tokenFromTo.to === NATIVE_POOL_SHARE_TOKEN_SYMBOL) ||
-				(tokenFromTo.from === NATIVE_POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === TOKEN_SYMBOL) ? (
+				{(tokenFromTo.from === TOKEN_SYMBOL && tokenFromTo.to === POOL_SHARE_TOKEN_SYMBOL) ||
+				(tokenFromTo.from === POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === TOKEN_SYMBOL) ? (
 					<InteractionStablecoinAndNativePS
 						selectedFromToken={selectedFromToken}
 						selectedToToken={selectedToToken}

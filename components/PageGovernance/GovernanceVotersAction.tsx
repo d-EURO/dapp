@@ -8,7 +8,7 @@ import { useAccount } from "wagmi";
 import Button from "@components/Button";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { VoteData } from "./GovernanceVotersTable";
-import { ADDRESS, EquityABI } from "@deuro/eurocoin";
+import { ADDRESS, EquityABI } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
 interface Props {
 	voter: VoteData;

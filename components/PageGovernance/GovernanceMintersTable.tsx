@@ -4,7 +4,7 @@ import Table from "../Table";
 import TableRowEmpty from "../Table/TableRowEmpty";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
-import { MinterQuery } from "@deuro/api";
+import { MinterQuery } from "@juicedollar/api";
 import { useState } from "react";
 import GovernanceMintersRow from "./GovernanceMintersRow";
 import { useTranslation } from "next-i18next";

@@ -13,7 +13,7 @@ import { formatCurrency, shortenAddress } from "@utils";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { useChainId, useReadContracts } from "wagmi";
 import { writeContract } from "wagmi/actions";
-import { PositionV2ABI } from "@deuro/eurocoin";
+import { PositionV2ABI } from "@juicedollar/jusd";
 import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { waitForTransactionReceipt } from "wagmi/actions";

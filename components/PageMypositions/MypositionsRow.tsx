@@ -1,6 +1,6 @@
 import { Address } from "viem";
 import TableRow from "../Table/TableRow";
-import { PositionQuery, ChallengesQueryItem } from "@deuro/api";
+import { PositionQuery, ChallengesQueryItem } from "@juicedollar/api";
 import { RootState } from "../../redux/redux.store";
 import { useSelector } from "react-redux";
 import { formatCurrency } from "../../utils/format";
@@ -33,14 +33,14 @@ export default function MypositionsRow({ headers, subHeaders, position, tab }: P
 	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
 	const challenges = useSelector((state: RootState) => state.challenges.positions);
 	const collTokenPrice = prices[position.collateral.toLowerCase() as Address]?.price?.usd || 0;
-	const deuroPrice = eurPrice || prices[position.deuro.toLowerCase() as Address]?.price?.usd || 1;
+	const deuroPrice = eurPrice || prices[position.stablecoinAddress.toLowerCase() as Address]?.price?.usd || 1;
 
 	const maturity: number = (position.expiration * 1000 - Date.now()) / 1000 / 60 / 60 / 24;
 
 	const balance: number = parseInt(position.collateralBalance) / 10 ** position.collateralDecimals;
 	const balanceDEURO: number = (balance * collTokenPrice) / deuroPrice;
 
-	const loanDEURO: number = parseInt(position.principal) / 10 ** position.deuroDecimals;
+	const loanDEURO: number = parseInt(position.principal) / 10 ** position.stablecoinDecimals;
 
 	const liquidationDEURO: number = parseInt(position.price) / 10 ** (36 - position.collateralDecimals);
 	const liquidationPct: number = (balanceDEURO / (liquidationDEURO * balance)) * 100;

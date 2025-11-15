@@ -1,6 +1,6 @@
 import AppCard from "@components/AppCard";
 import TokenInput from "@components/Input/TokenInput";
-import { ADDRESS, DecentralizedEUROABI, SavingsGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, JuiceDollarABI, SavingsGatewayABI } from "@juicedollar/jusd";
 import { useContractUrl } from "@hooks";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
@@ -56,12 +56,12 @@ export default function SavingsInteractionCard() {
 		{
 			symbol: TOKEN_SYMBOL,
 			name: TOKEN_SYMBOL,
-			address: ADDR.decentralizedEURO,
+			address: ADDR.juiceDollar,
 			allowance: [ADDR.savingsGateway],
 		},
 	]);
 	const allowance =
-		balances.find((b) => b.address.toLowerCase() === ADDR.decentralizedEURO.toLowerCase())?.allowance?.[ADDR.savingsGateway] || 0n;
+		balances.find((b) => b.address.toLowerCase() === ADDR.juiceDollar.toLowerCase())?.allowance?.[ADDR.savingsGateway] || 0n;
 	// ---------------------------------------------------------------------------
 
 	useEffect(() => {
@@ -69,8 +69,8 @@ export default function SavingsInteractionCard() {
 
 		const fetchAsync = async function () {
 			const _balance = await readContract(WAGMI_CONFIG, {
-				address: ADDR.decentralizedEURO,
-				abi: DecentralizedEUROABI,
+				address: ADDR.juiceDollar,
+				abi: JuiceDollarABI,
 				functionName: "balanceOf",
 				args: [account],
 			});
@@ -130,7 +130,7 @@ export default function SavingsInteractionCard() {
 			setIsApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDR.decentralizedEURO,
+				address: ADDR.juiceDollar,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [ADDR.savingsGateway, maxUint256],

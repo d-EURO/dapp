@@ -8,8 +8,8 @@ import { useAccount } from "wagmi";
 import Button from "@components/Button";
 import { Address, zeroAddress } from "viem";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
-import { PositionQuery } from "@deuro/api";
-import { PositionV2ABI } from "@deuro/eurocoin";
+import { PositionQuery } from "@juicedollar/api";
+import { PositionV2ABI } from "@juicedollar/jusd";
 
 interface Props {
 	position: PositionQuery;

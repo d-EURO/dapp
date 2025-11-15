@@ -14,10 +14,10 @@ import { RootState } from "../../../redux/redux.store";
 import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../../app.config";
 import { useEffect, useState } from "react";
 import { readContract } from "wagmi/actions";
-import { ChallengesQueryItem, PositionQuery } from "@deuro/api";
+import { ChallengesQueryItem, PositionQuery } from "@juicedollar/api";
 import { useRouter as useNavigation } from "next/navigation";
 import Button, { SecondaryLinkButton } from "@components/Button";
-import { ADDRESS, DecentralizedEUROABI } from "@deuro/eurocoin";
+import { ADDRESS, JuiceDollarABI } from "@juicedollar/jusd";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
@@ -43,8 +43,8 @@ export default function PositionDetail() {
 
 		const fetchAsync = async function () {
 			const data = await readContract(WAGMI_CONFIG, {
-				address: position.deuro,
-				abi: DecentralizedEUROABI,
+				address: position.stablecoinAddress,
+				abi: JuiceDollarABI,
 				functionName: "calculateAssignedReserve",
 				args: [BigInt(position.principal), position.reserveContribution],
 			});
@@ -85,7 +85,7 @@ export default function PositionDetail() {
 								<DisplayAmount
 									amount={BigInt(position.principal)}
 									currency={TOKEN_SYMBOL}
-									address={ADDRESS[chainId].decentralizedEURO}
+									address={ADDRESS[chainId].juiceDollar}
 									className="mt-2"
 								/>
 							</AppBox>
@@ -105,7 +105,7 @@ export default function PositionDetail() {
 									amount={BigInt(position.virtualPrice || position.price)}
 									currency={TOKEN_SYMBOL}
 									digits={36 - position.collateralDecimals}
-									address={ADDRESS[chainId].decentralizedEURO}
+									address={ADDRESS[chainId].juiceDollar}
 									className="mt-2"
 								/>
 							</AppBox>
@@ -114,7 +114,7 @@ export default function PositionDetail() {
 								<DisplayAmount
 									amount={reserve}
 									currency={TOKEN_SYMBOL}
-									address={ADDRESS[chainId].decentralizedEURO}
+									address={ADDRESS[chainId].juiceDollar}
 									className="mt-2"
 								/>
 							</AppBox>
@@ -123,7 +123,7 @@ export default function PositionDetail() {
 								<DisplayAmount
 									amount={BigInt(position.limitForClones)}
 									currency={TOKEN_SYMBOL}
-									address={ADDRESS[chainId].decentralizedEURO}
+									address={ADDRESS[chainId].juiceDollar}
 									className="mt-2"
 								/>
 							</AppBox>

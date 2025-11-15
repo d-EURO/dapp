@@ -1,7 +1,7 @@
 import { useAccount, useChainId, useReadContracts } from "wagmi";
 import { decodeBigIntCall } from "@utils";
 import { zeroAddress } from "viem";
-import { ADDRESS, EquityABI, DecentralizedEUROABI } from "@deuro/eurocoin";
+import { ADDRESS, EquityABI, JuiceDollarABI } from "@juicedollar/jusd";
 
 export const usePoolStats = () => {
 	const chainId = useChainId();
@@ -14,8 +14,8 @@ export const usePoolStats = () => {
 	};
 
 	const deuroContract = {
-		address: ADDRESS[chainId].decentralizedEURO,
-		abi: DecentralizedEUROABI,
+		address: ADDRESS[chainId].juiceDollar,
+		abi: JuiceDollarABI,
 	};
 
 	const { data, refetch } = useReadContracts({
@@ -45,6 +45,7 @@ export const usePoolStats = () => {
 			},
 			{
 				...equityContract,
+				// @ts-ignore TODO: see what's going on
 				functionName: "canRedeem",
 				args: [account],
 			},

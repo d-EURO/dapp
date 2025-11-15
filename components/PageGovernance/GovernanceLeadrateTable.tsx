@@ -5,7 +5,7 @@ import TableRowEmpty from "../Table/TableRowEmpty";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { useState } from "react";
-import { LeadrateProposed } from "@deuro/api";
+import { LeadrateProposed } from "@juicedollar/api";
 import GovernanceLeadrateRow from "./GovernanceLeadrateRow";
 import { useTranslation } from "next-i18next";
 

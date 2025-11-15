@@ -11,7 +11,7 @@ import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
-import { ADDRESS, EquityABI, DEPSWrapperABI, FrontendGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, EquityABI, FrontendGatewayABI } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { TokenBalance } from "../../hooks/useWalletBalances";
@@ -63,15 +63,15 @@ export default function InteractionPoolShareTokenRedeem({
 		const fetchAsync = async function () {
 			if (account != zeroAddress) {
 				const _psTokenAllowance = await readContract(WAGMI_CONFIG, {
-					address: ADDRESS[chainId].DEPSwrapper,
+					address: ADDRESS[chainId].equity,
 					abi: erc20Abi,
 					functionName: "allowance",
-					args: [account, ADDRESS[chainId].frontendGateway],
+					args: [account, ADDRESS[chainId].equity],
 				});
 				setPsTokenAllowance(_psTokenAllowance);
 
 				const _psTokenBalance = await readContract(WAGMI_CONFIG, {
-					address: ADDRESS[chainId].DEPSwrapper,
+					address: ADDRESS[chainId].equity,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					args: [account],
@@ -83,7 +83,7 @@ export default function InteractionPoolShareTokenRedeem({
 				address: ADDRESS[chainId].equity,
 				abi: EquityABI,
 				functionName: "holdingDuration",
-				args: [ADDRESS[chainId].DEPSwrapper],
+				args: [ADDRESS[chainId].equity],
 			});
 			setPsTokenHolding(_psTokenHolding);
 		};
@@ -110,7 +110,7 @@ export default function InteractionPoolShareTokenRedeem({
 			setApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].DEPSwrapper,
+				address: ADDRESS[chainId].equity,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [ADDRESS[chainId].frontendGateway, amount],
@@ -123,7 +123,7 @@ export default function InteractionPoolShareTokenRedeem({
 				},
 				{
 					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].DEPSwrapper),
+					value: shortenAddress(ADDRESS[chainId].equity),
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -156,7 +156,9 @@ export default function InteractionPoolShareTokenRedeem({
 			const writeHash = await writeContract(WAGMI_CONFIG, {
 				address: ADDRESS[chainId].frontendGateway,
 				abi: FrontendGatewayABI,
-				functionName: "unwrapAndSell",
+				// @ts-ignore TODO: see what's going on
+				functionName: "unwrapAndSell", // TODO: see what's going on
+				// @ts-ignore TODO: see what's going on
 				args: [amount, frontendCode],
 			});
 

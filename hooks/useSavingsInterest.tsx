@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import { useBlockNumber } from "wagmi";
-import { ADDRESS, SavingsGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, SavingsGatewayABI } from "@juicedollar/jusd";
 import { formatCurrency, getPublicViewAddress, TOKEN_SYMBOL } from "@utils";
 import { formatUnits, zeroAddress } from "viem";
 import { toast } from "react-toastify";

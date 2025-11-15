@@ -2,7 +2,7 @@ import { erc20Abi, getAddress, isAddress, zeroAddress } from "viem";
 import { useAccount, useReadContracts } from "wagmi";
 import { decodeBigIntCall } from "../utils/format";
 import { WAGMI_CHAIN } from "../app.config";
-import { ADDRESS } from "@deuro/eurocoin";
+import { ADDRESS } from "@juicedollar/jusd";
 
 export const useTokenData = (addr: string) => {
 	if (!isAddress(addr)) addr = zeroAddress;

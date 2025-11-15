@@ -5,7 +5,7 @@ import Table from "../Table";
 import TableRowEmpty from "../Table/TableRowEmpty";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
-import { ChallengesQueryItem, PositionQuery, PriceQueryObjectArray } from "@deuro/api";
+import { ChallengesQueryItem, PositionQuery, PriceQueryObjectArray } from "@juicedollar/api";
 import { Address, formatUnits } from "viem";
 import { useState } from "react";
 import { POSITION_NOT_BLACKLISTED } from "../../app.config";

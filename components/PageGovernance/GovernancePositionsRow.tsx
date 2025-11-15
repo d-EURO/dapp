@@ -1,6 +1,6 @@
 import { formatUnits } from "viem";
 import TableRow from "../Table/TableRow";
-import { PositionQuery } from "@deuro/api";
+import { PositionQuery } from "@juicedollar/api";
 import { formatCurrency, FormatType, shortenAddress } from "../../utils/format";
 import GovernancePositionsAction from "./GovernancePositionsAction";
 import DisplayCollateralBorrowTable from "@components/PageMint/DisplayCollateralBorrowTable";

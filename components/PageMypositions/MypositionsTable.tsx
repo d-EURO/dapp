@@ -4,7 +4,7 @@ import Table from "../Table";
 import TableRowEmpty from "../Table/TableRowEmpty";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
-import { ChallengesPositionsMapping, PositionQuery, PriceQueryObjectArray } from "@deuro/api";
+import { ChallengesPositionsMapping, PositionQuery, PriceQueryObjectArray } from "@juicedollar/api";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { useAccount } from "wagmi";
 import MypositionsRow from "./MypositionsRow";

@@ -5,7 +5,7 @@ import TableRowEmpty from "../Table/TableRowEmpty";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { useState } from "react";
-import { SavingsWithdrawQuery } from "@deuro/api";
+import { SavingsWithdrawQuery } from "@juicedollar/api";
 import SavingsWithdrawnRow from "./SavingsWithdrawnRow";
 import { useTranslation } from "next-i18next";
 

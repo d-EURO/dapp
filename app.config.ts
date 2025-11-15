@@ -183,7 +183,7 @@ export const WAGMI_CONFIG = createConfig({
 });
 
 // MINT POSITION BLACKLIST
-export const MINT_POSITION_BLACKLIST: Address[] = ["0x98725eE62833096C1c9bE26001F3cDA9a6241EF3"];
+export const MINT_POSITION_BLACKLIST: Address[] = [];
 export const POSITION_NOT_BLACKLISTED = (addr: Address): boolean => {
 	const r = MINT_POSITION_BLACKLIST.filter((p) => {
 		return p.toLowerCase() === addr.toLowerCase();

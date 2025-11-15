@@ -13,7 +13,7 @@ import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
-import { ADDRESS, DecentralizedEUROABI, EquityABI, FrontendGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, JuiceDollarABI, EquityABI, FrontendGatewayABI } from "@juicedollar/jusd";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { useTranslation } from "next-i18next";
 import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutlined";
@@ -53,8 +53,8 @@ export default function InteractionStablecoinAndNativePS({
 	const direction: boolean = selectedFromToken?.symbol === TOKEN_SYMBOL;
 
 	const { data: frontendDeuroAllowanceData, refetch: refetchFrontendDeuroAllowance } = useReadContract({
-		address: ADDRESS[chainId].decentralizedEURO,
-		abi: DecentralizedEUROABI,
+		address: ADDRESS[chainId].juiceDollar,
+		abi: JuiceDollarABI,
 		functionName: "allowance",
 		args: [account, ADDRESS[chainId].frontendGateway],
 	});
@@ -78,7 +78,7 @@ export default function InteractionStablecoinAndNativePS({
 			setApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].decentralizedEURO,
+				address: ADDRESS[chainId].juiceDollar,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [ADDRESS[chainId].frontendGateway, amount],

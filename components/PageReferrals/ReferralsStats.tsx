@@ -3,7 +3,7 @@ import { useMyReferrals } from "@hooks";
 import { useChainId } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useTranslation } from "next-i18next";
-import { ADDRESS, FrontendGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, FrontendGatewayABI } from "@juicedollar/jusd";
 import { formatUnits, zeroAddress } from "viem";
 import { WAGMI_CONFIG } from "../../app.config";
 import { formatCurrency, TOKEN_SYMBOL } from "@utils";

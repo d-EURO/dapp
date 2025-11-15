@@ -3,7 +3,7 @@ import { RootState } from "../../redux/redux.store";
 import TokenLogo from "@components/TokenLogo";
 import { Address } from "viem/accounts";
 import { formatCurrency } from "../../utils/format";
-import { PositionQuery, PriceQueryObjectArray } from "@deuro/api";
+import { PositionQuery, PriceQueryObjectArray } from "@juicedollar/api";
 
 export type CollateralItem = {
 	collateral: {
@@ -41,7 +41,7 @@ export function BorrowCollateralCalculate(listByCollateral: PositionQuery[][], p
 		if (!original) continue;
 		
 		const collateral = prices[original.collateral.toLowerCase() as Address];
-		const mint = prices[original.deuro.toLowerCase() as Address];
+		const mint = prices[original.stablecoinAddress.toLowerCase() as Address];
 
 		if (!collateral || !mint) continue;
 
@@ -52,8 +52,8 @@ export function BorrowCollateralCalculate(listByCollateral: PositionQuery[][], p
 		for (let pos of positions) {
 			balance += parseInt(pos.collateralBalance);
 			if (pos.isOriginal) {
-				limitForClones += parseInt(pos.limitForClones) / 10 ** pos.deuroDecimals;
-				availableForClones += parseInt(pos.availableForClones) / 10 ** pos.deuroDecimals;
+				limitForClones += parseInt(pos.limitForClones) / 10 ** pos.stablecoinDecimals;
+				availableForClones += parseInt(pos.availableForClones) / 10 ** pos.stablecoinDecimals;
 			}
 		}
 
@@ -67,7 +67,7 @@ export function BorrowCollateralCalculate(listByCollateral: PositionQuery[][], p
 			const interest: number = Math.round((position.annualInterestPPM / 10 ** 4) * 100) / 100;
 			const reserve: number = Math.round((position.reserveContribution / 10 ** 4) * 100) / 100;
 
-			const available: number = Math.round((parseInt(position.availableForClones) / 10 ** position.deuroDecimals) * 100) / 100;
+			const available: number = Math.round((parseInt(position.availableForClones) / 10 ** position.stablecoinDecimals) * 100) / 100;
 			const availableK: string = formatCurrency((Math.round(available / 100) / 10).toString(), 2) + "k";
 			const price: number = Math.round((parseInt(position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100;
 			const since: number = Math.round((Date.now() - position.start * 1000) / 1000 / 60 / 60 / 24);
@@ -110,7 +110,7 @@ export function BorrowCollateralCalculate(listByCollateral: PositionQuery[][], p
 				valueUsd: valueLockedUsd,
 			},
 			mint: {
-				address: original.deuro,
+				address: original.stablecoinAddress,
 				name: mint.name,
 				symbol: mint.symbol,
 				decimals: mint.decimals,
