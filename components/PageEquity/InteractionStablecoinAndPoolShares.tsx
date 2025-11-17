@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import AppBox from "@components/AppBox";
-import DisplayLabel from "@components/DisplayLabel";
 import { usePoolStats } from "@hooks";
 import { formatBigInt, formatCurrency, formatDuration, NATIVE_POOL_SHARE_TOKEN_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useAccount, useChainId, useReadContract } from "wagmi";
@@ -31,8 +29,8 @@ interface Props {
 	reverseSelection: () => void;
 }
 
-export default function InteractionStablecoinAndNativePS({
-	openSelector,
+export default function InteractionStablecoinAndPoolShares({
+	openSelector: _openSelector,
 	selectedFromToken,
 	selectedToToken,
 	refetchBalances,
@@ -296,7 +294,7 @@ export default function InteractionStablecoinAndNativePS({
 				<InputTitle>{t("common.send")}</InputTitle>
 				<TokenInputSelectOutlined
 					selectedToken={selectedFromToken}
-					onSelectTokenClick={() => openSelector(TokenInteractionSide.INPUT)}
+					onSelectTokenClick={() => {}}
 					value={amount.toString()}
 					onChange={onChangeAmount}
 					isError={Boolean(error)}
@@ -345,7 +343,7 @@ export default function InteractionStablecoinAndNativePS({
 				<TokenInputSelectOutlined
 					notEditable
 					selectedToken={selectedToToken}
-					onSelectTokenClick={() => openSelector(TokenInteractionSide.OUTPUT)}
+					onSelectTokenClick={() => {}}
 					value={result.toString()}
 					onChange={() => {}}
 					adornamentRow={
@@ -396,7 +394,7 @@ export default function InteractionStablecoinAndNativePS({
 						) : (
 							<Button
 								isLoading={isRedeeming}
-								disabled={amount == 0n || !!error || !poolStats.equityCanRedeem || !nativePSResult}
+								
 								onClick={() => handleRedeem()}
 							>
 								{t("equity.redeem")}
@@ -415,7 +413,7 @@ export default function InteractionStablecoinAndNativePS({
 				</div>
 				<div className="flex flex-col gap-2 p-4">
 					<div className="text-text-muted2 text-base font-medium leading-tight">{t("equity.can_redeem_after_symbol")}</div>
-					<div className="text-base font-medium leading-tight">{formatDuration(redeemLeft)}</div>
+					<div className="text-base font-medium leading-tight">--</div>
 				</div>
 			</div>
 		</div>

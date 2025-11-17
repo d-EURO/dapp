@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { NATIVE_POOL_SHARE_TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
+import { POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
 import { useChainId } from "wagmi";
-import InteractionStablecoinAndNativePS from "./InteractionStablecoinAndNativePS";
-import InteractionNativePSAndPoolShareToken from "./InteractionNativePSAndPoolShareToken";
-import InteractionPoolShareTokenRedeem from "./InteractionPoolShareTokenRedeem";
+import InteractionStablecoinAndPoolShares from "./InteractionStablecoinAndPoolShares";
 import { ADDRESS } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
@@ -15,13 +13,14 @@ export enum TokenInteractionSide {
 }
 
 export const EquityTokenSelectorMapping: { [key: string]: string[] } = {
-	[TOKEN_SYMBOL]: [NATIVE_POOL_SHARE_TOKEN_SYMBOL],
+	[TOKEN_SYMBOL]: [POOL_SHARE_TOKEN_SYMBOL],
+	[POOL_SHARE_TOKEN_SYMBOL]: [TOKEN_SYMBOL],
 };
 
 export default function EquityInteractionCard() {
 	const [tokenFromTo, setTokenFromTo] = useState<{ from: string; to: string }>({
 		from: TOKEN_SYMBOL,
-		to: NATIVE_POOL_SHARE_TOKEN_SYMBOL,
+		to: POOL_SHARE_TOKEN_SYMBOL,
 	});
 	const [isOpenTokenSelector, setIsOpenTokenSelector] = useState(false);
 	const [tokenInteractionSide, setTokenInteractionSide] = useState<TokenInteractionSide | undefined>(undefined);
@@ -86,36 +85,14 @@ export default function EquityInteractionCard() {
 					</div>
 				</div>
 
-				{/* Load modules dynamically */}
 				{(tokenFromTo.from === TOKEN_SYMBOL && tokenFromTo.to === POOL_SHARE_TOKEN_SYMBOL) ||
 				(tokenFromTo.from === POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === TOKEN_SYMBOL) ? (
-					<InteractionStablecoinAndNativePS
+					<InteractionStablecoinAndPoolShares
 						selectedFromToken={selectedFromToken}
 						selectedToToken={selectedToToken}
 						openSelector={handleOpenTokenSelector}
 						reverseSelection={handleReverseSelection}
 						refetchBalances={refetchBalances}
-					/>
-				) : null}
-
-				{(tokenFromTo.from === NATIVE_POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === POOL_SHARE_TOKEN_SYMBOL) ||
-				(tokenFromTo.from === POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === NATIVE_POOL_SHARE_TOKEN_SYMBOL) ? (
-					<InteractionNativePSAndPoolShareToken
-						openSelector={handleOpenTokenSelector}
-						selectedFromToken={selectedFromToken}
-						selectedToToken={selectedToToken}
-						refetchBalances={refetchBalances}
-						reverseSelection={handleReverseSelection}
-					/>
-				) : null}
-
-				{tokenFromTo.from === POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === TOKEN_SYMBOL ? (
-					<InteractionPoolShareTokenRedeem
-						openSelector={handleOpenTokenSelector}
-						selectedFromToken={selectedFromToken}
-						selectedToToken={selectedToToken}
-						refetchBalances={refetchBalances}
-						reverseSelection={handleReverseSelection}
 					/>
 				) : null}
 			</div>
