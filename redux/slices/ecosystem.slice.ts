@@ -103,7 +103,7 @@ export const fetchEcosystem =
 			const response2 = await DEURO_API_CLIENT.get("/ecosystem/collateral/stats");
 			dispatch(slice.actions.setCollateralStats(response2.data as ApiEcosystemCollateralStats));
 
-			const response3 = await DEURO_API_CLIENT.get("/ecosystem/deps/info");
+			const response3 = await DEURO_API_CLIENT.get("/ecosystem/poolshares/info");
 			dispatch(slice.actions.setDepsInfo(response3.data as ApiEcosystemPoolSharesInfo));
 
 			const response4 = await DEURO_API_CLIENT.get("/ecosystem/stablecoin/info");
