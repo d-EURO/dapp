@@ -27,7 +27,7 @@ enum TokenInteractionSide {
 	OUTPUT = "output",
 }
 
-const STABLECOIN_SYMBOLS = ["STARTUSD"];
+const STABLECOIN_SYMBOLS = ["SUSD"];
 
 const noTokenMeta = {
 	symbol: "",
@@ -73,8 +73,7 @@ export default function Swap() {
 		(symbol: string) => {
 			switch (symbol) {
 				case TOKEN_SYMBOL:
-					const stablecoinSymbol = getSelectedStablecoinSymbol();
-					const userAllowance = swapStats.dEuro.bridgeAllowance[stablecoinSymbol as keyof typeof swapStats.dEuro.bridgeAllowance];
+					const userAllowance = swapStats.dEuro.bridgeAllowance;
 					return {
 						symbol: TOKEN_SYMBOL,
 						userBal: swapStats.dEuro.userBal,
@@ -87,7 +86,7 @@ export default function Swap() {
 						contractBridgeAddress: "0x0",
 						contractAddress: swapStats.dEuro.contractAddress,
 					};
-				case "STARTUSD":
+				case "SUSD":
 					return swapStats.startUSD;
 				default:
 					return noTokenMeta;
@@ -473,7 +472,6 @@ export default function Swap() {
 							/>
 							<div className="mx-auto mt-12 max-w-full flex-col">
 								<GuardToAllowedChainBtn>
-									{/* @ts-ignore TODO: see what's going on */}
 									{amount > fromTokenMeta.userAllowance ? (
 										<Button isLoading={isTxOnGoing} onClick={() => handleApprove()}>
 											{t("common.approve")}

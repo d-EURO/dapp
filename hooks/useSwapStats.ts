@@ -119,7 +119,6 @@ export const useSwapStats = () => {
 		contractBridgeAddress: ADDRESS[chainId].bridgeStartUSD,
 	};
 
-
 	return {
 		isError,
 		isLoading,
