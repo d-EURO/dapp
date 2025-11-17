@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { usePoolStats } from "@hooks";
-import { formatBigInt, formatCurrency, formatDuration, NATIVE_POOL_SHARE_TOKEN_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
+import { formatBigInt, formatCurrency, formatDuration, POOL_SHARE_TOKEN_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useAccount, useChainId, useReadContract } from "wagmi";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
@@ -131,7 +131,7 @@ export default function InteractionStablecoinAndPoolShares({
 				},
 				{
 					title: t("common.txs.shares"),
-					value: formatBigInt(result) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
+					value: formatBigInt(result) + " " + POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -174,7 +174,7 @@ export default function InteractionStablecoinAndPoolShares({
 
 	const fromBalance = direction ? poolStats.deuroBalance : poolStats.equityBalance;
 	const result = (direction ? nativePSResult : deuroResult) || 0n;
-	const fromSymbol = direction ? TOKEN_SYMBOL : NATIVE_POOL_SHARE_TOKEN_SYMBOL;
+	const fromSymbol = direction ? TOKEN_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
 	const unlocked =
 		poolStats.equityUserVotes > 86_400 * 90 && poolStats.equityUserVotes < 86_400 * 365 * 30 && poolStats.equityUserVotes > 0n;
 	const redeemLeft = 86400n * 90n - (poolStats.equityBalance ? poolStats.equityUserVotes / poolStats.equityBalance / 2n ** 20n : 0n);
@@ -207,7 +207,7 @@ export default function InteractionStablecoinAndPoolShares({
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: formatBigInt(amount) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
+					value: formatBigInt(amount) + " " + POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: t("common.txs.spender"),
@@ -221,10 +221,10 @@ export default function InteractionStablecoinAndPoolShares({
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("common.txs.title", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
+					render: <TxToast title={t("common.txs.title", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 				success: {
-					render: <TxToast title={t("common.txs.success", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
+					render: <TxToast title={t("common.txs.success", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 			});
 
@@ -252,7 +252,7 @@ export default function InteractionStablecoinAndPoolShares({
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: formatBigInt(amount) + " " + NATIVE_POOL_SHARE_TOKEN_SYMBOL,
+					value: formatBigInt(amount) + " " + POOL_SHARE_TOKEN_SYMBOL,
 				},
 				{
 					title: t("common.txs.receive"),
@@ -266,12 +266,12 @@ export default function InteractionStablecoinAndPoolShares({
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: redeemWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("equity.txs.redeeming", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
+					render: <TxToast title={t("equity.txs.redeeming", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 				success: {
 					render: (
 						<TxToast
-							title={t("equity.txs.successfully_redeemed", { symbol: NATIVE_POOL_SHARE_TOKEN_SYMBOL })}
+							title={t("equity.txs.successfully_redeemed", { symbol: POOL_SHARE_TOKEN_SYMBOL })}
 							rows={toastContent}
 						/>
 					),

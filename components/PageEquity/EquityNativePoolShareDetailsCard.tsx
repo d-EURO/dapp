@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { usePoolStats, useTradeQuery } from "@hooks";
 import dynamic from "next/dynamic";
-import { formatCurrency, NATIVE_POOL_SHARE_TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
+import { formatCurrency, POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import { useTranslation } from "next-i18next";
 import { formatUnits } from "viem";
@@ -64,7 +64,7 @@ export default function EquityNativePoolShareDetailsCard() {
 			{trades?.length ? (
 				<div id="chart-timeline" className="relative">
 					<div className="absolute top-[20px] left-[20px] z-10 gap-2 flex flex-col items-start">
-						<TokenLogo currency={NATIVE_POOL_SHARE_TOKEN_SYMBOL} size={7} />
+						<TokenLogo currency={POOL_SHARE_TOKEN_SYMBOL} size={7} />
 						<div>
 							<span className="text-base font-extrabold leading-tight">
 								{formatCurrency(formatUnits(poolStats.equityPrice, 18), 4, 4)}
@@ -169,7 +169,7 @@ export default function EquityNativePoolShareDetailsCard() {
 				<div className="flex flex-row justify-between">
 					<div className="text-sm font-medium leading-relaxed">{t("equity.supply")}</div>
 					<div className="text-sm font-medium leading-tight ">
-						{formatCurrency(formatUnits(poolStats.equitySupply, 18), 2, 2)} {NATIVE_POOL_SHARE_TOKEN_SYMBOL}
+						{formatCurrency(formatUnits(poolStats.equitySupply, 18), 2, 2)} {POOL_SHARE_TOKEN_SYMBOL}
 					</div>
 				</div>
 				<div className="flex flex-row justify-between">
