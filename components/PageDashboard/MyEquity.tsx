@@ -57,13 +57,6 @@ export const MyEquity = () => {
 		args: [balancesByAddress[ADDRESS[chainId].equity]?.balanceOf || 0n],
 	});
 
-	const { data: deuroWrapped = 0n } = useReadContract({
-		address: ADDRESS[chainId].equity,
-		abi: EquityABI,
-		functionName: "calculateProceeds",
-		args: [balancesByAddress[ADDRESS[chainId].equity]?.balanceOf || 0n],
-	});
-
 	const equityData = [
 		{
 			symbol: POOL_SHARE_TOKEN_SYMBOL,
@@ -72,7 +65,7 @@ export const MyEquity = () => {
 		},
 	];
 
-	const totalInvested = deuroNative + deuroWrapped;
+	const totalInvested = deuroNative;
 	const isEquityData = totalInvested > 0;
 
 	return (
