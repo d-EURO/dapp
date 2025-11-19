@@ -80,8 +80,6 @@
         "placeholder": "Cantidad a intercambiar",
         "swap": "Intercambiar",
         "select_stablecoin": "Seleccionar Activo",
-        "vault_shares_approx": "Acciones de Vault (la cantidad varía según el precio)",
-        "vault_assets_approx": "dEURO (la cantidad varía según el precio)",
         "error": {
             "insufficient_bridge": "Fondos {{symbol}} insuficientes para el intercambio.",
             "exceeds_limit": "La cantidad excede el límite de intercambio."

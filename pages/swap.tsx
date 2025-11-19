@@ -12,9 +12,8 @@ import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../app.config";
 import AppCard from "@components/AppCard";
-import { StablecoinBridgeABI, SavingsVaultDEUROABI, ADDRESS } from "@deuro/eurocoin";
+import { StablecoinBridgeABI } from "@deuro/eurocoin";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { useChainId, useReadContract } from "wagmi";
 import { useTranslation } from "next-i18next";
 import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutlined";
 import { InputTitle } from "@components/Input/InputTitle";
@@ -22,14 +21,13 @@ import { MaxButton } from "@components/Input/MaxButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/redux.store";
 import { TokenModalRowButton, TokenSelectModal } from "@components/TokenSelectModal";
-import { useAccount } from "wagmi";
 
 enum TokenInteractionSide {
 	INPUT = "input",
 	OUTPUT = "output",
 }
 
-const STABLECOIN_SYMBOLS = ["EURC", "VEUR", "EURS", "EURR", "EUROP", "EURI", "EURE", "EURA", "svdEURO"];
+const STABLECOIN_SYMBOLS = ["EURC", "VEUR", "EURS", "EURR", "EUROP", "EURI", "EURE", "EURA"];
 
 const noTokenMeta = {
 	symbol: "",
@@ -66,39 +64,6 @@ export default function Swap() {
 	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
 	const swapStats = useSwapStats();
 	const { t } = useTranslation();
-	const chainId = useChainId();
-	const { address } = useAccount();
-
-	// Dynamic preview calls for vault operations (ERC-4626 standard)
-	const { data: previewShares } = useReadContract({
-		address: ADDRESS[chainId]?.savingsVaultDEURO,
-		abi: SavingsVaultDEUROABI,
-		functionName: 'previewDeposit',
-		args: [amount],
-		query: {
-			enabled: Boolean(
-				amount > 0n &&
-				fromSymbol === TOKEN_SYMBOL &&
-				toSymbol === "svdEURO" &&
-				ADDRESS[chainId]?.savingsVaultDEURO
-			),
-		},
-	});
-
-	const { data: previewAssets } = useReadContract({
-		address: ADDRESS[chainId]?.savingsVaultDEURO,
-		abi: SavingsVaultDEUROABI,
-		functionName: 'previewRedeem',
-		args: [amount],
-		query: {
-			enabled: Boolean(
-				amount > 0n &&
-				fromSymbol === "svdEURO" &&
-				toSymbol === TOKEN_SYMBOL &&
-				ADDRESS[chainId]?.savingsVaultDEURO
-			),
-		},
-	});
 
 	const getSelectedStablecoinSymbol = useCallback(() => {
 		return fromSymbol === TOKEN_SYMBOL ? toSymbol : fromSymbol;
@@ -138,8 +103,6 @@ export default function Swap() {
 					return swapStats.eure;
 				case "EURA":
 					return swapStats.eura;
-				case "svdEURO":
-					return swapStats.svdEURO;
 				default:
 					return noTokenMeta;
 			}
@@ -205,16 +168,8 @@ export default function Swap() {
 	useEffect(() => {
 		const fromTokenData = getTokenMetaBySymbol(fromSymbol);
 		const toTokenData = getTokenMetaBySymbol(toSymbol);
-		const isBurning = fromSymbol === TOKEN_SYMBOL && toSymbol !== "svdEURO";
-		const isMinting = toSymbol === TOKEN_SYMBOL && fromSymbol !== "svdEURO";
-		const isVaultDeposit = fromSymbol === TOKEN_SYMBOL && toSymbol === "svdEURO";
-		const isVaultRedeem = fromSymbol === "svdEURO" && toSymbol === TOKEN_SYMBOL;
-
-		// Check if vault address exists
-		if ((isVaultDeposit || isVaultRedeem) && !ADDRESS[chainId]?.savingsVaultDEURO) {
-			setError("Vault not available on this chain");
-			return;
-		}
+		const isBurning = fromSymbol === TOKEN_SYMBOL;
+		const isMinting = toSymbol === TOKEN_SYMBOL;
 
 		// For adjusting because of the decimal differences between the two token contracts
 		const forwardSubtraction = fromTokenData.decimals - toTokenData.decimals;
@@ -231,7 +186,7 @@ export default function Swap() {
 		} else {
 			setError("");
 		}
-	}, [amount, fromSymbol, toSymbol, getTokenMetaBySymbol, t, chainId]);
+	}, [amount, fromSymbol, toSymbol, getTokenMetaBySymbol, t]);
 
 	const handleApprove = async () => {
 		try {
@@ -240,16 +195,13 @@ export default function Swap() {
 			const fromContractAddress = fromTokenData.contractAddress;
 
 			const stablecoinSymbol = getSelectedStablecoinSymbol();
-			// For vault, use vault address; for bridges, use bridge address
-			const spenderAddress = (stablecoinSymbol === "svdEURO"
-				? ADDRESS[chainId].savingsVaultDEURO
-				: getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress) as `0x${string}`;
+			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress as `0x${string}`;
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
 				address: fromContractAddress as `0x${string}`,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [spenderAddress, maxUint256],
+				args: [bridgeAddress, maxUint256],
 			});
 
 			const toastContent = [
@@ -259,7 +211,7 @@ export default function Swap() {
 				},
 				{
 					title: t("common.txs.spender"),
-					value: shortenAddress(spenderAddress),
+					value: shortenAddress(bridgeAddress),
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -380,104 +332,6 @@ export default function Swap() {
 		}
 	};
 
-	// You send dEURO and receive svdEURO (deposit into vault)
-	const handleVaultDeposit = async () => {
-		if (!address) return;
-
-		try {
-			setTxOnGoing(true);
-			const vaultAddress = ADDRESS[chainId].savingsVaultDEURO as `0x${string}`;
-
-			const depositWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: vaultAddress,
-				abi: SavingsVaultDEUROABI,
-				functionName: "deposit",
-				args: [amount, address],
-			});
-
-			const fromDecimals = getTokenMetaBySymbol(fromSymbol).decimals;
-
-			const toastContent = [
-				{
-					title: t("swap.swap_tx.amount_from", { symbol: fromSymbol }),
-					value: formatBigInt(amount, Number(fromDecimals)) + " " + fromSymbol,
-				},
-				{
-					title: t("swap.swap_tx.amount_to", { symbol: toSymbol }),
-					value: t("swap.vault_shares_approx"),
-				},
-				{
-					title: t("common.txs.transaction"),
-					hash: depositWriteHash,
-				},
-			];
-
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: depositWriteHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title={t("swap.swap_tx.title", { fromSymbol, toSymbol })} rows={toastContent} />,
-				},
-				success: {
-					render: <TxToast title={t("swap.swap_tx.success", { fromSymbol, toSymbol })} rows={toastContent} />,
-				},
-			});
-			swapStats.refetch();
-			setAmount(0n);
-		} catch (error) {
-			toast.error(renderErrorTxToast(error));
-		} finally {
-			setTxOnGoing(false);
-		}
-	};
-
-	// You send svdEURO and receive dEURO (redeem from vault)
-	const handleVaultRedeem = async () => {
-		if (!address) return;
-
-		try {
-			setTxOnGoing(true);
-			const vaultAddress = ADDRESS[chainId].savingsVaultDEURO as `0x${string}`;
-
-			const redeemWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: vaultAddress,
-				abi: SavingsVaultDEUROABI,
-				functionName: "redeem",
-				args: [amount, address, address],
-			});
-
-			const fromDecimals = getTokenMetaBySymbol(fromSymbol).decimals;
-
-			const toastContent = [
-				{
-					title: t("swap.swap_tx.amount_from", { symbol: fromSymbol }),
-					value: formatBigInt(amount, Number(fromDecimals)) + " " + fromSymbol,
-				},
-				{
-					title: t("swap.swap_tx.amount_to", { symbol: toSymbol }),
-					value: t("swap.vault_assets_approx"),
-				},
-				{
-					title: t("common.txs.transaction"),
-					hash: redeemWriteHash,
-				},
-			];
-
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: redeemWriteHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title={t("swap.swap_tx.title", { fromSymbol, toSymbol })} rows={toastContent} />,
-				},
-				success: {
-					render: <TxToast title={t("swap.swap_tx.success", { fromSymbol, toSymbol })} rows={toastContent} />,
-				},
-			});
-			swapStats.refetch();
-			setAmount(0n);
-		} catch (error) {
-			toast.error(renderErrorTxToast(error));
-		} finally {
-			setTxOnGoing(false);
-		}
-	};
-
 	const handleOpenModal = (side: TokenInteractionSide) => {
 		setInteractionSide(side);
 		setIsModalOpen(true);
@@ -501,44 +355,8 @@ export default function Swap() {
 	const fromTokenMeta = getTokenMetaBySymbol(fromSymbol);
 	const toTokenMeta = getTokenMetaBySymbol(toSymbol);
 	const stablecoinMeta = getTokenMetaBySymbol(getSelectedStablecoinSymbol());
-
-	// Determine if this is a vault operation (no limits apply)
-	const isVaultOperation = (fromSymbol === "svdEURO" || toSymbol === "svdEURO");
 	const limit = fromSymbol === TOKEN_SYMBOL ? stablecoinMeta.bridgeBal : stablecoinMeta.remaining;
-
-	// Calculate output amount: uses ERC-4626 preview functions for vault, simple decimals for bridge
-	let rebasedOutputAmount: bigint;
-	if (fromSymbol === "svdEURO" && toSymbol === TOKEN_SYMBOL) {
-		// Vault redeem: use on-chain preview or fallback calculation
-		if (previewAssets !== undefined) {
-			rebasedOutputAmount = previewAssets as bigint;
-		} else {
-			const totalAssets = swapStats.svdEURO.totalAssets || 0n;
-			const totalSupply = swapStats.svdEURO.totalSupply || 0n;
-			if (totalSupply > 0n && amount > 0n) {
-				rebasedOutputAmount = (amount * totalAssets) / totalSupply;
-			} else {
-				rebasedOutputAmount = 0n;
-			}
-		}
-	} else if (fromSymbol === TOKEN_SYMBOL && toSymbol === "svdEURO") {
-		// Vault deposit: use on-chain preview or fallback calculation
-		if (previewShares !== undefined) {
-			rebasedOutputAmount = previewShares as bigint;
-		} else {
-			const totalAssets = swapStats.svdEURO.totalAssets || 0n;
-			const totalSupply = swapStats.svdEURO.totalSupply || 0n;
-			if (totalSupply === 0n) {
-				rebasedOutputAmount = amount; // First deposit: 1:1 ratio
-			} else if (amount > 0n && totalAssets > 0n) {
-				rebasedOutputAmount = (amount * totalSupply) / totalAssets;
-			} else {
-				rebasedOutputAmount = 0n;
-			}
-		}
-	} else {
-		rebasedOutputAmount = rebaseDecimals(amount, fromTokenMeta.decimals, toTokenMeta.decimals);
-	}
+	const rebasedOutputAmount = rebaseDecimals(amount, fromTokenMeta.decimals, toTokenMeta.decimals);
 
 	return (
 		<>
@@ -570,13 +388,11 @@ export default function Swap() {
 								isError={Boolean(error)}
 								errorMessage={error}
 								label={
-									isVaultOperation
-										? undefined
-										: t("swap.limit_label") +
-										  " " +
-										  formatBigInt(limit, Number(toTokenMeta.decimals)) +
-										  " " +
-										  fromTokenMeta.symbol
+									t("swap.limit_label") +
+									" " +
+									formatBigInt(limit, Number(toTokenMeta.decimals)) +
+									" " +
+									fromTokenMeta.symbol
 								}
 								adornamentRow={
 									<div className="self-stretch justify-start items-center inline-flex">
@@ -675,14 +491,6 @@ export default function Swap() {
 										<Button isLoading={isTxOnGoing} onClick={() => handleApprove()}>
 											{t("common.approve")}
 										</Button>
-									) : fromSymbol === TOKEN_SYMBOL && toSymbol === "svdEURO" ? (
-										<Button disabled={amount == 0n || !!error} isLoading={isTxOnGoing} onClick={() => handleVaultDeposit()}>
-											{t("swap.swap")}
-										</Button>
-									) : fromSymbol === "svdEURO" && toSymbol === TOKEN_SYMBOL ? (
-										<Button disabled={amount == 0n || !!error} isLoading={isTxOnGoing} onClick={() => handleVaultRedeem()}>
-											{t("swap.swap")}
-										</Button>
 									) : fromSymbol === TOKEN_SYMBOL ? (
 										<Button disabled={amount == 0n || !!error} isLoading={isTxOnGoing} onClick={() => handleBurn()}>
 											{t("swap.swap")}
@@ -763,14 +571,6 @@ export default function Swap() {
 						balance={formatCurrency(formatUnits(swapStats.eura.userBal, Number(swapStats.eura.decimals))) as string}
 						name={swapStats.eura.symbol}
 						onClick={() => handleSelectToken(swapStats.eura.symbol)}
-					/>
-					<TokenModalRowButton
-						currency="€"
-						symbol={swapStats.svdEURO.symbol}
-						price={formatCurrency(formatUnits(swapStats.svdEURO.userBal, Number(swapStats.svdEURO.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.svdEURO.userBal, Number(swapStats.svdEURO.decimals))) as string}
-						name={swapStats.svdEURO.symbol}
-						onClick={() => handleSelectToken(swapStats.svdEURO.symbol)}
 					/>
 				</div>
 			</TokenSelectModal>
