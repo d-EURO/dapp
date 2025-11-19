@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { usePoolStats } from "@hooks";
-import { formatBigInt, formatCurrency, formatDuration, POOL_SHARE_TOKEN_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
+import { formatBigInt, formatCurrency, SAVINGS_VAULT_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useAccount, useChainId, useReadContract } from "wagmi";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
@@ -11,8 +11,7 @@ import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
-import { ADDRESS, JuiceDollarABI, EquityABI, FrontendGatewayABI } from "@juicedollar/jusd";
-import { useFrontendCode } from "../../hooks/useFrontendCode";
+import { ADDRESS, JuiceDollarABI, SavingsVaultJUSDABI } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
 import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutlined";
 import { InputTitle } from "@components/Input/InputTitle";
@@ -29,7 +28,7 @@ interface Props {
 	reverseSelection: () => void;
 }
 
-export default function InteractionStablecoinAndPoolShares({
+export default function InteractionStablecoinAndSavingVault({
 	openSelector,
 	selectedFromToken,
 	selectedToToken,
@@ -42,7 +41,6 @@ export default function InteractionStablecoinAndPoolShares({
 	const [isInversting, setInversting] = useState(false);
 	const [isRedeeming, setRedeeming] = useState(false);
 	const { t } = useTranslation();
-	const { frontendCode } = useFrontendCode();
 	const { address } = useAccount();
 	const chainId = useChainId();
 	const poolStats = usePoolStats();
@@ -50,28 +48,20 @@ export default function InteractionStablecoinAndPoolShares({
 	const account = address || zeroAddress;
 	const direction: boolean = selectedFromToken?.symbol === TOKEN_SYMBOL;
 
-	const { data: frontendDeuroAllowanceData, refetch: refetchFrontendDeuroAllowance } = useReadContract({
+	const { data: stablecoinAllowanceData, refetch: refetchStablecoinAllowance } = useReadContract({
 		address: ADDRESS[chainId].juiceDollar,
 		abi: JuiceDollarABI,
 		functionName: "allowance",
-		args: [account, ADDRESS[chainId].frontendGateway],
+		args: [account, ADDRESS[chainId].savingsVaultJUSD],
 	});
-	const frontendDeuroAllowance = frontendDeuroAllowanceData ? BigInt(String(frontendDeuroAllowanceData)) : 0n;
-
-	const { data: frontendEquityAllowanceData, refetch: refetchFrontendEquityAllowance } = useReadContract({
-		address: ADDRESS[chainId].equity,
-		abi: EquityABI,
-		functionName: "allowance",
-		args: [account, ADDRESS[chainId].frontendGateway],
-	});
-	const frontendEquityAllowance = frontendEquityAllowanceData ? BigInt(String(frontendEquityAllowanceData)) : 0n;
+	const stablecoinAllowance = stablecoinAllowanceData ? BigInt(String(stablecoinAllowanceData)) : 0n;
 
 	useEffect(() => {
 		setAmount(0n);
 		setError("");
 	}, [selectedFromToken?.symbol]);
 
-	const handleApproveInvest = async () => {
+	const handleApproveDeposit = async () => {
 		try {
 			setApproving(true);
 
@@ -79,7 +69,7 @@ export default function InteractionStablecoinAndPoolShares({
 				address: ADDRESS[chainId].juiceDollar,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].frontendGateway, amount],
+				args: [ADDRESS[chainId].savingsVaultJUSD, amount],
 			});
 
 			const toastContent = [
@@ -89,7 +79,7 @@ export default function InteractionStablecoinAndPoolShares({
 				},
 				{
 					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].equity),
+					value: shortenAddress(ADDRESS[chainId].savingsVaultJUSD),
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -107,7 +97,7 @@ export default function InteractionStablecoinAndPoolShares({
 			});
 
 			await poolStats.refetchPoolStats();
-			await refetchFrontendDeuroAllowance();
+			await refetchStablecoinAllowance();
 		} catch (error) {
 			toast.error(renderErrorTxToast(error));
 		} finally {
@@ -115,13 +105,13 @@ export default function InteractionStablecoinAndPoolShares({
 		}
 	};
 
-	const handleInvest = async () => {
+	const handleDeposit = async () => {
 		try {
-			const investWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].frontendGateway,
-				abi: FrontendGatewayABI,
-				functionName: "invest",
-				args: [amount, result, frontendCode],
+			const depositWriteHash = await writeContract(WAGMI_CONFIG, {
+				address: ADDRESS[chainId].savingsVaultJUSD,
+				abi: SavingsVaultJUSDABI,
+				functionName: "deposit",
+				args: [amount, address!],
 			});
 
 			const toastContent = [
@@ -131,15 +121,15 @@ export default function InteractionStablecoinAndPoolShares({
 				},
 				{
 					title: t("common.txs.shares"),
-					value: formatBigInt(result) + " " + POOL_SHARE_TOKEN_SYMBOL,
+					value: formatBigInt(result) + " " + SAVINGS_VAULT_SYMBOL,
 				},
 				{
 					title: t("common.txs.transaction"),
-					hash: investWriteHash,
+					hash: depositWriteHash,
 				},
 			];
 
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: investWriteHash, confirmations: 1 }), {
+			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: depositWriteHash, confirmations: 1 }), {
 				pending: {
 					render: <TxToast title={t("equity.txs.investing", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
 				},
@@ -158,30 +148,28 @@ export default function InteractionStablecoinAndPoolShares({
 		}
 	};
 
-	const { data: nativePSResult, isLoading: shareLoading } = useReadContract({
-		address: ADDRESS[chainId].equity,
-		abi: EquityABI,
-		functionName: "calculateShares",
+	const { data: amountInShares } = useReadContract({
+		address: ADDRESS[chainId].savingsVaultJUSD,
+		abi: SavingsVaultJUSDABI,
+		functionName: "convertToShares",
 		args: [amount],
 	});
 
-	const { data: deuroResult, isLoading: proceedLoading } = useReadContract({
-		address: ADDRESS[chainId].equity,
-		abi: EquityABI,
-		functionName: "calculateProceeds",
+	const { data: amountInAssets } = useReadContract({
+		address: ADDRESS[chainId].savingsVaultJUSD,
+		abi: SavingsVaultJUSDABI,
+		functionName: "convertToAssets",
 		args: [amount],
 	});
 
 	const fromBalance = direction ? poolStats.deuroBalance : poolStats.equityBalance;
-	const result = (direction ? nativePSResult : deuroResult) || 0n;
-	const fromSymbol = direction ? TOKEN_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
-	const unlocked =
-		poolStats.equityUserVotes > 86_400 * 90 && poolStats.equityUserVotes < 86_400 * 365 * 30 && poolStats.equityUserVotes > 0n;
-	const redeemLeft = 86400n * 90n - (poolStats.equityBalance ? poolStats.equityUserVotes / poolStats.equityBalance / 2n ** 20n : 0n);
+	const result = (direction ? amountInShares : amountInAssets) || 0n;
+	const fromSymbol = direction ? TOKEN_SYMBOL : SAVINGS_VAULT_SYMBOL;
 
-	const collateralValue = direction ? amount : deuroResult;
+	const collateralValue = direction ? amount : amountInAssets;
 	const collateralEurValue = formatBigInt(collateralValue);
-	const collateralUsdValue = eurPrice && collateralValue ? formatBigInt(BigInt(Math.floor(eurPrice * 10000)) * collateralValue / 10000n) : formatBigInt(0n);
+	const collateralUsdValue =
+		eurPrice && collateralValue ? formatBigInt((BigInt(Math.floor(eurPrice * 10000)) * collateralValue) / 10000n) : formatBigInt(0n);
 
 	const onChangeAmount = (value: string) => {
 		const valueBigInt = BigInt(value);
@@ -193,66 +181,22 @@ export default function InteractionStablecoinAndPoolShares({
 		}
 	};
 
-	const handleApproveRedeem = async () => {
-		try {
-			setApproving(true);
-
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].equity,
-				abi: EquityABI,
-				functionName: "approve",
-				args: [ADDRESS[chainId].frontendGateway, amount],
-			});
-
-			const toastContent = [
-				{
-					title: t("common.txs.amount"),
-					value: formatBigInt(amount) + " " + POOL_SHARE_TOKEN_SYMBOL,
-				},
-				{
-					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].frontendGateway),
-				},
-				{
-					title: t("common.txs.transaction"),
-					hash: approveWriteHash,
-				},
-			];
-
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveWriteHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title={t("common.txs.title", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
-				},
-				success: {
-					render: <TxToast title={t("common.txs.success", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
-				},
-			});
-
-			await poolStats.refetchPoolStats();
-			await refetchFrontendEquityAllowance();
-		} catch (error) {
-			toast.error(renderErrorTxToast(error));
-		} finally {
-			setApproving(false);
-		}
-	};
-
 	const handleRedeem = async () => {
-		if (!deuroResult) return;
+		if (!amountInAssets) return;
 
 		try {
 			setRedeeming(true);
 			const redeemWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].frontendGateway,
-				abi: FrontendGatewayABI,
+				address: ADDRESS[chainId].savingsVaultJUSD,
+				abi: SavingsVaultJUSDABI,
 				functionName: "redeem",
-				args: [account, amount, deuroResult, frontendCode],
+				args: [amount, address!, address!],
 			});
 
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: formatBigInt(amount) + " " + POOL_SHARE_TOKEN_SYMBOL,
+					value: formatBigInt(amount) + " " + SAVINGS_VAULT_SYMBOL,
 				},
 				{
 					title: t("common.txs.receive"),
@@ -266,15 +210,10 @@ export default function InteractionStablecoinAndPoolShares({
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: redeemWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("equity.txs.redeeming", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />,
+					render: <TxToast title={t("equity.txs.redeeming", { symbol: SAVINGS_VAULT_SYMBOL })} rows={toastContent} />,
 				},
 				success: {
-					render: (
-						<TxToast
-							title={t("equity.txs.successfully_redeemed", { symbol: POOL_SHARE_TOKEN_SYMBOL })}
-							rows={toastContent}
-						/>
-					),
+					render: <TxToast title={t("equity.txs.successfully_redeemed", { symbol: SAVINGS_VAULT_SYMBOL })} rows={toastContent} />,
 				},
 			});
 
@@ -314,7 +253,7 @@ export default function InteractionStablecoinAndPoolShares({
 								{selectedFromToken && (
 									<>
 										<div className="text-text-muted3 text-xs font-medium leading-none">
-											{t("common.balance_label")} {" "}
+											{t("common.balance_label")}{" "}
 											{formatCurrency(
 												formatUnits(selectedFromToken?.balanceOf || 0n, selectedFromToken?.decimals || 18)
 											)}{" "}
@@ -376,46 +315,27 @@ export default function InteractionStablecoinAndPoolShares({
 				/>
 
 				<div className="my-12 max-w-full flex-col">
-					<GuardToAllowedChainBtn label={direction ? t("equity.mint") : t("equity.redeem")}>
+					<GuardToAllowedChainBtn label={direction ? t("common.deposit") : t("common.withdraw")}>
 						{direction ? (
-							amount > frontendDeuroAllowance ? (
-								<Button isLoading={isApproving} disabled={amount == 0n || !!error} onClick={() => handleApproveInvest()}>
+							amount > stablecoinAllowance ? (
+								<Button isLoading={isApproving} disabled={amount == 0n || !!error} onClick={() => handleApproveDeposit()}>
 									{t("common.approve")}
 								</Button>
 							) : (
-								<Button disabled={amount == 0n || !!error} isLoading={isInversting} onClick={() => handleInvest()}>
-									{t("equity.mint")}
+								<Button disabled={amount == 0n || !!error} isLoading={isInversting} onClick={() => handleDeposit()}>
+									{t("common.deposit")}
 								</Button>
 							)
-						) : amount > frontendEquityAllowance ? (
-							<Button isLoading={isApproving} disabled={amount == 0n || !!error} onClick={() => handleApproveRedeem()}>
-								{t("common.approve")}
-							</Button>
 						) : (
-							<Button
-								isLoading={isRedeeming}
-								
-								onClick={() => handleRedeem()}
-							>
-								{t("equity.redeem")}
+							<Button isLoading={isRedeeming} onClick={() => handleRedeem()}>
+								{t("common.withdraw")}
 							</Button>
 						)}
 					</GuardToAllowedChainBtn>
 				</div>
 			</div>
 
-			<div className="border-t border-borders-dividerLight grid grid-cols-1 md:grid-cols-2 gap-2">
-				<div className="flex flex-col gap-2 p-4">
-					<div className="text-text-muted2 text-base font-medium leading-tight">{t("equity.holding_duration")}</div>
-					<div className="text-base font-medium leading-tight">
-						{poolStats.equityBalance > 0 ? formatDuration(poolStats.equityHoldingDuration) : "--"}
-					</div>
-				</div>
-				<div className="flex flex-col gap-2 p-4">
-					<div className="text-text-muted2 text-base font-medium leading-tight">{t("equity.can_redeem_after_symbol")}</div>
-					<div className="text-base font-medium leading-tight">--</div>
-				</div>
-			</div>
+			<div className="border-t border-borders-dividerLight grid grid-cols-1 md:grid-cols-2 gap-2"></div>
 		</div>
 	);
 }

@@ -41,6 +41,8 @@
         "using_referral_code": "Usando código de referido",
         "details": "Detalles",
         "loading": "Cargando...",
+        "deposit": "Depositar",
+        "withdraw": "Retirar",
         "navbar": {
             "my_referrals": "Mis Referidos",
             "swap": "Intercambiar",

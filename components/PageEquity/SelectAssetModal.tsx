@@ -1,5 +1,5 @@
 import { formatUnits } from "viem";
-import { formatCurrency, POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
+import { formatCurrency, POOL_SHARE_TOKEN_SYMBOL, SAVINGS_VAULT_SYMBOL, TOKEN_SYMBOL } from "@utils";
 import { TokenModalRowButton, TokenSelectModal } from "@components/TokenSelectModal";
 import { TokenBalance } from "../../hooks/useWalletBalances";
 
@@ -41,6 +41,11 @@ export function SelectAssetModal({
             symbol: POOL_SHARE_TOKEN_SYMBOL,
             name: POOL_SHARE_TOKEN_SYMBOL,
             balanceOf: balances.find((balance) => balance.symbol === POOL_SHARE_TOKEN_SYMBOL)?.balanceOf ?? 0n,
+        },
+        {
+            symbol: SAVINGS_VAULT_SYMBOL,
+            name: SAVINGS_VAULT_SYMBOL,
+            balanceOf: balances.find((balance) => balance.symbol === SAVINGS_VAULT_SYMBOL)?.balanceOf ?? 0n,
         },
     ]
 

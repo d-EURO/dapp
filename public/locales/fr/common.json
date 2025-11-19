@@ -41,6 +41,8 @@
         "using_referral_code": "Utilisation du code de parrainage",
         "details": "Détails",
         "loading": "Chargement...",
+        "deposit": "Déposer",
+        "withdraw": "Retirer",
         "navbar": {
             "my_referrals": "Mes filleuls",
             "swap": "Swap",

@@ -17,6 +17,8 @@ export const TOKEN_SYMBOL = "JUSD";
 
 export const POOL_SHARE_TOKEN_SYMBOL = "JUICE";
 
+export const SAVINGS_VAULT_SYMBOL = "svJUSD";
+
 // For managing frontend codes
 export const MARKETING_PARAM_NAME = "ref";
 

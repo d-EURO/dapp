@@ -41,6 +41,8 @@
         "using_referral_code": "Mit Referral-Code verwenden",
         "details": "Details",
         "loading": "Lädt...",
+        "deposit": "Einzahlen",
+        "withdraw": "Auszahlen",
         "navbar": {
             "my_referrals": "Meine Empfehlungen",
             "swap": "Tausch",

@@ -41,6 +41,8 @@
         "using_referral_code": "Using referral code",
         "details": "Details",
         "loading": "Loading...",
+        "deposit": "Deposit",
+        "withdraw": "Withdraw",
         "navbar": {
             "my_referrals": "My Referrals",
             "swap": "Swap",

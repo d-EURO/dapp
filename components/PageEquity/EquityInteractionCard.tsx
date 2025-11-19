@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { POOL_SHARE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@utils";
+import { POOL_SHARE_TOKEN_SYMBOL, SAVINGS_VAULT_SYMBOL, TOKEN_SYMBOL } from "@utils";
 import { useChainId } from "wagmi";
-import InteractionStablecoinAndPoolShares from "./InteractionStablecoinAndPoolShares";
+import InteractionStablecoinAndPoolShares from "./InteractionStablecoinAndSavingVault";
 import { ADDRESS } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
@@ -13,8 +13,9 @@ export enum TokenInteractionSide {
 }
 
 export const EquityTokenSelectorMapping: { [key: string]: string[] } = {
-	[TOKEN_SYMBOL]: [POOL_SHARE_TOKEN_SYMBOL],
+	[TOKEN_SYMBOL]: [POOL_SHARE_TOKEN_SYMBOL, SAVINGS_VAULT_SYMBOL],
 	[POOL_SHARE_TOKEN_SYMBOL]: [TOKEN_SYMBOL],
+	[SAVINGS_VAULT_SYMBOL]: [TOKEN_SYMBOL],
 };
 
 export default function EquityInteractionCard() {
@@ -38,6 +39,11 @@ export default function EquityInteractionCard() {
 			symbol: POOL_SHARE_TOKEN_SYMBOL,
 			name: POOL_SHARE_TOKEN_SYMBOL,
 			address: ADDRESS[chainId].equity,
+		},
+		{
+			symbol: SAVINGS_VAULT_SYMBOL,
+			name: SAVINGS_VAULT_SYMBOL,
+			address: ADDRESS[chainId].savingsVaultJUSD,
 		},
 	]);
 
@@ -87,6 +93,16 @@ export default function EquityInteractionCard() {
 
 				{(tokenFromTo.from === TOKEN_SYMBOL && tokenFromTo.to === POOL_SHARE_TOKEN_SYMBOL) ||
 				(tokenFromTo.from === POOL_SHARE_TOKEN_SYMBOL && tokenFromTo.to === TOKEN_SYMBOL) ? (
+					<InteractionStablecoinAndPoolShares
+						selectedFromToken={selectedFromToken}
+						selectedToToken={selectedToToken}
+						openSelector={handleOpenTokenSelector}
+						reverseSelection={handleReverseSelection}
+						refetchBalances={refetchBalances}
+					/>
+				) : null}
+				{(tokenFromTo.from === TOKEN_SYMBOL && tokenFromTo.to === SAVINGS_VAULT_SYMBOL) ||
+				(tokenFromTo.from === SAVINGS_VAULT_SYMBOL && tokenFromTo.to === TOKEN_SYMBOL) ? (
 					<InteractionStablecoinAndPoolShares
 						selectedFromToken={selectedFromToken}
 						selectedToToken={selectedToToken}
