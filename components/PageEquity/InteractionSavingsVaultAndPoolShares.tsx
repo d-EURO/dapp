@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { usePoolStats } from "@hooks";
-import { formatBigInt, formatCurrency, formatDuration, POOL_SHARE_TOKEN_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
+import { formatBigInt, formatCurrency, formatDuration, POOL_SHARE_TOKEN_SYMBOL, SAVINGS_VAULT_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useAccount, useChainId, useClient, useReadContract } from "wagmi";
-import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { multicall, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
 import Button from "@components/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -49,7 +49,7 @@ export default function InteractionSavingsVaultAndPoolShares({
 	const poolStats = usePoolStats();
 	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
 	const account = address || zeroAddress;
-	const direction: boolean = selectedFromToken?.symbol === TOKEN_SYMBOL;
+	const direction: boolean = selectedFromToken?.symbol === SAVINGS_VAULT_SYMBOL;
 
 	const { data: frontendDeuroAllowanceData, refetch: refetchFrontendDeuroAllowance } = useReadContract({
 		address: ADDRESS[chainId].juiceDollar,
@@ -173,7 +173,6 @@ export default function InteractionSavingsVaultAndPoolShares({
 		args: [vaultSharesInStablecoin || 0n],
 	});
 
-
 	const { data: equityInStablecoin } = useReadContract({
 		address: ADDRESS[chainId].equity,
 		abi: EquityABI,
@@ -190,11 +189,8 @@ export default function InteractionSavingsVaultAndPoolShares({
 
 	const fromBalance = direction ? poolStats.deuroBalance : poolStats.equityBalance;
 	const result = (direction ? stablecoinInEquity : stablecoinInVaultSharesResult) || 0n;
-	const fromSymbol = direction ? TOKEN_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
-	const unlocked =
-		poolStats.equityUserVotes > 86_400 * 90 && poolStats.equityUserVotes < 86_400 * 365 * 30 && poolStats.equityUserVotes > 0n;
-	const redeemLeft = 86400n * 90n - (poolStats.equityBalance ? poolStats.equityUserVotes / poolStats.equityBalance / 2n ** 20n : 0n);
-
+	const fromSymbol = direction ? SAVINGS_VAULT_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
+	
 	const collateralValue = direction ? amount : stablecoinInVaultSharesResult;
 	const collateralEurValue = formatBigInt(collateralValue);
 	const collateralUsdValue = eurPrice && collateralValue ? formatBigInt(BigInt(Math.floor(eurPrice * 10000)) * collateralValue / 10000n) : formatBigInt(0n);
