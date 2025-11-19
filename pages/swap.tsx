@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { erc20Abi, formatUnits, maxUint256 } from "viem";
 import Button from "@components/Button";
 import { useSwapStats } from "@hooks";
@@ -55,9 +55,7 @@ const getAmountWithLeastPrecision = (amount: bigint, fromDecimals: bigint, toDec
 
 export default function Swap() {
 	const [fromSymbol, setFromSymbol] = useState(STABLECOIN_SYMBOLS[0]);
-	const [fromOptions, setFromOptions] = useState(STABLECOIN_SYMBOLS);
 	const [toSymbol, setToSymbol] = useState(TOKEN_SYMBOL);
-	const [toOptions, setToOptions] = useState([TOKEN_SYMBOL]);
 	const [amount, setAmount] = useState(0n);
 	const [error, setError] = useState("");
 	const [isTxOnGoing, setTxOnGoing] = useState(false);
@@ -68,6 +66,45 @@ export default function Swap() {
 	const { t } = useTranslation();
 	const chainId = useChainId();
 	const { address } = useAccount();
+
+	// Filter stablecoins based on bridge expiration status
+	// For "Send" (fromSymbol when swapping TO dEURO): only show non-expired bridges
+	// For "Receive" (toSymbol when swapping FROM dEURO): show all assets
+	const availableStablecoins = useMemo(() => {
+		const stablecoins = [];
+
+		if (!swapStats.eurc.isExpired) stablecoins.push("EURC");
+		if (!swapStats.veur.isExpired) stablecoins.push("VEUR");
+		if (!swapStats.eurs.isExpired) stablecoins.push("EURS");
+		if (!swapStats.eurr.isExpired) stablecoins.push("EURR");
+		if (!swapStats.europ.isExpired) stablecoins.push("EUROP");
+		if (!swapStats.euri.isExpired) stablecoins.push("EURI");
+		if (!swapStats.eure.isExpired) stablecoins.push("EURE");
+		if (!swapStats.eura.isExpired) stablecoins.push("EURA");
+
+		// svdEURO is always available (no bridge expiration)
+		stablecoins.push("svdEURO");
+
+		return stablecoins;
+	}, [swapStats]);
+
+	const [fromOptions, setFromOptions] = useState(availableStablecoins);
+	const [toOptions, setToOptions] = useState([TOKEN_SYMBOL]);
+
+	// Update fromSymbol if current selection is expired
+	useEffect(() => {
+		if (fromSymbol !== TOKEN_SYMBOL && availableStablecoins.length > 0 && !availableStablecoins.includes(fromSymbol)) {
+			// Current fromSymbol is expired, switch to first available
+			setFromSymbol(availableStablecoins[0]);
+		}
+	}, [availableStablecoins, fromSymbol]);
+
+	// Update fromOptions when availableStablecoins change
+	useEffect(() => {
+		if (fromSymbol !== TOKEN_SYMBOL) {
+			setFromOptions(availableStablecoins);
+		}
+	}, [availableStablecoins, fromSymbol]);
 
 	// Dynamic preview calls for vault operations (ERC-4626 standard)
 	const { data: previewShares } = useReadContract({
@@ -165,11 +202,17 @@ export default function Swap() {
 		setFromSymbol(prevToSymbol);
 		setToSymbol(prevFromSymbol);
 
-		// swap options
-		const prevFromOptions = fromOptions;
-		const prevToOptions = toOptions;
-		setFromOptions(prevToOptions);
-		setToOptions(prevFromOptions);
+		// swap options - when swapping from dEURO to stablecoin, use ALL stablecoins (receive screen)
+		// when swapping from stablecoin to dEURO, use only available (non-expired) stablecoins (send screen)
+		if (prevFromSymbol === TOKEN_SYMBOL) {
+			// Now sending stablecoin, receiving dEURO - filter to available only
+			setFromOptions(availableStablecoins);
+			setToOptions([TOKEN_SYMBOL]);
+		} else {
+			// Now sending dEURO, receiving stablecoin - show all stablecoins
+			setFromOptions([TOKEN_SYMBOL]);
+			setToOptions(STABLECOIN_SYMBOLS);
+		}
 
 		if (amount > 0n) {
 			const fromTokenData = getTokenMetaBySymbol(fromSymbol);
@@ -700,70 +743,89 @@ export default function Swap() {
 			</div>
 			<TokenSelectModal title={t("swap.select_stablecoin")} isOpen={isModalOpen} setIsOpen={setIsModalOpen}>
 				<div className="h-full">
-					<TokenModalRowButton
-						currency="€"
-						symbol={swapStats.eurc.symbol}
-						price={formatCurrency(formatUnits(swapStats.eurc.userBal, Number(swapStats.eurc.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.eurc.userBal, Number(swapStats.eurc.decimals))) as string}
-						name={swapStats.eurc.symbol}
-						onClick={() => handleSelectToken(swapStats.eurc.symbol)}
-					/>
-					<TokenModalRowButton
-						currency="€"
-						symbol={swapStats.veur.symbol}
-						price={formatCurrency(formatUnits(swapStats.veur.userBal, Number(swapStats.veur.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.veur.userBal, Number(swapStats.veur.decimals))) as string}
-						name={swapStats.veur.symbol}
-						onClick={() => handleSelectToken(swapStats.veur.symbol)}
-					/>
-					<TokenModalRowButton
-						currency="€"
-						symbol={swapStats.eurs.symbol}
-						price={formatCurrency(formatUnits(swapStats.eurs.userBal, Number(swapStats.eurs.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.eurs.userBal, Number(swapStats.eurs.decimals))) as string}
-						name={swapStats.eurs.symbol}
-						onClick={() => handleSelectToken(swapStats.eurs.symbol)}
-					/>
-					<TokenModalRowButton
-						currency="€"
-						symbol={swapStats.eurr.symbol}
-						price={formatCurrency(formatUnits(swapStats.eurr.userBal, Number(swapStats.eurr.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.eurr.userBal, Number(swapStats.eurr.decimals))) as string}
-						name={swapStats.eurr.symbol}
-						onClick={() => handleSelectToken(swapStats.eurr.symbol)}
-					/>
-					<TokenModalRowButton
-						currency="€"
-						symbol={swapStats.europ.symbol}
-						price={formatCurrency(formatUnits(swapStats.europ.userBal, Number(swapStats.europ.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.europ.userBal, Number(swapStats.europ.decimals))) as string}
-						name={swapStats.europ.symbol}
-						onClick={() => handleSelectToken(swapStats.europ.symbol)}
-					/>
-					<TokenModalRowButton
-						currency="€"
-						symbol={swapStats.euri.symbol}
-						price={formatCurrency(formatUnits(swapStats.euri.userBal, Number(swapStats.euri.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.euri.userBal, Number(swapStats.euri.decimals))) as string}
-						name={swapStats.euri.symbol}
-						onClick={() => handleSelectToken(swapStats.euri.symbol)}
-					/>
-					<TokenModalRowButton
-						currency="€"
-						symbol={swapStats.eure.symbol}
-						price={formatCurrency(formatUnits(swapStats.eure.userBal, Number(swapStats.eure.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.eure.userBal, Number(swapStats.eure.decimals))) as string}
-						name={swapStats.eure.symbol}
-						onClick={() => handleSelectToken(swapStats.eure.symbol.toUpperCase())}
-					/>
-					<TokenModalRowButton
-						currency="€"
-						symbol={swapStats.eura.symbol}
-						price={formatCurrency(formatUnits(swapStats.eura.userBal, Number(swapStats.eura.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.eura.userBal, Number(swapStats.eura.decimals))) as string}
-						name={swapStats.eura.symbol}
-						onClick={() => handleSelectToken(swapStats.eura.symbol)}
-					/>
+					{/* Show only available (non-expired) bridges when in Send mode (INPUT side) */}
+					{/* Show all stablecoins when in Receive mode (OUTPUT side) */}
+					{(interactionSide === TokenInteractionSide.OUTPUT || !swapStats.eurc.isExpired) && (
+						<TokenModalRowButton
+							currency="€"
+							symbol={swapStats.eurc.symbol}
+							price={formatCurrency(formatUnits(swapStats.eurc.userBal, Number(swapStats.eurc.decimals)), 2, 2) as string}
+							balance={formatCurrency(formatUnits(swapStats.eurc.userBal, Number(swapStats.eurc.decimals))) as string}
+							name={swapStats.eurc.symbol}
+							onClick={() => handleSelectToken(swapStats.eurc.symbol)}
+						/>
+					)}
+					{(interactionSide === TokenInteractionSide.OUTPUT || !swapStats.veur.isExpired) && (
+						<TokenModalRowButton
+							currency="€"
+							symbol={swapStats.veur.symbol}
+							price={formatCurrency(formatUnits(swapStats.veur.userBal, Number(swapStats.veur.decimals)), 2, 2) as string}
+							balance={formatCurrency(formatUnits(swapStats.veur.userBal, Number(swapStats.veur.decimals))) as string}
+							name={swapStats.veur.symbol}
+							onClick={() => handleSelectToken(swapStats.veur.symbol)}
+						/>
+					)}
+					{(interactionSide === TokenInteractionSide.OUTPUT || !swapStats.eurs.isExpired) && (
+						<TokenModalRowButton
+							currency="€"
+							symbol={swapStats.eurs.symbol}
+							price={formatCurrency(formatUnits(swapStats.eurs.userBal, Number(swapStats.eurs.decimals)), 2, 2) as string}
+							balance={formatCurrency(formatUnits(swapStats.eurs.userBal, Number(swapStats.eurs.decimals))) as string}
+							name={swapStats.eurs.symbol}
+							onClick={() => handleSelectToken(swapStats.eurs.symbol)}
+						/>
+					)}
+					{(interactionSide === TokenInteractionSide.OUTPUT || !swapStats.eurr.isExpired) && (
+						<TokenModalRowButton
+							currency="€"
+							symbol={swapStats.eurr.symbol}
+							price={formatCurrency(formatUnits(swapStats.eurr.userBal, Number(swapStats.eurr.decimals)), 2, 2) as string}
+							balance={formatCurrency(formatUnits(swapStats.eurr.userBal, Number(swapStats.eurr.decimals))) as string}
+							name={swapStats.eurr.symbol}
+							onClick={() => handleSelectToken(swapStats.eurr.symbol)}
+						/>
+					)}
+					{(interactionSide === TokenInteractionSide.OUTPUT || !swapStats.europ.isExpired) && (
+						<TokenModalRowButton
+							currency="€"
+							symbol={swapStats.europ.symbol}
+							price={formatCurrency(formatUnits(swapStats.europ.userBal, Number(swapStats.europ.decimals)), 2, 2) as string}
+							balance={formatCurrency(formatUnits(swapStats.europ.userBal, Number(swapStats.europ.decimals))) as string}
+							name={swapStats.europ.symbol}
+							onClick={() => handleSelectToken(swapStats.europ.symbol)}
+						/>
+					)}
+					{(interactionSide === TokenInteractionSide.OUTPUT || !swapStats.euri.isExpired) && (
+						<TokenModalRowButton
+							currency="€"
+							symbol={swapStats.euri.symbol}
+							price={formatCurrency(formatUnits(swapStats.euri.userBal, Number(swapStats.euri.decimals)), 2, 2) as string}
+							balance={formatCurrency(formatUnits(swapStats.euri.userBal, Number(swapStats.euri.decimals))) as string}
+							name={swapStats.euri.symbol}
+							onClick={() => handleSelectToken(swapStats.euri.symbol)}
+						/>
+					)}
+					{(interactionSide === TokenInteractionSide.OUTPUT || !swapStats.eure.isExpired) && (
+						<TokenModalRowButton
+							currency="€"
+							symbol={swapStats.eure.symbol}
+							price={formatCurrency(formatUnits(swapStats.eure.userBal, Number(swapStats.eure.decimals)), 2, 2) as string}
+							balance={formatCurrency(formatUnits(swapStats.eure.userBal, Number(swapStats.eure.decimals))) as string}
+							name={swapStats.eure.symbol}
+							onClick={() => handleSelectToken(swapStats.eure.symbol.toUpperCase())}
+						/>
+					)}
+					{(interactionSide === TokenInteractionSide.OUTPUT || !swapStats.eura.isExpired) && (
+						<TokenModalRowButton
+							currency="€"
+							symbol={swapStats.eura.symbol}
+							price={formatCurrency(formatUnits(swapStats.eura.userBal, Number(swapStats.eura.decimals)), 2, 2) as string}
+							balance={formatCurrency(formatUnits(swapStats.eura.userBal, Number(swapStats.eura.decimals))) as string}
+							name={swapStats.eura.symbol}
+							onClick={() => handleSelectToken(swapStats.eura.symbol)}
+						/>
+					)}
+					{/* svdEURO is always shown (no bridge expiration) */}
 					<TokenModalRowButton
 						currency="€"
 						symbol={swapStats.svdEURO.symbol}

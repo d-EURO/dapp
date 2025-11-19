@@ -51,10 +51,20 @@ const getTokenContractBasics = (chainId: number, address: Address, account: Addr
 			abi: StablecoinBridgeABI,
 			functionName: "minted",
 		},
+		{ // Horizon (expiration timestamp) of the bridge
+			chainId,
+			address: bridgeAddress,
+			abi: StablecoinBridgeABI,
+			functionName: "horizon",
+		},
 	];
 };
 
 const parseStablecoinStats = (data: any, fromIndex: number) => {
+	const horizon = data ? decodeBigIntCall(data[fromIndex + 7]) : BigInt(0);
+	const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
+	const isExpired = horizon > 0n && currentTimestamp > horizon;
+
 	return {
 		userBal: data ? decodeBigIntCall(data[fromIndex]) : BigInt(0),
 		symbol: data ? String(data[fromIndex + 1].result) : "",
@@ -64,6 +74,8 @@ const parseStablecoinStats = (data: any, fromIndex: number) => {
 		limit: data ? decodeBigIntCall(data[fromIndex + 5]) : BigInt(0),
 		minted: data ? decodeBigIntCall(data[fromIndex + 6]) : BigInt(0),
 		remaining: data ? decodeBigIntCall(data[fromIndex + 5]) - decodeBigIntCall(data[fromIndex + 6]) : BigInt(0),
+		horizon: horizon,
+		isExpired: isExpired,
 	}
 }
 
@@ -218,85 +230,87 @@ export const useSwapStats = () => {
 	};
 
 	const eurc = {
-		...parseStablecoinStats(data, 7),
+		...parseStablecoinStats(data, 8),
 		contractAddress: ADDRESS[chainId].eurc,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEURC,
 	};
 
 	const veur = {
-		...parseStablecoinStats(data, 14),
+		...parseStablecoinStats(data, 16),
 		contractAddress: ADDRESS[chainId].veur,
 		contractBridgeAddress: ADDRESS[chainId].bridgeVEUR,
 	};
 
 	const eurs = {
-		...parseStablecoinStats(data, 21),
+		...parseStablecoinStats(data, 24),
 		contractAddress: ADDRESS[chainId].eurs,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEURS,
 	};
 
 	const eura = {
-		...parseStablecoinStats(data, 28),
+		...parseStablecoinStats(data, 32),
 		contractAddress: ADDRESS[chainId].eura,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEURA,
 	};
 
 	const dEuro = {
-		userBal: data ? decodeBigIntCall(data[35]) : BigInt(0),
-		symbol: data ? String(data[36].result) : "",
-		decimals: data ? decodeBigIntCall(data[37]) : BigInt(0),
+		userBal: data ? decodeBigIntCall(data[40]) : BigInt(0),
+		symbol: data ? String(data[41].result) : "",
+		decimals: data ? decodeBigIntCall(data[42]) : BigInt(0),
 		bridgeAllowance: {
-			EURT: data ? decodeBigIntCall(data[38]) : BigInt(0),
-			EURC: data ? decodeBigIntCall(data[39]) : BigInt(0),
-			VEUR: data ? decodeBigIntCall(data[40]) : BigInt(0),
-			EURS: data ? decodeBigIntCall(data[41]) : BigInt(0),
-			EURR: data ? decodeBigIntCall(data[42]) : BigInt(0),
-			EUROP: data ? decodeBigIntCall(data[43]) : BigInt(0),
-			EURI: data ? decodeBigIntCall(data[44]) : BigInt(0),
-			EURE: data ? decodeBigIntCall(data[45]) : BigInt(0),
-			EURA: data ? decodeBigIntCall(data[46]) : BigInt(0),
-			svdEURO: data ? decodeBigIntCall(data[47]) : BigInt(0),
+			EURT: data ? decodeBigIntCall(data[43]) : BigInt(0),
+			EURC: data ? decodeBigIntCall(data[44]) : BigInt(0),
+			VEUR: data ? decodeBigIntCall(data[45]) : BigInt(0),
+			EURS: data ? decodeBigIntCall(data[46]) : BigInt(0),
+			EURR: data ? decodeBigIntCall(data[47]) : BigInt(0),
+			EUROP: data ? decodeBigIntCall(data[48]) : BigInt(0),
+			EURI: data ? decodeBigIntCall(data[49]) : BigInt(0),
+			EURE: data ? decodeBigIntCall(data[50]) : BigInt(0),
+			EURA: data ? decodeBigIntCall(data[51]) : BigInt(0),
+			svdEURO: data ? decodeBigIntCall(data[52]) : BigInt(0),
 		},
 		contractAddress: ADDRESS[chainId].decentralizedEURO,
 	};
 
 	const eurr = {
-		...parseStablecoinStats(data, 48),
+		...parseStablecoinStats(data, 53),
 		contractAddress: ADDRESS[chainId].eurr,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEURR,
 	};
 
 	const europ = {
-		...parseStablecoinStats(data, 55),
+		...parseStablecoinStats(data, 61),
 		contractAddress: ADDRESS[chainId].europ,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEUROP,
 	};
 
 	const euri = {
-		...parseStablecoinStats(data, 62),
+		...parseStablecoinStats(data, 69),
 		contractAddress: ADDRESS[chainId].euri,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEURI,
 	};
 
 	const eure = {
-		...parseStablecoinStats(data, 69),
+		...parseStablecoinStats(data, 77),
 		contractAddress: ADDRESS[chainId].eure,
 		contractBridgeAddress: ADDRESS[chainId].bridgeEURE,
 	};
 
 	const svdEURO = {
-		userBal: data ? decodeBigIntCall(data[76]) : BigInt(0),
-		symbol: data ? String(data[77].result) : "",
+		userBal: data ? decodeBigIntCall(data[85]) : BigInt(0),
+		symbol: data ? String(data[86].result) : "",
 		userAllowance: maxUint256, // No approval needed for redeem when owner == msg.sender
-		decimals: data ? decodeBigIntCall(data[78]) : BigInt(0),
-		totalAssets: data ? decodeBigIntCall(data[79]) : BigInt(0),
-		totalSupply: data ? decodeBigIntCall(data[80]) : BigInt(0),
+		decimals: data ? decodeBigIntCall(data[87]) : BigInt(0),
+		totalAssets: data ? decodeBigIntCall(data[88]) : BigInt(0),
+		totalSupply: data ? decodeBigIntCall(data[89]) : BigInt(0),
 		contractAddress: ADDRESS[chainId].savingsVaultDEURO,
 		contractBridgeAddress: ADDRESS[chainId].savingsVaultDEURO, // Vault acts as its own "bridge"
 		bridgeBal: BigInt(0),
 		limit: BigInt(0),
 		minted: BigInt(0),
 		remaining: BigInt(0),
+		horizon: BigInt(0),
+		isExpired: false,
 	};
 
 	return {
