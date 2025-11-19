@@ -17,8 +17,8 @@ export enum TokenInteractionSide {
 
 export const EquityTokenSelectorMapping: { [key: string]: string[] } = {
 	[TOKEN_SYMBOL]: [POOL_SHARE_TOKEN_SYMBOL, SAVINGS_VAULT_SYMBOL],
-	[POOL_SHARE_TOKEN_SYMBOL]: [TOKEN_SYMBOL, SAVINGS_VAULT_SYMBOL],
-	[SAVINGS_VAULT_SYMBOL]: [TOKEN_SYMBOL, POOL_SHARE_TOKEN_SYMBOL],
+	[POOL_SHARE_TOKEN_SYMBOL]: [TOKEN_SYMBOL],
+	[SAVINGS_VAULT_SYMBOL]: [TOKEN_SYMBOL],
 };
 
 export default function EquityInteractionCard() {
