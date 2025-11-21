@@ -475,6 +475,7 @@ export default function Swap() {
 								<GuardToAllowedChainBtn>
 									{isBridgeExpired ? (
 										<Button disabled={true}>{t("swap.bridge_expired", { symbol: TOKEN_SYMBOL })}</Button>
+									/* @ts-ignore come on typescript */
 									) : amount > fromTokenMeta.userAllowance ? (
 										<Button isLoading={isTxOnGoing} onClick={() => handleApprove()}>
 											{t("common.approve")}
