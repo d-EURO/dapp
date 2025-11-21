@@ -65,6 +65,11 @@ export default function Swap() {
 
 	const allStablecoins = swapStats.supportedStablecoins;
 	const notExpiredStablecoins = allStablecoins.filter(({ symbol }) => !swapStats[symbol as keyof StablecoinsStats].isExpired);
+	const stablecoinsWithBridgeBal = allStablecoins.filter(({ symbol }) => {
+		const stats = swapStats[symbol as keyof StablecoinsStats];
+		const balanceInUnits = Number(formatUnits(stats.bridgeBal, Number(stats.decimals)));
+		return balanceInUnits > 1;
+	});
 
 	const getSelectedStablecoinSymbol = useCallback(() => {
 		return fromSymbol === TOKEN_SYMBOL ? toSymbol : fromSymbol;
@@ -535,7 +540,7 @@ export default function Swap() {
 				setIsOpen={handleCloseModal}
 			>
 				<div className="h-full">
-					{allStablecoins.map((stablecoin) => (
+					{stablecoinsWithBridgeBal.map((stablecoin) => (
 						<TokenModalRowButton
 							currency="€"
 							symbol={swapStats[stablecoin.symbol as keyof StablecoinsStats].symbol}
