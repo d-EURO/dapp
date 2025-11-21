@@ -1,261 +1,221 @@
 import { useAccount, useReadContracts } from "wagmi";
-import { decodeBigIntCall } from "@utils";
+import { decodeBigIntCall, decodeStringCall } from "@utils";
 import { Address, erc20Abi } from "viem";
 import { WAGMI_CHAIN } from "../app.config";
 import { ADDRESS, StablecoinBridgeABI } from "@deuro/eurocoin";
+import { buildContractBatcher } from "../utils/contractBatcher";
+import { StablecoinSymbol, SupportedStablecoin, useSupportedBridges } from "./useSupportedBridges";
 
-const getTokenContractBasics = (chainId: number, address: Address, account: Address, bridgeAddress: Address) => {
-	return [
-		{ // Balance of the user in the wallet
+type DEuroBridgeAllowance = {
+	[key in StablecoinSymbol]?: bigint;
+};
+interface DEuroStats {
+	userBal: bigint;
+	symbol: string;
+	decimals: bigint;
+	bridgeAllowance: DEuroBridgeAllowance;
+	contractAddress: Address;
+}
+interface StablecoinStats {
+	userBal: bigint;
+	symbol: string;
+	userAllowance: bigint;
+	bridgeBal: bigint;
+	decimals: bigint;
+	limit: bigint;
+	minted: bigint;
+	remaining: bigint;
+	contractBridgeAddress: Address;
+	contractAddress: Address;
+	horizon: bigint;
+	isExpired: boolean;
+}
+
+export type StablecoinsStats = {
+	[key in StablecoinSymbol]: StablecoinStats;
+};
+interface SwapStats extends StablecoinsStats {
+	supportedStablecoins: SupportedStablecoin[];
+	isError: boolean;
+	isLoading: boolean;
+	dEuro: DEuroStats;
+	refetch: () => void;
+}
+
+const parseStablecoinStats = (data?: any): {
+	userBal: bigint;
+	symbol: string;
+	userAllowance: bigint;
+	bridgeBal: bigint;
+	decimals: bigint;
+	limit: bigint;
+	minted: bigint;
+	remaining: bigint;
+	horizon: bigint;
+	isExpired: boolean;
+} => {
+	const horizon = data ? decodeBigIntCall(data?.horizon || 0) : BigInt(0);
+	const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
+	
+	return {
+		userBal: decodeBigIntCall(data?.balanceOf?.userBalance || 0),
+		symbol: decodeStringCall(data?.symbol ?? ""),
+		userAllowance: decodeBigIntCall(data?.allowance || 0),
+		bridgeBal: decodeBigIntCall(data?.balanceOf?.bridgeBalance || 0),
+		decimals: decodeBigIntCall(data?.decimals || 0),
+		limit: decodeBigIntCall(data?.limit || 0),
+		minted: decodeBigIntCall(data?.minted || 0),
+		remaining: decodeBigIntCall(data?.limit || 0) - decodeBigIntCall(data?.minted || 0),
+		isExpired: horizon > 0n && currentTimestamp > horizon,
+		horizon: horizon,
+	};
+};
+
+export const useSwapStats = (): SwapStats => {
+	const chainId = WAGMI_CHAIN.id as number;
+	const { address } = useAccount();
+	const account = address || "0x0";
+	const supportedStablecoins = useSupportedBridges();
+
+	const contractBatcher = buildContractBatcher([
+		{
 			chainId,
-			address,
+			address: ADDRESS[chainId].decentralizedEURO,
 			abi: erc20Abi,
 			functionName: "balanceOf",
 			args: [account],
 		},
-		{ // Symbol of the token
+		{
 			chainId,
-			address,
+			address: ADDRESS[chainId].decentralizedEURO,
 			abi: erc20Abi,
 			functionName: "symbol",
 		},
-		{ // Allowance of the user to the bridge
+		{
 			chainId,
-			address,
-			abi: erc20Abi,
-			functionName: "allowance",
-			args: [account, bridgeAddress],
-		},
-		{ // Balance of the bridge
-			chainId,
-			address,
-			abi: erc20Abi,
-			functionName: "balanceOf",
-			args: [bridgeAddress],
-		},
-		{ // Decimals of the token
-			chainId,
-			address,
+			address: ADDRESS[chainId].decentralizedEURO,
 			abi: erc20Abi,
 			functionName: "decimals",
 		},
-		{ // Limit of the bridge
+		{
 			chainId,
-			address: bridgeAddress,
-			abi: StablecoinBridgeABI,
-			functionName: "limit",
+			address: ADDRESS[chainId].decentralizedEURO,
+			abi: erc20Abi,
+			functionName: "allowance",
+			calls: supportedStablecoins.map((stablecoin) => ({
+				id: stablecoin.symbol,
+				args: [account, stablecoin.bridgeAddress],
+			})),
 		},
-		{ // Minted coins of the bridge
-			chainId,
-			address: bridgeAddress,
-			abi: StablecoinBridgeABI,
-			functionName: "minted",
-		},
-	];
-};
+		...supportedStablecoins
+			.map((stablecoin) => [
+				{
+					chainId,
+					address: stablecoin.address,
+					abi: erc20Abi,
+					functionName: "balanceOf",
+					calls: [
+						{
+							id: "userBalance",
+							args: [account],
+						},
+						{
+							id: "bridgeBalance",
+							args: [stablecoin.bridgeAddress],
+						},
+					],
+				},
+				{
+					chainId,
+					address: stablecoin.address,
+					abi: erc20Abi,
+					functionName: "symbol",
+				},
+				{
+					chainId,
+					address: stablecoin.address,
+					abi: erc20Abi,
+					functionName: "allowance",
+					args: [account, stablecoin.bridgeAddress],
+				},
+				{
+					chainId,
+					address: stablecoin.address,
+					abi: erc20Abi,
+					functionName: "decimals",
+				},
+				{
+					chainId,
+					address: stablecoin.bridgeAddress,
+					groupKey: stablecoin.address,
+					abi: StablecoinBridgeABI,
+					functionName: "limit",
+				},
+				{
+					chainId,
+					address: stablecoin.bridgeAddress,
+					groupKey: stablecoin.address,
+					abi: StablecoinBridgeABI,
+					functionName: "minted",
+				},
+				{
+					chainId,
+					address: stablecoin.bridgeAddress,
+					groupKey: stablecoin.address,
+					abi: StablecoinBridgeABI,
+					functionName: "horizon",
+				},
+			])
+			.flat(),
+	]);
 
-const parseStablecoinStats = (data: any, fromIndex: number) => {
-	return {
-		userBal: data ? decodeBigIntCall(data[fromIndex]) : BigInt(0),
-		symbol: data ? String(data[fromIndex + 1].result) : "",
-		userAllowance: data ? decodeBigIntCall(data[fromIndex + 2]) : BigInt(0),
-		bridgeBal: data ? decodeBigIntCall(data[fromIndex + 3]) : BigInt(0),
-		decimals: data ? decodeBigIntCall(data[fromIndex + 4]) : BigInt(0),
-		limit: data ? decodeBigIntCall(data[fromIndex + 5]) : BigInt(0),
-		minted: data ? decodeBigIntCall(data[fromIndex + 6]) : BigInt(0),
-		remaining: data ? decodeBigIntCall(data[fromIndex + 5]) - decodeBigIntCall(data[fromIndex + 6]) : BigInt(0),
-	}
-}
-
-export const useSwapStats = () => {
-	const chainId = WAGMI_CHAIN.id as number;
-	const { address } = useAccount();
-	const account = address || "0x0";
-
-	const { data, isError, isLoading, refetch } = useReadContracts({
-		contracts: [
-			// Stablecoin Calls
-			...getTokenContractBasics(chainId, ADDRESS[chainId].eurt, account, ADDRESS[chainId].bridgeEURT),
-			...getTokenContractBasics(chainId, ADDRESS[chainId].eurc, account, ADDRESS[chainId].bridgeEURC),
-			...getTokenContractBasics(chainId, ADDRESS[chainId].veur, account, ADDRESS[chainId].bridgeVEUR),
-			...getTokenContractBasics(chainId, ADDRESS[chainId].eurs, account, ADDRESS[chainId].bridgeEURS),
-			...getTokenContractBasics(chainId, ADDRESS[chainId].eura, account, ADDRESS[chainId].bridgeEURA),
-
-			// dEURO Calls
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "balanceOf",
-				args: [account],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "symbol",
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "decimals",
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridgeEURT],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridgeEURC],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridgeVEUR],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridgeEURS],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridgeEURR],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridgeEUROP],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridgeEURI],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridgeEURE],
-			},
-			{
-				chainId,
-				address: ADDRESS[chainId].decentralizedEURO,
-				abi: erc20Abi,
-				functionName: "allowance",
-				args: [account, ADDRESS[chainId].bridgeEURA],
-			},
-			...getTokenContractBasics(chainId, ADDRESS[chainId].eurr, account, ADDRESS[chainId].bridgeEURR),
-			...getTokenContractBasics(chainId, ADDRESS[chainId].europ, account, ADDRESS[chainId].bridgeEUROP),
-			...getTokenContractBasics(chainId, ADDRESS[chainId].euri, account, ADDRESS[chainId].bridgeEURI),
-			...getTokenContractBasics(chainId, ADDRESS[chainId].eure, account, ADDRESS[chainId].bridgeEURE),
-		],
+	const {
+		data: contractBatcherData,
+		isError,
+		isLoading,
+		refetch,
+	} = useReadContracts({
+		contracts: contractBatcher.getQuery(),
 	});
 
-	const eurt = {
-		...parseStablecoinStats(data, 0),
-		contractAddress: ADDRESS[chainId].eurt,
-		contractBridgeAddress: ADDRESS[chainId].bridgeEURT,
-	};
+	const parsedData = contractBatcherData ? contractBatcher.parseResponse(contractBatcherData) : {};
 
-	const eurc = {
-		...parseStablecoinStats(data, 7),
-		contractAddress: ADDRESS[chainId].eurc,
-		contractBridgeAddress: ADDRESS[chainId].bridgeEURC,
-	};
+	const deuroAddress = ADDRESS[chainId].decentralizedEURO;
 
-	const veur = {
-		...parseStablecoinStats(data, 14),
-		contractAddress: ADDRESS[chainId].veur,
-		contractBridgeAddress: ADDRESS[chainId].bridgeVEUR,
-	};
+	const bridgeAllowance = supportedStablecoins.reduce(
+		(acc, stablecoin) => ({
+			...acc,
+			[stablecoin.symbol]: decodeBigIntCall(parsedData?.[deuroAddress]?.allowance?.[stablecoin.symbol] || 0),
+		}),
+		{}
+	);
 
-	const eurs = {
-		...parseStablecoinStats(data, 21),
-		contractAddress: ADDRESS[chainId].eurs,
-		contractBridgeAddress: ADDRESS[chainId].bridgeEURS,
-	};
-
-	const eura = {
-		...parseStablecoinStats(data, 28),
-		contractAddress: ADDRESS[chainId].eura,
-		contractBridgeAddress: ADDRESS[chainId].bridgeEURA,
-	};
-
-	const dEuro = {
-		userBal: data ? decodeBigIntCall(data[35]) : BigInt(0),
-		symbol: data ? String(data[36].result) : "",
-		decimals: data ? decodeBigIntCall(data[37]) : BigInt(0),
-		bridgeAllowance: {
-			EURT: data ? decodeBigIntCall(data[38]) : BigInt(0),
-			EURC: data ? decodeBigIntCall(data[39]) : BigInt(0),
-			VEUR: data ? decodeBigIntCall(data[40]) : BigInt(0),
-			EURS: data ? decodeBigIntCall(data[41]) : BigInt(0),
-			EURR: data ? decodeBigIntCall(data[42]) : BigInt(0),
-			EUROP: data ? decodeBigIntCall(data[43]) : BigInt(0),
-			EURI: data ? decodeBigIntCall(data[44]) : BigInt(0),
-			EURE: data ? decodeBigIntCall(data[45]) : BigInt(0),
-			EURA: data ? decodeBigIntCall(data[46]) : BigInt(0),
-		},
+	const dEuro: DEuroStats = {
+		userBal: decodeBigIntCall(parsedData?.[deuroAddress]?.balanceOf || 0) ?? BigInt(0),
+		symbol: decodeStringCall(parsedData?.[deuroAddress]?.symbol ?? ""),
+		decimals: decodeBigIntCall(parsedData?.[deuroAddress]?.decimals || 0),
+		bridgeAllowance,
 		contractAddress: ADDRESS[chainId].decentralizedEURO,
 	};
 
-	const eurr = {
-		...parseStablecoinStats(data, 47),
-		contractAddress: ADDRESS[chainId].eurr,
-		contractBridgeAddress: ADDRESS[chainId].bridgeEURR,
-	};
-
-	const europ = {
-		...parseStablecoinStats(data, 54),
-		contractAddress: ADDRESS[chainId].europ,
-		contractBridgeAddress: ADDRESS[chainId].bridgeEUROP,
-	};
-
-	const euri = {
-		...parseStablecoinStats(data, 61),
-		contractAddress: ADDRESS[chainId].euri,
-		contractBridgeAddress: ADDRESS[chainId].bridgeEURI,
-	};
-
-	const eure = {
-		...parseStablecoinStats(data, 68),
-		contractAddress: ADDRESS[chainId].eure,
-		contractBridgeAddress: ADDRESS[chainId].bridgeEURE,
-	};
+	const stablecoinsStats = supportedStablecoins.reduce(
+		(acc, stablecoin) => ({
+			...acc,
+			[stablecoin.symbol]: {
+				...parseStablecoinStats(parsedData?.[stablecoin.address]),
+				contractAddress: stablecoin.address,
+				contractBridgeAddress: stablecoin.bridgeAddress,
+			},
+		}),
+		{} as StablecoinsStats
+	);
 
 	return {
+		...stablecoinsStats,
+		supportedStablecoins,
 		isError,
 		isLoading,
-		eurt,
-		eurc,
-		veur,
-		eurs,
-		eura,
 		dEuro,
-		eurr,
-		europ,
-		euri,
-		eure,
 		refetch,
 	};
 };
