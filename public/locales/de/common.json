@@ -80,6 +80,7 @@
         "placeholder": "Tauschbetrag",
         "swap": "Tauschen",
         "select_stablecoin": "Besicherungsasset auswählen",
+        "bridge_expired": "Nicht verfügbar für Prägen {{symbol}}",
         "error": {
             "insufficient_bridge": "Nicht genügend {{symbol}} zum Tauschen verfügbar.",
             "exceeds_limit": "Betrag überschreitet das Tauschlimit."

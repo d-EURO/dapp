@@ -79,6 +79,7 @@
         "placeholder": "Montant à échanger",
         "swap": "Échanger",
         "select_stablecoin": "Sélectionner un actif",
+        "bridge_expired": "Non disponible pour la frappe {{symbol}}",
         "error": {
             "insufficient_bridge": "Quantité insuffisante de {{symbol}} disponible pour l'échange.",
             "exceeds_limit": "Montant dépassant la limite d'échange."

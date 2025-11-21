@@ -80,6 +80,7 @@
         "placeholder": "Cantidad a intercambiar",
         "swap": "Intercambiar",
         "select_stablecoin": "Seleccionar Activo",
+        "bridge_expired": "No disponible para acuñar {{symbol}}",
         "error": {
             "insufficient_bridge": "Fondos {{symbol}} insuficientes para el intercambio.",
             "exceeds_limit": "La cantidad excede el límite de intercambio."
