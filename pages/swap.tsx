@@ -252,10 +252,7 @@ export default function Swap() {
 				},
 				success: {
 					render: <TxToast title={t("swap.swap_tx.success", { fromSymbol, toSymbol })} rows={toastContent} />,
-				},
-				error: {
-					render: <TxToast title={t("swap.swap_tx.error", { fromSymbol, toSymbol })} rows={toastContent} />,
-				},
+				}
 			});
 			swapStats.refetch();
 			setAmount(0n);
