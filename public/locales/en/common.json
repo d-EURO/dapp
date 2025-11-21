@@ -80,6 +80,7 @@
         "placeholder": "Swap Amount",
         "swap": "Swap",
         "select_stablecoin": "Select Asset",
+        "bridge_expired": "Not available for minting {{symbol}}",
         "error": {
             "insufficient_bridge": "Not enough {{symbol}} available to swap.",
             "exceeds_limit": "Amount exceeds the swap limit."
