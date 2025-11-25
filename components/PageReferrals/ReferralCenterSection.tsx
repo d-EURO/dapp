@@ -26,7 +26,7 @@ export const ReferralCenterSection = () => {
 					<div className="self-stretch flex-col justify-start items-start gap-5 inline-flex sm:w-1/2">
 						<div className="flex-col justify-start items-start gap-3 flex">
 							<div className="w-8 h-8 sm:w-11 sm:h-11 bg-borders-primary rounded-full flex justify-center items-center">
-								<Image src="/icons/chest_dark.svg" width={28} height={28} alt="Chest" className="w-5 h-5 sm:w-6 sm:h-6" />
+								<Image src="/icons/chest.svg" width={28} height={28} alt="Chest" className="w-5 h-5 sm:w-6 sm:h-6" />
 							</div>
 							<div className="text-text-primary text-2xl sm:text-4xl font-black !leading-none">
 								{t("referrals.referral_center")}

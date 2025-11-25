@@ -15,16 +15,19 @@ export default function NavButton({ to, name, external }: Props) {
 
 	const href = `${to}${toQueryString(carryOnQueryParams)}`;
 
-	const activeClass = active ? "bg-menu-active-bg menu-active-text" : "bg-menu-default-bg menu-default-text";
+	const baseClass = "inline-flex h-9 px-3 py-2.5 items-center gap-1.5 shrink-0 rounded-lg overflow-hidden";
+	const stateClass = active ? "bg-menu-active-bg text-menu-active-text" : "bg-menu-default-bg text-menu-default-text";
 	const hoverClass = "hover:bg-menu-hover-bg hover:menu-hover-text";
 
 	return (
 		<Link
-			className={`w-[80%] sm:w-fit h-9 px-4 sm:px-3 py-2.5 rounded-lg justify-start sm:justify-center items-center gap-1.5 inline-flex overflow-hidden ${activeClass} ${hoverClass}`}
+			className={`${baseClass} ${stateClass} ${hoverClass} justify-start sm:justify-center`}
 			href={external ? to : href}
 			target={external ? "_blank" : "_self"}
 		>
-			<span className="text-base font-medium leading-normal whitespace-nowrap">{name}</span>
+			<span className="text-base font-normal leading-normal whitespace-nowrap">
+				{name}
+			</span>
 		</Link>
 	);
 }

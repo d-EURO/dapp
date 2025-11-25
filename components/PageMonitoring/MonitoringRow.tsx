@@ -63,7 +63,7 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 			headers={headers}
 			actionCol={
 				<Button className="h-10" onClick={() => navigate.push(`/monitoring/${position.position}${toQueryString(getCarryOnQueryParams(router))}`)}>
-					{t("common.details")}
+					{t("monitoring.challenge")}
 				</Button>
 			}
 			tab={tab}

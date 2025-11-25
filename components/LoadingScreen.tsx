@@ -15,9 +15,9 @@ export default function LoadingScreen() {
 				<div className="flex flex-col items-center gap-8">
 					<div className="flex flex-row items-center -mt-20">
 						<picture>
-							<Image className="h-10 mr-4" width={40} height={40} src="/coin/logo.png" alt="Logo"/>
+							<Image className="h-10 mr-4" width={40} height={40} src="/coin/JUSDLogo.png" alt="Logo"/>
 						</picture>
-						<h1>dEURO is loading...</h1>
+						<h1>JUSD is loading...</h1>
 					</div>
 					<div className="absolute bottom-0 bg-layout-footer w-full pb-8 pt-8 justify-items-center">
 						<SubmitIssue />

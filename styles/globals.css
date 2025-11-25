@@ -23,6 +23,10 @@
 		@apply text-sm px-2 py-1 md:px-3 md:py-1;
 	}
 
+	.btn-md {
+		@apply px-4 py-2.5;
+	}
+
 	.btn-disabled {
 		@apply cursor-not-allowed bg-neutral-700 text-slate-800 pointer-events-none;
 	}

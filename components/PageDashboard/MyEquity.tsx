@@ -8,6 +8,7 @@ import { useChainId, useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import { useRouter } from "next/router";
 import { getPublicViewAddress } from "../../utils/url";
+import { TOKEN_SYMBOL } from "@utils";
 
 const EquityRow = ({
 	symbol,
@@ -76,7 +77,7 @@ export const MyEquity = () => {
 					{/** Headers */}
 					<span></span>
 					<HeaderCell>{t("dashboard.current_investment")}</HeaderCell>
-					<HeaderCell className="text-right">{t("dashboard.symbol_amount", { symbol: "dEURO" })}</HeaderCell>
+					<HeaderCell className="text-right">{t("dashboard.symbol_amount", { symbol: TOKEN_SYMBOL })}</HeaderCell>
 					{isEquityData ? (
 						equityData.map((item) => <EquityRow key={item.symbol} {...item} />)
 					) : (

@@ -46,9 +46,9 @@ export default function WalletConnect() {
 			</div>
 			<div className="h-9 pl-2 pr-0.5 bg-menu-wallet-bg rounded-full border border-menu-wallet-border justify-start items-center gap-4 hidden md:inline-flex">
 				<Link href={`/referrals${carryOnQueryParams}`} className="justify-start items-center gap-2 flex !hover:text-button-text-hover-text group">
-					<div className="min-w-6 h-6 flex justify-center items-center bg-gradient-to-br to-[#272b37] from-[#5a637f] rounded-full">
-						<img src="/icons/chest_white.svg" alt="Logo" width={16} height={16} />
-					</div>
+					
+						<img src="/icons/chest.svg" alt="Logo" width={24} height={24} />
+					
 					<div className="text-menu-active-text text-base font-extrabold leading-tight whitespace-nowrap group-hover:text-button-text-hover-text">
 						{t("common.navbar.my_referrals")}
 					</div>

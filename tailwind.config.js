@@ -9,7 +9,7 @@ module.exports = {
 	],
 	theme: {
 		fontFamily: {
-			sans: ["Avenir", "Helvetica", "ui-sans-serif"],
+			sans: ["Inter", "Helvetica", "ui-sans-serif"],
 		},
 		screens: {
 			xs: "480px",
@@ -27,10 +27,19 @@ module.exports = {
 			minHeight: {
 				content: "calc(100vh - 230px)",
 			},
+			spacing: {
+				"spacing-10": "40px",
+			},
 			transitionProperty: {
 				height: "height",
 			},
 			colors: {
+				gray: {
+					"palette-75": "#6d6d6d",
+				},
+				neutral: {
+					"palette-n-78": "#656565",
+				},
 				layout: {
 					primary: "#f5f6f9",
 					secondary: "#092f62",
@@ -38,16 +47,20 @@ module.exports = {
 				},
 				menu: {
 					default: {
-						text: "#272b37",
-						bg: "#ffffff",
+						text: "var(--Gray-palette-95, #272b37)",
+						bg: "transparent",
 					},
 					hover: {
-						text: "#1d2029",
-						bg: "#f5f6f9",
+						text: "var(--Gray-palette-95, #272b37)",
+						bg: "var(--Gray-palette-5, #F6F6F6)",
 					},
 					active: {
-						text: "#1d2029",
-						bg: "#f0f1f5",
+						text: "var(--Neutral-palette-n100, #131313)",
+						bg: "var(--Gray-palette-5, #F6F6F6)",
+					},
+					disabled: {
+						text: "var(--Gray-palette-40, #b3b3b3)",
+						bg: "transparent",
 					},
 					separator: "#e9ebf0",
 					back: "#FFFFFF",
@@ -117,30 +130,30 @@ module.exports = {
 					},
 					primary: {
 						disabled: {
-							text: "#adb2c1",
-							bg: "#e9ebf0",
+							text: "var(--Gray-palette-40, #C5C5C5)",
+							bg: "var(--Gray-palette-10, #ECECEC)",
 						},
 						default: {
-							text: "#ffffff",
-							bg: "#092f62",
+							text: "var(--Gray-palette-White, #FFF)",
+							bg: "var(--Brand-colors-Citrus-orange, #F7911A)",
 						},
 						hover: {
-							text: "#ffffff",
-							bg: "#0F80F0",
+							text: "var(--Gray-palette-White, #FFF)",
+							bg: "var(--Brand-colors-Juice-orange, #F57F00)",
 						},
 					},
 					secondary: {
 						disabled: {
-							text: "#ADB2C2",
-							bg: "##F5F6F9",
+							text: "var(--Gray-palette-40, #C5C5C5)",
+							bg: "var(--Gray-palette-5, #F6F6F6)",
 						},
 						default: {
-							text: "#272B38",
-							bg: "#F5F6F9",
+							text: "var(--Gray-palette-90, #424242)",
+							bg: "var(--Gray-palette-7, #F1F1F1)",
 						},
 						hover: {
-							text: "#272B38",
-							bg: "#EAEBF0",
+							text: "var(--Gray-palette-90, #424242)",
+							bg: "var(--Gray-palette-15, #E7E7E7)",
 						},
 					},
 					text:{
@@ -148,7 +161,7 @@ module.exports = {
 							text: "#272B38",
 						},
 						hover: {
-							text: "#0F80F0",
+							text: "#F7911A",
 						},
 						disabled: {
 							text: "#ADB2C2",

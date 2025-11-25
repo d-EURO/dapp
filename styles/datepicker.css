@@ -32,7 +32,7 @@
 }
 
 .react-datepicker {
-	font-family: "Helvetica Neue", helvetica, arial, sans-serif;
+	font-family: "Inter", system-ui, sans-serif;
 	font-size: 0.8rem;
 	background-color: rgb(55 65 81);
 	color: #000;
