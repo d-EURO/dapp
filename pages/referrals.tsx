@@ -7,6 +7,7 @@ import BonusHistoryTable from "@components/PageReferrals/BonusHistoryTable";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Leaderboard from "@components/PageReferrals/Leaderboard";
+import { TOKEN_SYMBOL } from "@utils";
 
 export default function Referrals() {
 	const { t } = useTranslation();
@@ -21,7 +22,7 @@ export default function Referrals() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("referrals.referrals")}</title>
+				<title>{TOKEN_SYMBOL} - {t("referrals.referrals")}</title>
 			</Head>
 
 			<div className="md:mt-8 flex flex-col gap-6 sm:gap-12">

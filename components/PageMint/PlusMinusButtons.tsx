@@ -9,7 +9,7 @@ export const SvgIconButton = ({ isSelected, onClick, SvgComponent, children }: {
 			onMouseLeave={() => setIsHover(false)}
 			onClick={onClick}
 		>
-			<SvgComponent color={isSelected ? "#065DC1" : isHover ? "#272B38" : "#8B92A8"} />
+			<SvgComponent color={isSelected ? "#F57F00" : isHover ? "#272B38" : "#8B92A8"} />
 			<span
 				className={`mt-0.5 ${
 					isSelected

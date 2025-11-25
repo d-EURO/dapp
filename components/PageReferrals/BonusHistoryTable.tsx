@@ -23,7 +23,7 @@ interface BonusData {
 	txId: string;
 }
 
-const subHeaders = ["dEURO", "", "", ""];
+const subHeaders = ["JUSD", "", "", ""];
 
 export default function BonusHistoryTable() {
 	const { t } = useTranslation();

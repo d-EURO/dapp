@@ -5,8 +5,8 @@ import { ReferralsStats } from "./ReferralsStats";
 
 const ExplanationItem = ({ icon, title, description }: { icon: string; title: string; description: string }) => (
 	<div className="max-w-[28rem] justify-start items-start gap-3 flex">
-		<div className="w-10 h-10 bg-[#f2f7fd] rounded-full flex justify-center items-center">
-			<Image src={icon} width={20} height={20} alt={title} />
+		<div className="w-10 h-10 bg-orangePalette-pale-orange rounded-full flex justify-center items-center">
+			<Image src={icon} width={28} height={28} alt={title} className="w-6 h-6 sm:w-7 sm:h-7" />
 		</div>
 		<div className="grow shrink basis-0 flex-col justify-center items-start">
 			<div className="self-stretch text-base font-extrabold leading-tight">{title}</div>
@@ -26,7 +26,7 @@ export const ReferralCenterSection = () => {
 					<div className="self-stretch flex-col justify-start items-start gap-5 inline-flex sm:w-1/2">
 						<div className="flex-col justify-start items-start gap-3 flex">
 							<div className="w-8 h-8 sm:w-11 sm:h-11 bg-borders-primary rounded-full flex justify-center items-center">
-								<Image src="/icons/chest.svg" width={28} height={28} alt="Chest" className="w-5 h-5 sm:w-6 sm:h-6" />
+							  <Image src="/icons/chest.svg" width={42} height={42} alt="Chest" />
 							</div>
 							<div className="text-text-primary text-2xl sm:text-4xl font-black !leading-none">
 								{t("referrals.referral_center")}

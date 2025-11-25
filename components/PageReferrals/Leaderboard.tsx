@@ -22,7 +22,7 @@ interface LeaderboardData {
 	totalVolume: string;
 }
 
-const subHeaders = ["", "", "dEURO", "dEURO", "dEURO", "dEURO"];
+const subHeaders = ["", "", "JUSD", "JUSD", "JUSD", "JUSD"];
 
 export default function Leaderboard() {
 	const { t } = useTranslation();

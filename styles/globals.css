@@ -159,7 +159,7 @@ button[data-testid="component-big-button"] {
 	}
 
 	input[type=range] {
-		@apply appearance-none w-full h-[4px] dark:border-y-[#3d89f4] border-slate-200 border-y-2 bg-[#3d89f4] rounded-full;
+		@apply appearance-none w-full h-[4px] dark:border-y-[#FFA33B] border-slate-200 border-y-2 bg-[#FFA33B] rounded-full;
 	}
 }
 

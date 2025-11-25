@@ -34,7 +34,7 @@ const HystoryRow = ({ item }: { item: TransactionHistoryData }) => {
 
 export function TransactionHistoryPanel() {
 	const { t } = useTranslation();
-	const headers: string[] = ["Date", "Type", "Rate", "Amount, dEURO"];
+	const headers: string[] = ["Date", "Type", "Rate", "Amount, JUSD"];
 	const [tab, setTab] = useState<string>(headers[0]);
 	const [reverse, setReverse] = useState<boolean>(false);
 

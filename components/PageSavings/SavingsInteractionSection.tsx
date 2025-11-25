@@ -229,7 +229,7 @@ export default function SavingsInteractionSection() {
 		<>
 			<div className="w-full self-stretch justify-center items-center gap-1.5 inline-flex flex-col">
 				<div className="text-text-title text-center text-lg sm:text-xl font-black ">{t("savings.earn_yield_on_your_d_euro")}</div>
-				<div className="py-1 px-3 rounded-lg bg-[#E4F0FC] text-[#272B38] flex flex-row items-center gap-x-2 text-sm leading-[0.875rem]">
+				<div className="py-1 px-3 rounded-lg bg-[#FDF2E2] text-[#272B38] flex flex-row items-center gap-x-2 text-sm leading-[0.875rem]">
 					<span className="font-[400]">{t("savings.savings_rate")} (APR)</span>
 					<span className="font-extrabold">{rate !== undefined ? `${rate / 10_000}%` : "-"}</span>
 				</div>

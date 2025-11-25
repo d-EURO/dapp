@@ -9,7 +9,7 @@ module.exports = {
 	],
 	theme: {
 		fontFamily: {
-			sans: ["Inter", "Helvetica", "ui-sans-serif"],
+			sans: ["Avenir", "Helvetica", "ui-sans-serif"],
 		},
 		screens: {
 			xs: "480px",
@@ -27,40 +27,27 @@ module.exports = {
 			minHeight: {
 				content: "calc(100vh - 230px)",
 			},
-			spacing: {
-				"spacing-10": "40px",
-			},
 			transitionProperty: {
 				height: "height",
 			},
 			colors: {
-				gray: {
-					"palette-75": "#6d6d6d",
-				},
-				neutral: {
-					"palette-n-78": "#656565",
-				},
 				layout: {
 					primary: "#f5f6f9",
-					secondary: "#092f62",
+					secondary: "#F57F00",
 					footer: "#272B38",
 				},
 				menu: {
 					default: {
-						text: "var(--Gray-palette-95, #272b37)",
-						bg: "transparent",
+						text: "#272b37",
+						bg: "#ffffff",
 					},
 					hover: {
-						text: "var(--Gray-palette-95, #272b37)",
-						bg: "var(--Gray-palette-5, #F6F6F6)",
+						text: "#1d2029",
+						bg: "#f5f6f9",
 					},
 					active: {
-						text: "var(--Neutral-palette-n100, #131313)",
-						bg: "var(--Gray-palette-5, #F6F6F6)",
-					},
-					disabled: {
-						text: "var(--Gray-palette-40, #b3b3b3)",
-						bg: "transparent",
+						text: "#1d2029",
+						bg: "#f0f1f5",
 					},
 					separator: "#e9ebf0",
 					back: "#FFFFFF",
@@ -73,7 +60,7 @@ module.exports = {
 				card: {
 					body: {
 						primary: "#ffffff",
-						secondary: "#092f62",
+						secondary: "#F57F00",
 						seperator: "#1e293b",
 					},
 					content: {
@@ -99,61 +86,61 @@ module.exports = {
 					label: "#5c637b",
 					title: "#43495c",
 					disabled: "#5d647b",
-					labelButton: "#065DC1",
+					labelButton: "#F57F00",
 				},
 				borders: {
 					primary: '#e9ebf0',
 					secondary: '#ced0da',
 					tertiary: '#8b91a7',
 					input: '#adb2c1',
-					focus: '#3d89f4',
+					focus: '#F57F00',
 					divider: '#1e293b',
 					dividerLight: '#eaebf0',
 				},
 				input: {
-					border: "#adb2c1",
-					placeholder: "#bdc1cd",
-					primary: "#1d2029",
+					border: "#B7B7B7",
+					placeholder: "#C5C5C5",
+					primary: "#131313",
 					label: "#adb2c1",
-					bg: "#f5f6f9",
-					borderFocus: "#3d89f4",
-					borderHover: "#5D647B",
-					bgNotEditable: "#F5F6F9",
+					bg: "#ffffff",
+					borderFocus: "#FFA33B",
+					borderHover: "#6D6D6D",
+					bgNotEditable: "#F6F6F6",
 				},
 				button: {
 					max: {
-						bg: "#e4f0fb",
-						text: "#092f62",
-						hover: "#CCE4FF",
-						disabledBg: "#E9EBF0",
-						disabledText: "#ADB2C2",
+						bg: "#FDF2E2",
+						text: "#FFA33B",
+						hover: "#FDF2E2",
+						disabledBg: "#ECECEC",
+						disabledText: "#C5C5C5",
 					},
 					primary: {
 						disabled: {
-							text: "var(--Gray-palette-40, #C5C5C5)",
-							bg: "var(--Gray-palette-10, #ECECEC)",
+							text: "#C5C5C5",
+							bg: "#ECECEC",
 						},
 						default: {
-							text: "var(--Gray-palette-White, #FFF)",
-							bg: "var(--Brand-colors-Citrus-orange, #F7911A)",
+							text: "#ffffff",
+							bg: "#F7911A",
 						},
 						hover: {
-							text: "var(--Gray-palette-White, #FFF)",
-							bg: "var(--Brand-colors-Juice-orange, #F57F00)",
+							text: "#ffffff",
+							bg: "#F57F00",
 						},
 					},
 					secondary: {
 						disabled: {
-							text: "var(--Gray-palette-40, #C5C5C5)",
-							bg: "var(--Gray-palette-5, #F6F6F6)",
+							text: "#ADB2C2",
+							bg: "##F5F6F9",
 						},
 						default: {
-							text: "var(--Gray-palette-90, #424242)",
-							bg: "var(--Gray-palette-7, #F1F1F1)",
+							text: "#272B38",
+							bg: "#F5F6F9",
 						},
 						hover: {
-							text: "var(--Gray-palette-90, #424242)",
-							bg: "var(--Gray-palette-15, #E7E7E7)",
+							text: "#272B38",
+							bg: "#EAEBF0",
 						},
 					},
 					text:{
@@ -161,7 +148,7 @@ module.exports = {
 							text: "#272B38",
 						},
 						hover: {
-							text: "#F7911A",
+							text: "#F57F00",
 						},
 						disabled: {
 							text: "#ADB2C2",
@@ -169,7 +156,7 @@ module.exports = {
 					},
 					textGroup: {
 						primary: {
-							text: "#065DC1",
+							text: "#F57F00",
 						},
 						secondary: {
 							text: "#8B92A8",
@@ -193,6 +180,9 @@ module.exports = {
 						secondary: "#F0F1F5",
 						hover: "#F0F1F5",
 					},
+				},
+				orangePalette: {
+					"pale-orange": "var(--Orange-palette-Pale-orange, #FDF2E2)",
 				},
 			},
 			boxShadow: {

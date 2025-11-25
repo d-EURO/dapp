@@ -90,7 +90,7 @@ export default function SavingsHistoryCard() {
 						options={{
 							theme: {
 								monochrome: {
-									color: "#0D4E9C",
+									color: "#F57F00",
 									enabled: true,
 								},
 							},
@@ -136,13 +136,13 @@ export default function SavingsHistoryCard() {
 								max: maxPrice * 2,
 							},
 							fill: {
-								colors: ["#0F80F099"],
+								colors: ["#F57F0099"],
 								type: "gradient",
 								gradient: {
 									type: "vertical",
 									opacityFrom: 1,
 									opacityTo: 0.95,
-									gradientToColors: ["#F5F6F9"],
+									gradientToColors: ["#FDF2E2"],
 								},
 							},
 						}}

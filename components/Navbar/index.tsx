@@ -43,7 +43,7 @@ export default function Navbar() {
 	return (
 		<div className="fixed top-0 left-0 right-0 z-20 bg-white border-b border-menu-separator bg-menu-back backdrop-blur">
 			<div className="flex justify-center">
-				<header className="flex w-full max-w-[1440px] h-16 px-spacing-10 justify-between items-center shrink-0">
+				<header className="flex w-full max-w-[1440px] px-5 h-16 px-spacing-10 justify-between items-center shrink-0">
 					<div className="h-9 justify-start items-center gap-6 inline-flex">
 						<Link className="w-[120px] flex items-center justify-center" href={CONFIG.landing}>
 							<div className="relative">

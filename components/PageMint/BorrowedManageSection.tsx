@@ -376,7 +376,7 @@ export const BorrowedManageSection = () => {
 					/>
 					{error && <div className="ml-1 text-text-warning text-sm">{error}</div>}
 				</div>
-				<div className="w-full mt-1.5 px-4 py-2 rounded-xl bg-[#E4F0FC] flex flex-row justify-between items-center text-base font-extrabold text-[#272B38]">
+				<div className="w-full mt-1.5 px-4 py-2 rounded-xl bg-[#FDF2E2] flex flex-row justify-between items-center text-base font-extrabold text-[#272B38]">
 					<span>{t("mint.collateralization")}</span>
 					<span>{collateralizationPercentage} %</span>
 				</div>
