@@ -68,16 +68,19 @@ export function useWalletERC20Balances(tokenList: TokenDescriptor[] = [], { acco
 	const { address } = useAccount();
 	const account = accountAddress || address;
 
-	// Get native ETH balance
-	const { data: ethBalanceData } = useBalance({
+	// Get native coin balance (uses the chain's native currency)
+	const { data: nativeBalanceData } = useBalance({
 		address: account,
 	});
 
 	const chainId = WAGMI_CHAIN.id as number;
+	const nativeSymbol = WAGMI_CHAIN.nativeCurrency.symbol;
+	const nativeName = WAGMI_CHAIN.nativeCurrency.name;
+	const nativeDecimals = WAGMI_CHAIN.nativeCurrency.decimals;
 
-	// Filter out ETH from the token list for ERC20 queries
-	const erc20TokenList = tokenList.filter((token) => token.symbol !== 'ETH');
-	const ethToken = tokenList.find((token) => token.symbol === 'ETH');
+	// Filter out the native coin from the token list for ERC20 queries
+	const erc20TokenList = tokenList.filter((token) => token.symbol !== WAGMI_CHAIN.nativeCurrency.symbol);
+	const nativeToken = tokenList.find((token) => token.symbol === WAGMI_CHAIN.nativeCurrency.symbol);
 
 	const query = useMemo(
 		() =>
@@ -127,20 +130,20 @@ export function useWalletERC20Balances(tokenList: TokenDescriptor[] = [], { acco
 	const responseMappedByAddress = useMemo(() => {
 		const erc20Balances = getMappedResponseByAddress(query, erc20TokenList, data as any[]);
 
-		// Add ETH balance if ETH token is in the list (ETH uses zero address as identifier)
-		if (ethToken) {
-			erc20Balances[ethToken.address] = {
-				address: ethToken.address,
-				symbol: 'ETH',
-				name: 'Ethereum',
-				decimals: 18,
-				balanceOf: ethBalanceData?.value ?? 0n,
+		// Add native coin balance if the synthetic native token is in the list
+		if (nativeToken) {
+			erc20Balances[nativeToken.address] = {
+				address: nativeToken.address,
+				symbol: nativeSymbol,
+				name: nativeName,
+				decimals: nativeDecimals,
+				balanceOf: nativeBalanceData?.value ?? 0n,
 				allowance: {},
 			};
 		}
 
 		return erc20Balances;
-	}, [query, data, isLoading, ethToken, ethBalanceData]);
+	}, [query, data, isLoading, nativeToken, nativeBalanceData]);
 
 	return { balances: Object.values(responseMappedByAddress), balancesByAddress: responseMappedByAddress, isLoading, refetchBalances: refetch };
 }

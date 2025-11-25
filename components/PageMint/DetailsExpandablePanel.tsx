@@ -1,4 +1,4 @@
-import { formatCurrency } from "@utils";
+import { formatCurrency, TOKEN_SYMBOL } from "@utils";
 import { formatUnits } from "viem";
 import { useTranslation } from "next-i18next";
 import { LoanDetails } from "../../utils/loanCalculations";
@@ -42,31 +42,31 @@ export function DetailsExpandablePanel({
 			<div className="py-1.5 flex justify-between">
 				<span className="text-base leading-tight">{t("mint.loan_amount")}</span>
 				<span className="text-right text-sm font-extrabold leading-none tracking-tight">
-					{formatCurrency(formatUnits(loanDetails.loanAmount, 18), 2, 2)} dEURO
+					{formatCurrency(formatUnits(loanDetails.loanAmount, 18), 2, 2)} {TOKEN_SYMBOL}
 				</span>
 			</div>
 			<div className="py-1.5 flex justify-between">
 				<span className="text-base leading-tight">{t("mint.retained_reserve")}</span>
 				<span className="text-right text-sm font-extrabold leading-none tracking-tight">
-					{formatCurrency(formatUnits(loanDetails.borrowersReserveContribution, 18), 2, 2)} dEURO
+					{formatCurrency(formatUnits(loanDetails.borrowersReserveContribution, 18), 2, 2)} {TOKEN_SYMBOL}
 				</span>
 			</div>
 			<div className="py-1.5 flex justify-between">
 				<span className="text-base leading-tight">{t("mint.expected_interest")}</span>
 				<span className="text-right text-sm font-extrabold leading-none tracking-tight">
-					{formatCurrency(formatUnits(loanDetails.interestUntilExpiration, 18), 2, 2)} dEURO
+					{formatCurrency(formatUnits(loanDetails.interestUntilExpiration, 18), 2, 2)} {TOKEN_SYMBOL}
 				</span>
 			</div>
 			<div className="py-1.5 flex justify-between">
 				<span className="text-base leading-tight">{t("mint.starting_liquidation_price")}</span>
 				<span className="text-right text-sm font-extrabold leading-none tracking-tight">
-					{formatCurrency(formatUnits(startingLiquidationPrice, 36 - collateralDecimals), 2, 2)} €
+					{formatCurrency(formatUnits(startingLiquidationPrice, 36 - collateralDecimals), 2, 2)} {TOKEN_SYMBOL}
 				</span>
 			</div>
 			<div className="py-1.5 flex justify-between">
 				<span className="text-base leading-tight">{t("mint.liquidation_price_at_expiration")}</span>
 				<span className="text-right text-sm font-extrabold leading-none tracking-tight">
-					{formatCurrency(formatUnits(loanDetails.liquidationPrice, 36 - collateralDecimals), 2, 2)} €
+					{formatCurrency(formatUnits(loanDetails.liquidationPrice, 36 - collateralDecimals), 2, 2)} {TOKEN_SYMBOL}
 				</span>
 			</div>
 			<div className="py-1.5 flex justify-between">
@@ -78,7 +78,7 @@ export function DetailsExpandablePanel({
 			<div className="py-1.5 flex justify-between">
 				<span className="text-base leading-tight">{t("mint.market_price")}</span>
 				<span className="text-right text-sm font-extrabold leading-none tracking-tight">
-					{formatCurrency(collateralPriceDeuro, 2, 2)} dEURO
+					{formatCurrency(collateralPriceDeuro, 2, 2)} {TOKEN_SYMBOL}
 				</span>
 			</div>
 			<div className="py-1.5 flex justify-between">

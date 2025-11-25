@@ -29,8 +29,8 @@ export function SliderInputOutlined({ value, onChange, min, max, decimals, isErr
 				<div className="h-18 self-stretch justify-between inline-flex flex-col sm:flex-row">
 					<div className="flex-col justify-center items-start inline-flex">
 						<div className="self-stretch px-2 bg-white rounded-xl flex-col justify-center items-start flex">
-							<div className="h-11 self-stretch justify-start items-center gap-1 inline-flex overflow-hidden">
-								<div className="text-input-placeholder text-xl leading-normal">€</div>
+						<div className="h-11 self-stretch justify-start items-center gap-1 inline-flex overflow-hidden">
+						<div className="text-input-placeholder text-xl leading-normal">€</div>
 								<BigNumberInput
 									className={`w-full pl-0 text-input-primary placeholder:text-input-placeholder text-2xl font-medium leading-tight ${
 										isError ? "!text-text-warning" : ""
