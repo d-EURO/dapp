@@ -9,11 +9,11 @@ export default function Document() {
 				<meta property="og:url" content="https://app.deuro.com/" />
 				<meta content="dEURO - Decentralized Euro." property="og:title" />
 				<meta content="dEURO is a collateralized, oracle-free stablecoin that tracks the value of the Euro. Its strengths are its decentralization and its versatility." property="og:description" />
-				<meta content="https://cdn.prod.website-files.com/66f821decbc5c641c7050485/67c5b744908076ae482e1be4_og_image.png" property="og:image" />
+				<meta content="https://juicedollar.com/Brand_Kit/02_Web_App/Og_image/JUSD-open-graph-preview.png" property="og:image" />
 				<meta content="dEURO is a collateralized, oracle-free stablecoin that tracks the value of the Euro. Its strengths are its decentralization and its versatility." name="description" />
 				<meta content="dEURO - Decentralized Euro." property="twitter:title" />
 				<meta content="dEURO is a collateralized, oracle-free stablecoin that tracks the value of the Euro. Its strengths are its decentralization and its versatility." property="twitter:description" />
-				<meta content="https://cdn.prod.website-files.com/66f821decbc5c641c7050485/67c5b744908076ae482e1be4_og_image.png" property="twitter:image" />
+				<meta content="https://juicedollar.com/Brand_Kit/02_Web_App/Og_image/JUSD-open-graph-preview.png" property="twitter:image" />
 				<meta content="summary_large_image" name="twitter:card" />
 			</Head>
 			<body className="font-sans container-xl mx-auto bg-layout-primary text-text-primary">
