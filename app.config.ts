@@ -121,8 +121,8 @@ export const PONDER_CLIENT = new ApolloClient({
 	cache: new InMemoryCache(),
 });
 
-// DEURO API CLIENT
-export const DEURO_API_CLIENT = axios.create({
+// API CLIENT
+export const API_CLIENT = axios.create({
 	baseURL: CONFIG.api,
 });
 

@@ -10,6 +10,20 @@ import { SliderInputOutlined } from "@components/Input/SliderInputOutlined";
 import { DetailsExpandablePanel } from "@components/PageMint/DetailsExpandablePanel";
 import { NormalInputOutlined } from "@components/Input/NormalInputOutlined";
 import { PositionQuery } from "@juicedollar/api";
+
+// Type for the default position from API (will be exported from @juicedollar/api in future version)
+type ApiPositionDefault = {
+	position: Address;
+	collateral: Address;
+	collateralSymbol: string;
+	collateralDecimals: number;
+	price: string;
+	minimumCollateral: string;
+	availableForClones: string;
+	expiration: number;
+	reserveContribution: number;
+	annualInterestPPM: number;
+};
 import { SelectCollateralModal } from "./SelectCollateralModal";
 import { BorrowingDEUROModal } from "@components/PageMint/BorrowingDEUROModal";
 import { InputTitle } from "@components/Input/InputTitle";
@@ -20,7 +34,6 @@ import {
 	toDate,
 	TOKEN_SYMBOL,
 	toTimestamp,
-	WHITELISTED_POSITIONS,
 	NATIVE_WRAPPED_SYMBOLS
 } from "@utils";
 import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalances";
@@ -29,7 +42,7 @@ import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { useTranslation } from "next-i18next";
 import { ADDRESS, MintingHubGatewayABI, PositionV2ABI, CoinLendingGatewayABI } from "@juicedollar/jusd";
 import { useAccount, useBlock, useChainId } from "wagmi";
-import { WAGMI_CONFIG, WAGMI_CHAIN } from "../../app.config";
+import { WAGMI_CONFIG, WAGMI_CHAIN, API_CLIENT } from "../../app.config";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { TxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
@@ -61,10 +74,24 @@ export default function PositionCreate({}) {
 	const [isCloneLoading, setIsCloneLoading] = useState(false);
 	const [collateralError, setCollateralError] = useState("");
 	const [isMaxedOut, setIsMaxedOut] = useState(false);
+	const [defaultPosition, setDefaultPosition] = useState<ApiPositionDefault | null>(null);
 
 	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
 	const challenges = useSelector((state: RootState) => state.challenges.list?.list || []);
 	const challengedPositions = (challenges || []).filter((c) => c.status === "Active").map((c) => c.position);
+
+	// Fetch default position from API
+	useEffect(() => {
+		const fetchDefaultPosition = async () => {
+			try {
+				const response = await API_CLIENT.get("/positions/default");
+				setDefaultPosition(response.data as ApiPositionDefault);
+			} catch (error) {
+				console.error("Failed to fetch default position:", error);
+			}
+		};
+		fetchDefaultPosition();
+	}, []);
 
 	const { data: latestBlock } = useBlock();
 	const chainId = useChainId();
@@ -83,15 +110,16 @@ export default function PositionCreate({}) {
 	};
 
 	const elegiblePositions = useMemo(() => {
+		if (!defaultPosition) return [];
 		const blockTimestamp = latestBlock?.timestamp || new Date().getTime() / 1000;
 		return positions
-			.filter((p) => WHITELISTED_POSITIONS.includes(p.position as `0x${string}`))
+			.filter((p) => p.position.toLowerCase() === defaultPosition.position.toLowerCase())
 			.filter((p) => BigInt(p.availableForClones) > 0n)
 			.filter((p) => !p.closed)
 			.filter((p) => blockTimestamp > toTimestamp(toDate(p.cooldown)))
 			.filter((p) => blockTimestamp < toTimestamp(toDate(p.expiration)))
 			.filter((p) => !challengedPositions.includes(p.position));
-	}, [positions, latestBlock, challengedPositions]);
+	}, [positions, latestBlock, challengedPositions, defaultPosition]);
 
 	const collateralTokenList = useMemo(() => {
 		const uniqueTokens = new Map();
@@ -106,19 +134,14 @@ export default function PositionCreate({}) {
 			});
 		});
 
-		const tokens = Array.from(uniqueTokens.values()).sort((a, b) => {
-			const posA = WHITELISTED_POSITIONS.findIndex((p) => p.toLowerCase() === a.position.toLowerCase());
-			const posB = WHITELISTED_POSITIONS.findIndex((p) => p.toLowerCase() === b.position.toLowerCase());
-			if (posA === -1 || posB === -1) return 0;
-			return posA - posB;
-		});
+		const tokens = Array.from(uniqueTokens.values());
 
 		// If a wrapped-native token (e.g. WBTC, WCBTC) exists, prepend the chain's native coin
 		const wrappedNativeToken = tokens.find((t) =>
 			NATIVE_WRAPPED_SYMBOLS.includes(t.symbol.toLowerCase())
 		);
 		if (wrappedNativeToken) {
-			
+
 			const nativeToken = {
 				...wrappedNativeToken,
 				symbol: WAGMI_CHAIN.nativeCurrency.symbol,

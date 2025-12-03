@@ -6,7 +6,7 @@ import {
 	ApiChallengesPositions,
 	ApiChallengesPrices,
 } from "@juicedollar/api";
-import { DEURO_API_CLIENT } from "../../app.config";
+import { API_CLIENT } from "../../app.config";
 import {
 	ChallengesState,
 	DispatchApiChallengesChallengers,
@@ -99,19 +99,19 @@ export const fetchChallengesList =
 		try {
 			// ---------------------------------------------------------------
 			// Query raw data from backend api
-			const response1 = await DEURO_API_CLIENT.get("/challenges/list");
+			const response1 = await API_CLIENT.get("/challenges/list");
 			dispatch(slice.actions.setList(response1.data as ApiChallengesListing));
 
-			const responseMapping = await DEURO_API_CLIENT.get("/challenges/mapping");
+			const responseMapping = await API_CLIENT.get("/challenges/mapping");
 			dispatch(slice.actions.setMapping(responseMapping.data as ApiChallengesMapping));
 
-			const response2 = await DEURO_API_CLIENT.get("/challenges/challengers");
+			const response2 = await API_CLIENT.get("/challenges/challengers");
 			dispatch(slice.actions.setChallengers(response2.data as ApiChallengesChallengers));
 
-			const response3 = await DEURO_API_CLIENT.get("/challenges/positions");
+			const response3 = await API_CLIENT.get("/challenges/positions");
 			dispatch(slice.actions.setPositions(response3.data as ApiChallengesPositions));
 
-			const response4 = await DEURO_API_CLIENT.get("/challenges/prices");
+			const response4 = await API_CLIENT.get("/challenges/prices");
 			dispatch(slice.actions.setPrices(response4.data as ApiChallengesPrices));
 		} catch (error) {
 			logApiError(error, "challenges data");

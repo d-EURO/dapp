@@ -1,7 +1,7 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
 import { PricesState, DispatchBoolean, DispatchApiPriceMapping, DispatchApiPriceERC20Mapping, DispatchApiPriceERC20, DispatchPriceQueryCurrencies } from "./prices.types";
 import { ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping, PriceQueryCurrencies } from "@juicedollar/api";
-import { DEURO_API_CLIENT } from "../../app.config";
+import { API_CLIENT } from "../../app.config";
 import { zeroAddress } from "viem";
 import { logApiError } from "../../utils/errorLogger";
 
@@ -76,19 +76,19 @@ export const fetchPricesList =
 		try {
 			// ---------------------------------------------------------------
 			// Query raw data from backend api
-			const response1 = await DEURO_API_CLIENT.get("/prices/mapping");
+			const response1 = await API_CLIENT.get("/prices/mapping");
 			dispatch(slice.actions.setListMapping(response1.data as ApiPriceMapping));
 
-			const response2 = await DEURO_API_CLIENT.get("/prices/erc20/mint");
+			const response2 = await API_CLIENT.get("/prices/erc20/mint");
 			dispatch(slice.actions.setMintERC20Info(response2.data as ApiPriceERC20));
 
-			const response3 = await DEURO_API_CLIENT.get("/prices/erc20/collateral");
+			const response3 = await API_CLIENT.get("/prices/erc20/collateral");
 			dispatch(slice.actions.setCollateralERC20Info(response3.data as ApiPriceERC20Mapping));
 
-			const response4 = await DEURO_API_CLIENT.get("/prices/erc20/deps");
+			const response4 = await API_CLIENT.get("/prices/erc20/deps");
 			dispatch(slice.actions.setNativePSERC20Info(response4.data as ApiPriceERC20));
 
-			const response5 = await DEURO_API_CLIENT.get("/prices/eur");
+			const response5 = await API_CLIENT.get("/prices/eur");
 			dispatch(slice.actions.setEurPrice(response5.data as PriceQueryCurrencies));
 		} catch (error) {
 			logApiError(error, "prices data");

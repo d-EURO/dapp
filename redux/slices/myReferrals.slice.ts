@@ -1,5 +1,5 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
-import { DEURO_API_CLIENT } from "../../app.config";
+import { API_CLIENT } from "../../app.config";
 import { getFrontendCodeFromReferralName, getReferralLink, getReferralNameFromFrontendCode } from "@utils";
 import { ReferralsState, DispatchString, DispatchBoolean, DispatchReferralsState, DispatchFrontendCode } from "./myReferrals.types";
 
@@ -64,7 +64,7 @@ export const fetchReferralData = () => async (dispatch: Dispatch) => {
   console.log("Loading [REDUX]: ReferralData");
   
   try {
-    const response = await DEURO_API_CLIENT.get("/referrals/my-data");
+    const response = await API_CLIENT.get("/referrals/my-data");
     dispatch(slice.actions.setReferralData(response.data));
     dispatch(slice.actions.setLoaded(true));
   } catch (error) {

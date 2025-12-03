@@ -1,5 +1,5 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
-import { DEURO_API_CLIENT } from "../../app.config";
+import { API_CLIENT } from "../../app.config";
 import {
 	DispatchApiEcosystemCollateralPositions,
 	DispatchApiEcosystemCollateralStats,
@@ -97,19 +97,19 @@ export const fetchEcosystem =
 		try {
 			// ---------------------------------------------------------------
 			// Query raw data from backend api
-			const response1 = await DEURO_API_CLIENT.get("/ecosystem/collateral/positions");
+			const response1 = await API_CLIENT.get("/ecosystem/collateral/positions");
 			dispatch(slice.actions.setCollateralPositions(response1.data as ApiEcosystemCollateralPositions));
 
-			const response2 = await DEURO_API_CLIENT.get("/ecosystem/collateral/stats");
+			const response2 = await API_CLIENT.get("/ecosystem/collateral/stats");
 			dispatch(slice.actions.setCollateralStats(response2.data as ApiEcosystemCollateralStats));
 
-			const response3 = await DEURO_API_CLIENT.get("/ecosystem/poolshares/info");
+			const response3 = await API_CLIENT.get("/ecosystem/poolshares/info");
 			dispatch(slice.actions.setDepsInfo(response3.data as ApiEcosystemPoolSharesInfo));
 
-			const response4 = await DEURO_API_CLIENT.get("/ecosystem/stablecoin/info");
+			const response4 = await API_CLIENT.get("/ecosystem/stablecoin/info");
 			dispatch(slice.actions.setStablecoinInfo(response4.data as ApiEcosystemStablecoinInfo));
 			
-			const response5 = await DEURO_API_CLIENT.get("/ecosystem/stablecoin/minter/list");
+			const response5 = await API_CLIENT.get("/ecosystem/stablecoin/minter/list");
 			dispatch(slice.actions.setStablecoinMinters(response5.data as ApiMinterListing));
 
 			// ---------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
-import { DEURO_API_CLIENT } from "../../app.config";
+import { API_CLIENT } from "../../app.config";
 import {
 	BidsState,
 	DispatchBoolean,
@@ -95,19 +95,19 @@ export const fetchBidsList =
 		try {
 			// ---------------------------------------------------------------
 			// Query raw data from backend api
-			const response1 = await DEURO_API_CLIENT.get("/challenges/bids/list");
+			const response1 = await API_CLIENT.get("/challenges/bids/list");
 			dispatch(slice.actions.setList(response1.data as ApiBidsListing));
 
-			const responseMapping = await DEURO_API_CLIENT.get("/challenges/bids/mapping");
+			const responseMapping = await API_CLIENT.get("/challenges/bids/mapping");
 			dispatch(slice.actions.setMapping(responseMapping.data as ApiBidsMapping));
 
-			const response2 = await DEURO_API_CLIENT.get("/challenges/bids/bidders");
+			const response2 = await API_CLIENT.get("/challenges/bids/bidders");
 			dispatch(slice.actions.setBidders(response2.data as ApiBidsBidders));
 
-			const response3 = await DEURO_API_CLIENT.get("/challenges/bids/challenges");
+			const response3 = await API_CLIENT.get("/challenges/bids/challenges");
 			dispatch(slice.actions.setChallenges(response3.data as ApiBidsChallenges));
 
-			const response4 = await DEURO_API_CLIENT.get("/challenges/bids/positions");
+			const response4 = await API_CLIENT.get("/challenges/bids/positions");
 			dispatch(slice.actions.setPositions(response4.data as ApiBidsPositions));
 		} catch (error) {
 			logApiError(error, "bids data");
