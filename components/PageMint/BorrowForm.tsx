@@ -40,7 +40,8 @@ import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalan
 import { RootState, store } from "../../redux/redux.store";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { useTranslation } from "next-i18next";
-import { ADDRESS, MintingHubGatewayABI, PositionV2ABI, CoinLendingGatewayABI } from "@juicedollar/jusd";
+import { ADDRESS, MintingHubGatewayABI, PositionV2ABI } from "@juicedollar/jusd";
+import { CoinLendingGatewayABI } from "../../utils/coinLendingGateway";
 import { useAccount, useBlock, useChainId } from "wagmi";
 import { WAGMI_CONFIG, WAGMI_CHAIN, API_CLIENT } from "../../app.config";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -362,10 +363,12 @@ export default function PositionCreate({}) {
 				abi: MintingHubGatewayABI,
 				functionName: "clone",
 				args: [
-					selectedPosition.position,
+					address as `0x${string}`,
+					selectedPosition.position as `0x${string}`,
 					BigInt(collateralAmount),
 					loanDetails.loanAmount,
 					toTimestamp(expirationDate),
+					BigInt(liquidationPrice),
 					frontendCode,
 				],
 			});
@@ -510,7 +513,7 @@ export default function PositionCreate({}) {
 			setIsCloneSuccess(false);
 
 			// Check if CoinLendingGateway is available on this chain
-			const gatewayAddress = ADDRESS[chainId]?.coinLendingGateway;
+			const gatewayAddress = (ADDRESS[chainId] as any)?.coinLendingGateway as Address | undefined;
 			if (gatewayAddress && gatewayAddress !== zeroAddress) {
 				// Use the 1-click solution with CoinLendingGateway
 				const hash = await writeContract(WAGMI_CONFIG, {
@@ -650,10 +653,12 @@ export default function PositionCreate({}) {
 					abi: MintingHubGatewayABI,
 					functionName: "clone",
 					args: [
-						selectedPosition.position,
+						address as `0x${string}`,
+						selectedPosition.position as `0x${string}`,
 						BigInt(collateralAmount),
 						loanDetails.loanAmount,
 						toTimestamp(expirationDate),
+						BigInt(liquidationPrice),
 						frontendCode,
 					],
 				});

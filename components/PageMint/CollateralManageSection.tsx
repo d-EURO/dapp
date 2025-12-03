@@ -215,7 +215,7 @@ export const CollateralManageSection = () => {
 				address: position.position,
 				abi: PositionV2ABI,
 				functionName: "adjust",
-				args: [principal, contractAmount, price],
+				args: [principal, contractAmount, price, false],
 			});
 
 			const toastContent = [
@@ -256,7 +256,7 @@ export const CollateralManageSection = () => {
 				address: position.position,
 				abi: PositionV2ABI,
 				functionName: "adjust",
-				args: [principal, contractAmount, price],
+				args: [principal, contractAmount, price, false],
 			});
 
 			const toastContent = [

@@ -216,7 +216,7 @@ export default function PositionAdjust() {
 				address: position.position,
 				abi: PositionV2ABI,
 				functionName: "adjust",
-				args: [amount, collateralAmount, liqPrice],
+				args: [amount, collateralAmount, liqPrice, false],
 			});
 
 			const toastContent = [

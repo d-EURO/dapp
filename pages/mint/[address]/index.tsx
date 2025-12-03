@@ -211,7 +211,15 @@ export default function PositionBorrow({}) {
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubGatewayABI,
 				functionName: "clone",
-				args: [position.position, requiredColl, amount, expirationTime, frontendCode],
+				args: [
+					account.address as `0x${string}`,
+					position.position as `0x${string}`,
+					requiredColl,
+					amount,
+					expirationTime,
+					BigInt(position.price),
+					frontendCode,
+				],
 			});
 
 			const toastContent = [

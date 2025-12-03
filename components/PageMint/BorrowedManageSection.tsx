@@ -275,7 +275,7 @@ export const BorrowedManageSection = () => {
 					address: position.position,
 					abi: PositionV2ABI,
 					functionName: "adjust",
-					args: [BigInt(0), BigInt(0), BigInt(position.price)],
+					args: [BigInt(0), BigInt(0), BigInt(position.price), false],
 				});
 			} else {
 				const userInputAmount = BigInt(amount);
