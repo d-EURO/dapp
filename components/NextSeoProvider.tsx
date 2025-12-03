@@ -1,10 +1,11 @@
 import { NextSeo } from "next-seo";
+import { TOKEN_SYMBOL } from "@utils";
 
 export default function NextSeoProvider() {
 	return (
 		<NextSeo
-			title="dEURO"
-			description="The dEURO is a collateralized, oracle-free stablecoin that tracks the value of the Swiss franc."
+			title={TOKEN_SYMBOL}
+			description={`The ${TOKEN_SYMBOL} is a collateralized, oracle-free stablecoin that tracks the value of the Swiss franc.`}
 			openGraph={{
 				type: "website",
 				locale: "en_US",

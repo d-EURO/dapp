@@ -255,7 +255,7 @@ export default function PositionBorrow({}) {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t('mint.mint')}</title>
+				<title>{TOKEN_SYMBOL} - {t('mint.mint')}</title>
 			</Head>
 
 			<div className="mt-8">

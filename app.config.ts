@@ -7,6 +7,7 @@ import { injected, coinbaseWallet, walletConnect } from "@wagmi/connectors";
 import { testnet, mainnet } from "./chains";
 import axios from "axios";
 import { Address, Chain } from "viem";
+import { TOKEN_SYMBOL } from "./utils/constant";
 
 export type ConfigEnv = {
 	landing: string;
@@ -129,8 +130,8 @@ export const API_CLIENT = axios.create({
 // WAGMI CONFIG
 export const WAGMI_CHAIN = CONFIG_CHAIN();
 export const WAGMI_METADATA = {
-	name: "dEURO",
-	description: "dEURO Frontend Application",
+	name: TOKEN_SYMBOL,
+	description: `${TOKEN_SYMBOL} Frontend Application`,
 	url: CONFIG.landing,
 	icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };

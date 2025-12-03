@@ -226,7 +226,7 @@ export default function ChallengePlaceBid() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("challenges.bid")}</title>
+				<title>{TOKEN_SYMBOL} - {t("challenges.bid")}</title>
 			</Head>
 
 			<div className="md:mt-8">

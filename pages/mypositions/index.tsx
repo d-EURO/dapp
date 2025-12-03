@@ -4,7 +4,7 @@ import MyPositionsChallengesTable from "@components/PageMypositions/MyPositionsC
 import MyPositionsBidsTable from "@components/PageMypositions/MyPositionsBidsTable";
 import { useRouter } from "next/router";
 import { Address } from "viem";
-import { shortenAddress } from "@utils";
+import { shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useEffect } from "react";
 import { store } from "../../redux/redux.store";
 import { fetchPositionsList } from "../../redux/slices/positions.slice";
@@ -28,7 +28,7 @@ export default function Positions() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("my_positions.positions")}</title>
+				<title>{TOKEN_SYMBOL} - {t("my_positions.positions")}</title>
 			</Head>
 
 			{/* Section Positions */}

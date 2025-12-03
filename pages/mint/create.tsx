@@ -355,7 +355,7 @@ export default function PositionCreate({}) {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("mint.propose_position")}</title>
+				<title>{TOKEN_SYMBOL} - {t("mint.propose_position")}</title>
 			</Head>
 
 			<div className="md:mt-8">

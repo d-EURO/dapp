@@ -1,12 +1,12 @@
 import Head from "next/head";
 import Link from "next/link";
-import { SOCIAL } from "@utils";
+import { SOCIAL, TOKEN_SYMBOL } from "@utils";
 
 export default function Custom404() {
 	return (
 		<main className="container-xl mx-auto">
 			<Head>
-				<title>dEURO - 404</title>
+				<title>{TOKEN_SYMBOL} - 404</title>
 			</Head>
 
 			{/* To load dynamic classes */}

@@ -25,6 +25,7 @@ import { SvgIconButton } from "@components/PageMint/PlusMinusButtons";
 import { getLoanDetailsByCollateralAndYouGetAmount } from "../../utils/loanCalculations";
 import Link from "next/link";
 import { useContractUrl } from "../../hooks/useContractUrl";
+import { TOKEN_SYMBOL } from "@utils";
 
 export const CollateralManageSection = () => {
 	const router = useRouter();
@@ -303,7 +304,7 @@ export const CollateralManageSection = () => {
 								{position.collateralSymbol}
 							</span>
 							<span className="text-xs font-medium text-text-muted2 leading-[1rem]">
-								{formatCurrency(collateralValuation)} dEURO
+								{formatCurrency(collateralValuation)} {TOKEN_SYMBOL}
 							</span>
 						</div>
 					</div>

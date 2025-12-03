@@ -5,6 +5,7 @@ import { store } from "../../redux/redux.store";
 import { fetchChallengesList } from "../../redux/slices/challenges.slice";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
+import { TOKEN_SYMBOL } from "@utils";
 
 export default function ChallengesPage() {
 	const { t } = useTranslation();
@@ -16,7 +17,7 @@ export default function ChallengesPage() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("challenges.title")}</title>
+				<title>{TOKEN_SYMBOL} - {t("challenges.title")}</title>
 			</Head>
 
 			<div className="md:mt-8">

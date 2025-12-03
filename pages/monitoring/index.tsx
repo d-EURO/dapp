@@ -5,6 +5,7 @@ import { store } from "../../redux/redux.store";
 import { fetchPositionsList } from "../../redux/slices/positions.slice";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
+import { TOKEN_SYMBOL } from "@utils";
 
 export default function Positions() {
 	const { t } = useTranslation();
@@ -16,7 +17,7 @@ export default function Positions() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("monitoring.title")}</title>
+				<title>{TOKEN_SYMBOL} - {t("monitoring.title")}</title>
 			</Head>
 
 			<div className="md:mt-8">

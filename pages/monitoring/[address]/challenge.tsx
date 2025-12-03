@@ -193,7 +193,7 @@ export default function PositionChallenge() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("monitoring.challenge_title")}</title>
+				<title>{TOKEN_SYMBOL} - {t("monitoring.challenge_title")}</title>
 			</Head>
 
 			{/* <div>

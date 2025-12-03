@@ -346,7 +346,7 @@ export default function Swap() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("swap.swap")}</title>
+				<title>{TOKEN_SYMBOL} - {t("swap.swap")}</title>
 			</Head>
 
 			<div className="md:mt-8 flex justify-center">

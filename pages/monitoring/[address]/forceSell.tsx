@@ -157,7 +157,7 @@ export default function MonitoringForceSell() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("monitoring.force_sell_title")}</title>
+				<title>{TOKEN_SYMBOL} - {t("monitoring.force_sell_title")}</title>
 			</Head>
 
 			<div className="md:mt-8">

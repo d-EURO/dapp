@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import BorrowForm from "@components/PageMint/BorrowForm";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
+import { TOKEN_SYMBOL } from "@utils";
 
 export default function Borrow() {
 	const expertMode = useSelector((state: RootState) => state.globalPreferences.expertMode);
@@ -20,7 +21,7 @@ export default function Borrow() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("mint.title")}</title>
+				<title>{TOKEN_SYMBOL} - {t("mint.title")}</title>
 			</Head>
 
 			<BorrowForm />

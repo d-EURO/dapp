@@ -6,6 +6,7 @@ import SavingsInteractionSection from "@components/PageSavings/SavingsInteractio
 import AppCard from "@components/AppCard";
 import { TransactionHistoryPanel } from "@components/PageSavings/TransactionHistoryPanel";
 import SavingsHistoryCard from "@components/PageSavings/SavingsHistoryCard";
+import { TOKEN_SYMBOL } from "@utils";
 
 export default function Savings() {
 	const { t } = useTranslation();
@@ -13,7 +14,7 @@ export default function Savings() {
 	return (
 		<>
 			<Head>
-				<title>dEURO - {t("savings.title")}</title>
+				<title>{TOKEN_SYMBOL} - {t("savings.title")}</title>
 			</Head>
 
 			<div className="md:mt-8 flex justify-center">
