@@ -1,4 +1,11 @@
-import { ApiLeadrateInfo, ApiLeadrateProposed, ApiLeadrateRate, ApiSavingsInfo, ApiSavingsUserTable, ApiSavingsUserLeaderboard } from "@juicedollar/api";
+import {
+	ApiLeadrateInfo,
+	ApiLeadrateProposed,
+	ApiLeadrateRate,
+	ApiSavingsInfo,
+	ApiSavingsUserTable,
+	ApiSavingsUserLeaderboard,
+} from "@juicedollar/api";
 
 // --------------------------------------------------------------------------------
 export type SavingsState = {

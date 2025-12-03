@@ -25,11 +25,15 @@ export default function SavingsWithdrawnRow({ headers, item, tab }: Props) {
 					<AddressLabelSimple address={item.account} showLink />
 				</div>
 
-				<div className="flex flex-col">{formatCurrency(formatUnits(BigInt(item.amount), 18))} {TOKEN_SYMBOL}</div>
+				<div className="flex flex-col">
+					{formatCurrency(formatUnits(BigInt(item.amount), 18))} {TOKEN_SYMBOL}
+				</div>
 
 				<div className={`flex flex-col`}>{formatCurrency(item.rate / 10_000)} %</div>
 
-				<div className="flex flex-col">{formatCurrency(formatUnits(BigInt(item.balance), 18))} {TOKEN_SYMBOL}</div>
+				<div className="flex flex-col">
+					{formatCurrency(formatUnits(BigInt(item.balance), 18))} {TOKEN_SYMBOL}
+				</div>
 
 				{/* <div className="flex flex-col">{formatCurrency(formatUnits(BigInt(item.total), 18))} {TOKEN_SYMBOL}</div> */}
 			</TableRow>

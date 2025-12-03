@@ -28,11 +28,21 @@ export default function SavingsCollectInterest() {
 					</div>
 				</div>
 				<div className="flex flex-row gap-x-2.5">
-					<Button className="h-9 !py-1.5 gap-x-1.5 justify-start !w-fit" disabled={!interestToBeCollected} isLoading={isReinvesting} onClick={handleReinvest}>
+					<Button
+						className="h-9 !py-1.5 gap-x-1.5 justify-start !w-fit"
+						disabled={!interestToBeCollected}
+						isLoading={isReinvesting}
+						onClick={handleReinvest}
+					>
 						<FontAwesomeIcon icon={faArrowRotateRight} />
 						<span className="font-medium">{t("savings.reinvest")}</span>
 					</Button>
-					<SecondaryButton className="!py-1.5 gap-x-1.5" onClick={claimInterest} isLoading={isClaiming} disabled={!interestToBeCollected}>
+					<SecondaryButton
+						className="!py-1.5 gap-x-1.5"
+						onClick={claimInterest}
+						isLoading={isClaiming}
+						disabled={!interestToBeCollected}
+					>
 						<Image src="/icons/ph_hand-coins-black.svg" alt="arrow-right" width={20} height={20} />
 						<span className="font-medium">{t("savings.collect_interest")}</span>
 					</SecondaryButton>

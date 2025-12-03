@@ -81,7 +81,7 @@ export const ReferralsStats = () => {
 		}
 	};
 
-	const hasReferrals = totalReffered  > 0;
+	const hasReferrals = totalReffered > 0;
 	const hasAvailableToClaim = availableToClaim > 0;
 	const hasTotalRewards = totalVolume > 0;
 
@@ -130,11 +130,7 @@ export const ReferralsStats = () => {
 					{t("referrals.total_referred")}
 				</div>
 				<div className="flex-col justify-center items-center gap-2.5 flex">
-					<div
-						className={`text-xl sm:text-2xl font-extrabold leading-normal ${
-							hasReferrals ? "" : "text-menu-wallet-bg"
-						}`}
-					>
+					<div className={`text-xl sm:text-2xl font-extrabold leading-normal ${hasReferrals ? "" : "text-menu-wallet-bg"}`}>
 						{totalReffered}
 					</div>
 				</div>

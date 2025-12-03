@@ -140,7 +140,12 @@ export default function MonitoringForceSell() {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: bidWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("monitoring.txs.force_sell_pending", { symbol: position.collateralSymbol })} rows={toastContent} />,
+					render: (
+						<TxToast
+							title={t("monitoring.txs.force_sell_pending", { symbol: position.collateralSymbol })}
+							rows={toastContent}
+						/>
+					),
 				},
 				success: {
 					render: <TxToast title={t("monitoring.txs.force_sell_success")} rows={toastContent} />,
@@ -157,13 +162,17 @@ export default function MonitoringForceSell() {
 	return (
 		<>
 			<Head>
-				<title>{TOKEN_SYMBOL} - {t("monitoring.force_sell_title")}</title>
+				<title>
+					{TOKEN_SYMBOL} - {t("monitoring.force_sell_title")}
+				</title>
 			</Head>
 
 			<div className="md:mt-8">
 				<section className="mx-auto max-w-2xl sm:px-8">
 					<div className="bg-card-body-primary shadow-card rounded-xl p-4 flex flex-col gap-y-4">
-						<div className="text-lg font-bold text-center mt-3">{t("monitoring.force_sell_description", { symbol: position.collateralSymbol })}</div>
+						<div className="text-lg font-bold text-center mt-3">
+							{t("monitoring.force_sell_description", { symbol: position.collateralSymbol })}
+						</div>
 
 						<div className="">
 							<TokenInput
@@ -178,10 +187,14 @@ export default function MonitoringForceSell() {
 								balanceLabel={t("common.available_label")}
 							/>
 							<div className="flex flex-col">
-								<span>{t("common.your_balance")} {formatCurrency(formatUnits(userBalance, 18), 2, 2)} {TOKEN_SYMBOL}</span>
+								<span>
+									{t("common.your_balance")} {formatCurrency(formatUnits(userBalance, 18), 2, 2)} {TOKEN_SYMBOL}
+								</span>
 							</div>
 							<div className="flex flex-col">
-								<span>{t("common.estimated_cost")} {formatCurrency(formatUnits(expectedEURO(), 18), 2, 2)} {TOKEN_SYMBOL}</span>
+								<span>
+									{t("common.estimated_cost")} {formatCurrency(formatUnits(expectedEURO(), 18), 2, 2)} {TOKEN_SYMBOL}
+								</span>
 							</div>
 						</div>
 

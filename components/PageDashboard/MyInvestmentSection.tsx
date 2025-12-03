@@ -12,9 +12,7 @@ const ExplanationItem = ({ icon, title, description }: { icon: string; title: st
 		</div>
 		<div className="grow shrink basis-0 flex-col justify-center items-start">
 			<div className="self-stretch text-base font-extrabold leading-tight">{title}</div>
-			<div className="mt-1 self-stretch text-sm font-normal leading-[18px] text-gray-palette-75">
-				{description}
-			</div>
+			<div className="mt-1 self-stretch text-sm font-normal leading-[18px] text-gray-palette-75">{description}</div>
 		</div>
 	</div>
 );

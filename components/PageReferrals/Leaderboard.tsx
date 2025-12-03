@@ -26,7 +26,14 @@ const subHeaders = ["", "", "JUSD", "JUSD", "JUSD", "JUSD"];
 
 export default function Leaderboard() {
 	const { t } = useTranslation();
-	const headers = [t("referrals.ref_name"), t("referrals.referrals"), t("referrals.loans_volume"), t("referrals.invest_volume"), t("referrals.savings_volume"), t("referrals.total_volume")];
+	const headers = [
+		t("referrals.ref_name"),
+		t("referrals.referrals"),
+		t("referrals.loans_volume"),
+		t("referrals.invest_volume"),
+		t("referrals.savings_volume"),
+		t("referrals.total_volume"),
+	];
 	const [isShowMore, setIsShowMore] = useState(false);
 	const [tab, setTab] = useState<string>(headers[5]);
 	const [reverse, setReverse] = useState<boolean>(false);

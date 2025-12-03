@@ -14,7 +14,12 @@ import { useTranslation } from "next-i18next";
 
 export default function MyPositionsBidsTable() {
 	const { t } = useTranslation();
-	const headers: string[] = [t("my_positions.filled_size"), t("my_positions.price"), t("my_positions.bid_amount"), t("my_positions.state")];
+	const headers: string[] = [
+		t("my_positions.filled_size"),
+		t("my_positions.price"),
+		t("my_positions.bid_amount"),
+		t("my_positions.state"),
+	];
 	const [tab, setTab] = useState<string>(headers[0]);
 	const [reverse, setReverse] = useState<boolean>(false);
 
@@ -50,7 +55,14 @@ export default function MyPositionsBidsTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol headerClassNames={["text-center"]} />
+			<TableHeader
+				headers={headers}
+				tab={tab}
+				reverse={reverse}
+				tabOnChange={handleTabOnChange}
+				actionCol
+				headerClassNames={["text-center"]}
+			/>
 			<TableBody>
 				{sorted.length == 0 ? (
 					<TableRowEmpty>{t("my_positions.no_bids")}</TableRowEmpty>

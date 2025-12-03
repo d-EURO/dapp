@@ -79,7 +79,7 @@ module.exports = {
 					warning: "#ef4444",
 					success: "#22c55e",
 					icon: "#adb2c1",
-					muted:"#8b91a7",
+					muted: "#8b91a7",
 					muted2: "#8B92A8",
 					muted3: "#ADB2C2",
 					error: "#e02523",
@@ -89,13 +89,13 @@ module.exports = {
 					labelButton: "#F57F00",
 				},
 				borders: {
-					primary: '#e9ebf0',
-					secondary: '#ced0da',
-					tertiary: '#8b91a7',
-					input: '#adb2c1',
-					focus: '#F57F00',
-					divider: '#1e293b',
-					dividerLight: '#eaebf0',
+					primary: "#e9ebf0",
+					secondary: "#ced0da",
+					tertiary: "#8b91a7",
+					input: "#adb2c1",
+					focus: "#F57F00",
+					divider: "#1e293b",
+					dividerLight: "#eaebf0",
 				},
 				input: {
 					border: "#B7B7B7",
@@ -143,7 +143,7 @@ module.exports = {
 							bg: "#EAEBF0",
 						},
 					},
-					text:{
+					text: {
 						default: {
 							text: "#272B38",
 						},
@@ -173,7 +173,7 @@ module.exports = {
 						active: "#272b38",
 						action: "#ced0da",
 						default: "#CED1DA",
-						hover: "#8B92A8"
+						hover: "#8B92A8",
 					},
 					row: {
 						primary: "#FFFFFF",
@@ -186,7 +186,7 @@ module.exports = {
 				},
 			},
 			boxShadow: {
-				'card': '0px 0px 16px 0px rgba(0,0,0,0.08), 0px 1px 4px 0px rgba(0,0,0,0.03)',
+				card: "0px 0px 16px 0px rgba(0,0,0,0.08), 0px 1px 4px 0px rgba(0,0,0,0.03)",
 			},
 		},
 	},

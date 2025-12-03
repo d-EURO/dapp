@@ -51,18 +51,14 @@ export const CONFIG_CHAIN = (): Chain => {
 
 // CONFIG RPC
 export const CONFIG_RPC = (): string => {
-	return CONFIG.chain === "testnet"
-		? CONFIG.network.testnet
-		: CONFIG.network.mainnet;
+	return CONFIG.chain === "testnet" ? CONFIG.network.testnet : CONFIG.network.mainnet;
 };
 
 // Ponder fallback mechanism
 let fallbackUntil: number | null = null;
 
 function getPonderUrl(): string {
-	return fallbackUntil && Date.now() < fallbackUntil 
-		? CONFIG.ponderFallback 
-		: CONFIG.ponder;
+	return fallbackUntil && Date.now() < fallbackUntil ? CONFIG.ponderFallback : CONFIG.ponder;
 }
 
 function activateFallback(): void {
@@ -77,7 +73,7 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
 	// Log GraphQL errors for better debugging
 	if (graphQLErrors) {
 		graphQLErrors.forEach((error) => {
-			console.error(`[GraphQL error in operation: ${operation?.operationName || 'unknown'}]`, {
+			console.error(`[GraphQL error in operation: ${operation?.operationName || "unknown"}]`, {
 				message: error.message,
 				locations: error.locations,
 				path: error.path,
@@ -100,7 +96,7 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
 	}
 
 	// Handle other network errors
-	console.error(`[Network error in operation: ${operation?.operationName || 'unknown'}]`, {
+	console.error(`[Network error in operation: ${operation?.operationName || "unknown"}]`, {
 		message: (networkError as any).message,
 		name: (networkError as any).name,
 	});

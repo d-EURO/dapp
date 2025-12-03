@@ -55,7 +55,12 @@ export default function DisplayAmount({
 			<div>
 				<div>
 					<span className={`${bold && "font-bold"} ${big ? "text-3xl" : "text-base leading-5"}`}>
-						{amount ? formatCurrency(typeof amount === "number" ? amount : formatUnits(amount, Number(digits)), presentationPrecision) : "0.00"}
+						{amount
+							? formatCurrency(
+									typeof amount === "number" ? amount : formatUnits(amount, Number(digits)),
+									presentationPrecision
+							  )
+							: "0.00"}
 					</span>
 					<span className={`${bold && "font-bold"} ${big ? "text-3xl" : "text-base leading-5"}`}>
 						{currency == "%" ? "" : " "}

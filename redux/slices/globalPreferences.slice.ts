@@ -4,7 +4,7 @@ import { GlobalPreferencesState, DispatchWithoutPayload } from "./globalPreferen
 // --------------------------------------------------------------------------------
 
 export const initialState: GlobalPreferencesState = {
-	expertMode: typeof window !== 'undefined' ? localStorage.getItem("expertMode") == "true" : false,
+	expertMode: typeof window !== "undefined" ? localStorage.getItem("expertMode") == "true" : false,
 };
 
 // --------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ export const slice = createSlice({
 		toggleExpertMode(state) {
 			const newMode = !state.expertMode;
 			state.expertMode = newMode;
-			if (typeof window !== 'undefined') {
+			if (typeof window !== "undefined") {
 				localStorage.setItem("expertMode", newMode ? "true" : "false");
 			}
 		},

@@ -18,20 +18,30 @@ export default function SavingsDetailsCard({ balance, change, direction, interes
 			<div className="p-4 flex flex-col gap-2">
 				<div className="flex">
 					<div className="flex-1">{t("savings.current_balance")}</div>
-					<div className="">{formatCurrency(formatUnits(balance, 18))} {TOKEN_SYMBOL}</div>
+					<div className="">
+						{formatCurrency(formatUnits(balance, 18))} {TOKEN_SYMBOL}
+					</div>
 				</div>
 				<div className="flex">
-					<div className="flex-1">{direction ? t("savings.to_be_added_from_your_wallet") : t("savings.withdrawn_to_your_wallet")}</div>
-					<div className="">{formatCurrency(formatUnits(change, 18))} {TOKEN_SYMBOL}</div>
+					<div className="flex-1">
+						{direction ? t("savings.to_be_added_from_your_wallet") : t("savings.withdrawn_to_your_wallet")}
+					</div>
+					<div className="">
+						{formatCurrency(formatUnits(change, 18))} {TOKEN_SYMBOL}
+					</div>
 				</div>
 				<div className="flex">
 					<div className="flex-1">{t("savings.interest_to_be_collected")}</div>
-					<div className="">{formatCurrency(formatUnits(interest, 18))} {TOKEN_SYMBOL}</div>
+					<div className="">
+						{formatCurrency(formatUnits(interest, 18))} {TOKEN_SYMBOL}
+					</div>
 				</div>
 				<hr className="border-slate-700 border-dashed" />
 				<div className="flex font-bold">
 					<div className="flex-1">{t("savings.resulting_balance")}</div>
-					<div className="">{formatCurrency(formatUnits(balance + change + interest, 18))} {TOKEN_SYMBOL}</div>
+					<div className="">
+						{formatCurrency(formatUnits(balance + change + interest, 18))} {TOKEN_SYMBOL}
+					</div>
 				</div>
 			</div>
 		</AppCard>

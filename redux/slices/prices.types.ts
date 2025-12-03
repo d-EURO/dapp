@@ -1,10 +1,4 @@
-import {
-	ERC20Info,
-	ApiPriceERC20,
-	ApiPriceERC20Mapping,
-	ApiPriceMapping,
-	PriceQueryCurrencies,
-} from "@juicedollar/api";
+import { ERC20Info, ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping, PriceQueryCurrencies } from "@juicedollar/api";
 
 // --------------------------------------------------------------------------------
 export type PricesState = {

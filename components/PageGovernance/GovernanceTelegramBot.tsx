@@ -16,9 +16,7 @@ export default function GovernanceTelegramBot() {
 		<AppCard>
 			<div className="grid max-md:grid-cols-1 md:grid-cols-2">
 				<div className="flex flex-col gap-4 p-2 md:px-4 justify-center items-left">
-					<div>
-						{t("governance.d_euro_api_bot_description")}
-					</div>
+					<div>{t("governance.d_euro_api_bot_description")}</div>
 
 					<div className="grid grid-cols-1 w-full my-4 ml-6">
 						<ul className="flex flex-col gap-4">

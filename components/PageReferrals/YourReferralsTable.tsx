@@ -217,10 +217,10 @@ export default function YourReferralsTable() {
 		<div className="flex flex-col gap-2 sm:gap-0">
 			<SectionTitle>{t("referrals.your_referrals")}</SectionTitle>
 			<Table>
-				<TableHeader 
-					headers={headers} 
-					tab={tab} 
-					tabOnChange={handleTabOnChange} 
+				<TableHeader
+					headers={headers}
+					tab={tab}
+					tabOnChange={handleTabOnChange}
 					reverse={reverse}
 					colSpan={5}
 					headerClassNames={["text-left", "text-right", "text-right", "text-right", "text-right"]}

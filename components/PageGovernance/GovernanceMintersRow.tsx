@@ -50,7 +50,9 @@ export default function GovernanceMintersRow({ headers, minter, tab }: Props) {
 			<div className="flex flex-col">{minter.applyMessage}</div>
 
 			{/* State */}
-			<div className={`flex flex-col ${vetoed || passed ? "" : "font-bold"}`}>{vetoed ? t("governance.vetoed") : passed ? t("governance.passed") : stateStr}</div>
+			<div className={`flex flex-col ${vetoed || passed ? "" : "font-bold"}`}>
+				{vetoed ? t("governance.vetoed") : passed ? t("governance.passed") : stateStr}
+			</div>
 		</TableRow>
 	);
 }

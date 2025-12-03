@@ -44,7 +44,7 @@ export default function BorrowRow({ headers, position, tab }: Props) {
 			headers={headers}
 			actionCol={
 				<Button className="h-10" onClick={() => navigate.push(`/mint/${position.position}`)}>
-					{t('mint.mint')}
+					{t("mint.mint")}
 				</Button>
 			}
 			tab={tab}

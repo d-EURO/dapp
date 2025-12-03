@@ -27,13 +27,13 @@ export default function TableRow({
 }: Props) {
 	return (
 		<div
-			className={`${
-				className ?? "bg-table-row-primary"
-			} cursor-default px-5 py-5 ${actionCol ? "sm:pr-12" : ""} sm:px-8 sm:py-4 border-t border-table-row-hover sm:first:rounded-t-none last:rounded-b-xl duration-300`}
+			className={`${className ?? "bg-table-row-primary"} cursor-default px-5 py-5 ${
+				actionCol ? "sm:pr-12" : ""
+			} sm:px-8 sm:py-4 border-t border-table-row-hover sm:first:rounded-t-none last:rounded-b-xl duration-300`}
 		>
 			<div className="flex flex-col justify-between gap-y-5 md:flex-row">
 				{/* @dev: this is desktop view */}
-				<div 
+				<div
 					className="max-md:hidden text-right grid font-medium flex-grow items-center"
 					style={{ gridTemplateColumns: `repeat(${colSpan || children.length}, minmax(0, 1fr))` }}
 				>
@@ -41,7 +41,13 @@ export default function TableRow({
 				</div>
 
 				{/* @dev: this is mobile view */}
-				<TableRowMobile headers={headers} subHeaders={subHeaders} className={classNameMobile} tab={tab} showFirstHeader={showFirstHeader}>
+				<TableRowMobile
+					headers={headers}
+					subHeaders={subHeaders}
+					className={classNameMobile}
+					tab={tab}
+					showFirstHeader={showFirstHeader}
+				>
 					{children}
 				</TableRowMobile>
 
@@ -72,7 +78,11 @@ function TableRowMobile({ children, headers, subHeaders, className, tab, showFir
 						<div className="flex-1 text-left">
 							{idx === 0 ? (
 								<>
-									{showFirstHeader && <div className={`mb-2 ${headers[idx] == tab ? "text-text-primary font-bold" : "text-text-muted"}`}>{headers[idx]}</div>}
+									{showFirstHeader && (
+										<div className={`mb-2 ${headers[idx] == tab ? "text-text-primary font-bold" : "text-text-muted"}`}>
+											{headers[idx]}
+										</div>
+									)}
 									<div className={`${headers[idx] == tab ? "text-text-primary font-bold" : "text-text-muted"}`}>{c}</div>
 								</>
 							) : subHeaders.length === 0 ? (

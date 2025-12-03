@@ -8,7 +8,6 @@ interface DetailsExpandablePanelProps {
 	children: React.ReactNode;
 }
 
-
 export function ExpandablePanel({ title, children }: DetailsExpandablePanelProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
 
@@ -23,9 +22,7 @@ export function ExpandablePanel({ title, children }: DetailsExpandablePanelProps
 			</button>
 
 			<div className={`grid transition-all duration-300 ${isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
-				<div className="overflow-hidden">
-					{children}
-				</div>
+				<div className="overflow-hidden">{children}</div>
 			</div>
 		</div>
 	);

@@ -9,7 +9,6 @@ import InteractionStablecoinAndPoolShares from "./InteractionStablecoinAndPoolSh
 import InteractionStablecoinAndSavingVault from "./InteractionStablecoinAndSavingVault";
 import InteractionSavingsVaultAndPoolShares from "./InteractionSavingsVaultAndPoolShares";
 
-
 export enum TokenInteractionSide {
 	INPUT = "input",
 	OUTPUT = "output",

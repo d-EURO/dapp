@@ -32,7 +32,14 @@ export default function GovernanceLeadrateTable() {
 
 	return (
 		<Table>
-			<TableHeader className={sorted.length == 0 ? "!hidden" : ""} headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} headerClassNames={['text-center']} />
+			<TableHeader
+				className={sorted.length == 0 ? "!hidden" : ""}
+				headers={headers}
+				tab={tab}
+				reverse={reverse}
+				tabOnChange={handleTabOnChange}
+				headerClassNames={["text-center"]}
+			/>
 			<TableBody>
 				{sorted.length == 0 ? (
 					<TableRowEmpty className={sorted.length == 0 ? "!rounded-t-lg" : ""}>{t("savings.no_savings_yet")}</TableRowEmpty>

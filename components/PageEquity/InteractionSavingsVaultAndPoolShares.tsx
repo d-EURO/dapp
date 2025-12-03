@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { usePoolStats } from "@hooks";
-import { formatBigInt, formatCurrency, formatDuration, POOL_SHARE_TOKEN_SYMBOL, SAVINGS_VAULT_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
+import {
+	formatBigInt,
+	formatCurrency,
+	formatDuration,
+	POOL_SHARE_TOKEN_SYMBOL,
+	SAVINGS_VAULT_SYMBOL,
+	shortenAddress,
+	TOKEN_SYMBOL,
+} from "@utils";
 import { useAccount, useChainId, useClient, useReadContract } from "wagmi";
 import { multicall, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
@@ -190,10 +198,11 @@ export default function InteractionSavingsVaultAndPoolShares({
 	const fromBalance = direction ? poolStats.deuroBalance : poolStats.equityBalance;
 	const result = (direction ? stablecoinInEquity : stablecoinInVaultSharesResult) || 0n;
 	const fromSymbol = direction ? SAVINGS_VAULT_SYMBOL : POOL_SHARE_TOKEN_SYMBOL;
-	
+
 	const collateralValue = direction ? amount : stablecoinInVaultSharesResult;
 	const collateralEurValue = formatBigInt(collateralValue);
-	const collateralUsdValue = eurPrice && collateralValue ? formatBigInt(BigInt(Math.floor(eurPrice * 10000)) * collateralValue / 10000n) : formatBigInt(0n);
+	const collateralUsdValue =
+		eurPrice && collateralValue ? formatBigInt((BigInt(Math.floor(eurPrice * 10000)) * collateralValue) / 10000n) : formatBigInt(0n);
 
 	const onChangeAmount = (value: string) => {
 		const valueBigInt = BigInt(value);
@@ -282,10 +291,7 @@ export default function InteractionSavingsVaultAndPoolShares({
 				},
 				success: {
 					render: (
-						<TxToast
-							title={t("equity.txs.successfully_redeemed", { symbol: POOL_SHARE_TOKEN_SYMBOL })}
-							rows={toastContent}
-						/>
+						<TxToast title={t("equity.txs.successfully_redeemed", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />
 					),
 				},
 			});
@@ -326,7 +332,7 @@ export default function InteractionSavingsVaultAndPoolShares({
 								{selectedFromToken && (
 									<>
 										<div className="text-text-muted3 text-xs font-medium leading-none">
-											{t("common.balance_label")} {" "}
+											{t("common.balance_label")}{" "}
 											{formatCurrency(
 												formatUnits(selectedFromToken?.balanceOf || 0n, selectedFromToken?.decimals || 18)
 											)}{" "}
@@ -404,11 +410,7 @@ export default function InteractionSavingsVaultAndPoolShares({
 								{t("common.approve")}
 							</Button>
 						) : (
-							<Button
-								isLoading={isRedeeming}
-								
-								onClick={() => handleRedeem()}
-							>
+							<Button isLoading={isRedeeming} onClick={() => handleRedeem()}>
 								{t("equity.redeem")}
 							</Button>
 						)}

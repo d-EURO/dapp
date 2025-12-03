@@ -58,7 +58,14 @@ export default function ChallengesTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol headerClassNames={["text-center"]} />
+			<TableHeader
+				headers={headers}
+				tab={tab}
+				reverse={reverse}
+				tabOnChange={handleTabOnChange}
+				actionCol
+				headerClassNames={["text-center"]}
+			/>
 			<TableBody>
 				{sorted.length == 0 ? (
 					<TableRowEmpty>{t("challenges.no_active_challenges")}</TableRowEmpty>

@@ -4,7 +4,6 @@ import { useLanguageSelector } from "../../hooks/useLanguageSelector";
 
 type OptionType = { value: string; label: string };
 
-
 export const LanguageSelector = () => {
 	const { options, selectedLanguage, handleLanguageChange } = useLanguageSelector();
 	const { t } = useTranslation();
@@ -36,8 +35,10 @@ export const LanguageSelectorDropdown = () => {
 	const { options, selectedLanguage, handleLanguageChange } = useLanguageSelector();
 	const { t } = useTranslation();
 
-	const filteredOptions = options.filter((option) => !option.disabled).map((option) => ({ value: option.value, label: option.value.toUpperCase() }));
-	
+	const filteredOptions = options
+		.filter((option) => !option.disabled)
+		.map((option) => ({ value: option.value, label: option.value.toUpperCase() }));
+
 	return (
 		<Select<OptionType>
 			className="flex-1  text-base font-medium leading-tight"
@@ -78,7 +79,7 @@ export const LanguageSelectorDropdown = () => {
 				singleValue: (baseStyles) => ({
 					...baseStyles,
 					color: "#272b37", // text color of selected value
-					paddingLeft: "6px"
+					paddingLeft: "6px",
 				}),
 				menu: (baseStyles) => ({
 					...baseStyles,
@@ -101,9 +102,7 @@ export const LanguageSelectorDropdown = () => {
 			components={{
 				Menu: ({ children, ...props }) => (
 					<components.Menu {...props}>
-						<div className="p-1">
-							{children}
-						</div>
+						<div className="p-1">{children}</div>
 					</components.Menu>
 				),
 			}}

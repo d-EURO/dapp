@@ -23,7 +23,6 @@ import { ADDRESS, MintingHubV2ABI } from "@juicedollar/jusd";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
-
 export default function PositionChallenge() {
 	const [amount, setAmount] = useState(0n);
 	const [error, setError] = useState("");
@@ -193,7 +192,9 @@ export default function PositionChallenge() {
 	return (
 		<>
 			<Head>
-				<title>{TOKEN_SYMBOL} - {t("monitoring.challenge_title")}</title>
+				<title>
+					{TOKEN_SYMBOL} - {t("monitoring.challenge_title")}
+				</title>
 			</Head>
 
 			{/* <div>
@@ -282,7 +283,7 @@ export default function PositionChallenge() {
 						</div>
 					</div>
 					<div className="bg-card-body-primary shadow-card rounded-xl p-4 flex flex-col">
-						<div className="text-lg font-bold text-center mt-3">{t('monitoring.how_it_works')}</div>
+						<div className="text-lg font-bold text-center mt-3">{t("monitoring.how_it_works")}</div>
 						<div className="flex-1 mt-4">
 							<p>{t("monitoring.challenge_description_how_it_works")}</p>
 							<ol className="flex flex-col gap-y-2 pl-6 [&>li]:list-decimal">

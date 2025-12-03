@@ -154,33 +154,32 @@ export const useSavingsInterest = () => {
 		try {
 			setIsReinvesting(true);
 
-		const reinvestHash = await writeContract(WAGMI_CONFIG, {
-			address: ADDRESS[chainId].savingsGateway,
-			abi: SavingsGatewayABI,
-			functionName: "refreshBalance",
-			args: [address]
-		});
+			const reinvestHash = await writeContract(WAGMI_CONFIG, {
+				address: ADDRESS[chainId].savingsGateway,
+				abi: SavingsGatewayABI,
+				functionName: "refreshBalance",
+				args: [address],
+			});
 
-		const toastContent = [
-			{
-				title: `Reinvested amount: `,
-				value: `${formatCurrency(formatUnits(interestToBeCollected, 18))} ${TOKEN_SYMBOL}`,
-			},
-			{
-				title: "Transaction: ",
-				hash: reinvestHash,
-			},
-		];
+			const toastContent = [
+				{
+					title: `Reinvested amount: `,
+					value: `${formatCurrency(formatUnits(interestToBeCollected, 18))} ${TOKEN_SYMBOL}`,
+				},
+				{
+					title: "Transaction: ",
+					hash: reinvestHash,
+				},
+			];
 
-		await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: reinvestHash, confirmations: 2 }), {
-			pending: {
-				render: <TxToast title={`Reinvesting...`} rows={toastContent} />,
-			},
-			success: {
-				render: <TxToast title="Successfully reinvested" rows={toastContent} />,
-			},
-		});
-
+			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: reinvestHash, confirmations: 2 }), {
+				pending: {
+					render: <TxToast title={`Reinvesting...`} rows={toastContent} />,
+				},
+				success: {
+					render: <TxToast title="Successfully reinvested" rows={toastContent} />,
+				},
+			});
 		} catch (error) {
 			toast.error(renderErrorTxToast(error));
 		} finally {

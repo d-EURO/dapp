@@ -17,7 +17,9 @@ export default function Positions() {
 	return (
 		<>
 			<Head>
-				<title>{TOKEN_SYMBOL} - {t("monitoring.title")}</title>
+				<title>
+					{TOKEN_SYMBOL} - {t("monitoring.title")}
+				</title>
 			</Head>
 
 			<div className="md:mt-8">

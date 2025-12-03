@@ -38,7 +38,14 @@ export default function GovernanceMintersTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol headerClassNames={['text-center']} />
+			<TableHeader
+				headers={headers}
+				tab={tab}
+				reverse={reverse}
+				tabOnChange={handleTabOnChange}
+				actionCol
+				headerClassNames={["text-center"]}
+			/>
 			<TableBody>
 				{sorted.length == 0 ? (
 					<TableRowEmpty>{t("governance.minters_table_empty")}</TableRowEmpty>

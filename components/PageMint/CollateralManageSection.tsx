@@ -41,51 +41,55 @@ export const CollateralManageSection = () => {
 	const position = positions.find((p) => p.position == addressQuery);
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const { balancesByAddress, refetchBalances } = useWalletERC20Balances(
-		position ? [
-			{
-				symbol: position.collateralSymbol,
-				address: position.collateral,
-				name: position.collateralName,
-				allowance: [position.position],
-			},
-		] : []
+		position
+			? [
+					{
+						symbol: position.collateralSymbol,
+						address: position.collateral,
+						name: position.collateralName,
+						allowance: [position.position],
+					},
+			  ]
+			: []
 	);
-	const url = useContractUrl(position?.position || zeroAddress as Address);
+	const url = useContractUrl(position?.position || (zeroAddress as Address));
 
 	const { data, refetch: refetchReadContracts } = useReadContracts({
-		contracts: position ? [
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "principal",
-			},
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "price",
-			},
-			{
-				chainId,
-				abi: erc20Abi,
-				address: position.collateral as Address,
-				functionName: "balanceOf",
-				args: [position.position],
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "getDebt",
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "getCollateralRequirement",
-			},
-		] : [],
+		contracts: position
+			? [
+					{
+						chainId,
+						address: position.position,
+						abi: PositionV2ABI,
+						functionName: "principal",
+					},
+					{
+						chainId,
+						address: position.position,
+						abi: PositionV2ABI,
+						functionName: "price",
+					},
+					{
+						chainId,
+						abi: erc20Abi,
+						address: position.collateral as Address,
+						functionName: "balanceOf",
+						args: [position.position],
+					},
+					{
+						chainId,
+						abi: PositionV2ABI,
+						address: position.position,
+						functionName: "getDebt",
+					},
+					{
+						chainId,
+						abi: PositionV2ABI,
+						address: position.position,
+						functionName: "getCollateralRequirement",
+					},
+			  ]
+			: [],
 	});
 
 	const principal = data?.[0]?.result || 0n;
@@ -101,9 +105,7 @@ export const CollateralManageSection = () => {
 	// Calculate maxToRemove for validation (will be 0 if position is undefined)
 	const debtBasedRequirement = (collateralRequirement * 10n ** 18n) / price;
 	const minimumCollateralBigInt = BigInt(position?.minimumCollateral || 0);
-	const requiredCollateral = debtBasedRequirement > minimumCollateralBigInt
-		? debtBasedRequirement
-		: minimumCollateralBigInt;
+	const requiredCollateral = debtBasedRequirement > minimumCollateralBigInt ? debtBasedRequirement : minimumCollateralBigInt;
 
 	const maxToRemoveThreshold = position ? balanceOf - requiredCollateral : 0n;
 	const maxToRemove = debt > 0n ? (maxToRemoveThreshold > 0n ? maxToRemoveThreshold : 0n) : balanceOf;
@@ -144,7 +146,7 @@ export const CollateralManageSection = () => {
 			</div>
 		);
 	}
-	
+
 	const collBalancePosition: number = Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100;
 	const collTokenPriceMarket = prices[position.collateral.toLowerCase() as Address]?.price?.eur || 0;
 	const collTokenPricePosition: number =

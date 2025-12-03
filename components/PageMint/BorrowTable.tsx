@@ -13,7 +13,7 @@ import { useTranslation } from "next-i18next";
 
 export default function BorrowTable() {
 	const { t } = useTranslation();
-	const headers: string[] = [t('mint.collateral'), t('mint.loan_to_value'), t('mint.interest'), t('mint.available'), t('mint.maturity')];
+	const headers: string[] = [t("mint.collateral"), t("mint.loan_to_value"), t("mint.interest"), t("mint.available"), t("mint.maturity")];
 	const [tab, setTab] = useState<string>(headers[3]);
 	const [reverse, setReverse] = useState<boolean>(false);
 
@@ -51,10 +51,17 @@ export default function BorrowTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol headerClassNames={["text-center"]} />
+			<TableHeader
+				headers={headers}
+				tab={tab}
+				reverse={reverse}
+				tabOnChange={handleTabOnChange}
+				actionCol
+				headerClassNames={["text-center"]}
+			/>
 			<TableBody>
 				{sorted.length == 0 ? (
-					<TableRowEmpty>{t('mint.no_positions')}</TableRowEmpty>
+					<TableRowEmpty>{t("mint.no_positions")}</TableRowEmpty>
 				) : (
 					sorted.map((pos) => <PositionRow headers={headers} position={pos} key={pos.position} tab={tab} />)
 				)}

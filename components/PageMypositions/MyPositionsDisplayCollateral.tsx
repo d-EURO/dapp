@@ -36,7 +36,9 @@ export default function MyPositionsDisplayCollateral({ position, collateralPrice
 				<span className={`text-left text-text-primary font-bold leading-tight`}>
 					{formatCurrency(collateralSize, 2, 2) + " " + position.collateralSymbol}
 				</span>
-				<span className="text-left text-text-subheader text-sm leading-tight">{formatCurrency(collateralValue, 2, 2)} {TOKEN_SYMBOL}</span>
+				<span className="text-left text-text-subheader text-sm leading-tight">
+					{formatCurrency(collateralValue, 2, 2)} {TOKEN_SYMBOL}
+				</span>
 			</div>
 		</div>
 	);

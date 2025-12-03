@@ -21,7 +21,12 @@ import { useTranslation } from "next-i18next";
 
 export default function MyPositionsChallengesTable() {
 	const { t } = useTranslation();
-	const headers: string[] = [t("my_positions.remaining_size"), t("my_positions.current_price"), t("my_positions.state"), t("my_positions.time_left")];
+	const headers: string[] = [
+		t("my_positions.remaining_size"),
+		t("my_positions.current_price"),
+		t("my_positions.state"),
+		t("my_positions.time_left"),
+	];
 	const [tab, setTab] = useState<string>(headers[0]);
 	const [reverse, setReverse] = useState<boolean>(false);
 
@@ -59,7 +64,14 @@ export default function MyPositionsChallengesTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol headerClassNames={["text-center"]} />
+			<TableHeader
+				headers={headers}
+				tab={tab}
+				reverse={reverse}
+				tabOnChange={handleTabOnChange}
+				actionCol
+				headerClassNames={["text-center"]}
+			/>
 			<TableBody>
 				{sorted.length == 0 ? (
 					<TableRowEmpty>{t("my_positions.no_challenges")}</TableRowEmpty>

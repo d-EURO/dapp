@@ -72,13 +72,15 @@ export function TransactionHistoryPanel() {
 			const deposit = operations.find((op) => op.type === t("savings.deposit"));
 			const withdraw = operations.find((op) => op.type === t("savings.withdraw"));
 			const interest = operations.find((op) => op.type === t("savings.claimed_interest"));
-			
+
 			if (deposit) {
 				return [deposit, { ...interest, type: t("savings.reinvested_interest"), created: String(Number(interest?.created) - 1) }];
 			}
-			
+
 			if (withdraw && interest) {
-				return withdraw.amount === interest.amount ? [interest] : [withdraw, { ...interest, type: t("savings.accrued_interest"), created: String(Number(interest?.created) - 1) }];
+				return withdraw.amount === interest.amount
+					? [interest]
+					: [withdraw, { ...interest, type: t("savings.accrued_interest"), created: String(Number(interest?.created) - 1) }];
 			}
 		})
 		.flat()

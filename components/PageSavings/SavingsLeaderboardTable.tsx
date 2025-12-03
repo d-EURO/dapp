@@ -28,11 +28,11 @@ interface Props {
 const Rank = ({ rank }: { rank: number }) => {
 	switch (rank) {
 		case 1:
-			return <Image src="/icons/coin-gold.svg" alt="1" width={24} height={24} />
+			return <Image src="/icons/coin-gold.svg" alt="1" width={24} height={24} />;
 		case 2:
-			return <Image src="/icons/coin_silver.svg" alt="2" width={24} height={24} />
+			return <Image src="/icons/coin_silver.svg" alt="2" width={24} height={24} />;
 		case 3:
-			return <Image src="/icons/coin_bronze.svg" alt="3" width={24} height={24} />
+			return <Image src="/icons/coin_bronze.svg" alt="3" width={24} height={24} />;
 		default:
 			return <div className="w-[24px] text-center">{rank}</div>;
 	}
@@ -95,7 +95,13 @@ export default function SavingsLeaderboardTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} headerClassNames={["!text-left", "!text-left"]} />
+			<TableHeader
+				headers={headers}
+				tab={tab}
+				reverse={reverse}
+				tabOnChange={handleTabOnChange}
+				headerClassNames={["!text-left", "!text-left"]}
+			/>
 			<TableBody>
 				<>
 					{sorted.length == 0 ? (

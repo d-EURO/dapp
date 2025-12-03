@@ -11,7 +11,7 @@ export function calcOverviewStats(listByCollateral: PositionQuery[][], prices: P
 	for (let positions of listByCollateral) {
 		const original = positions.at(0);
 		if (!original) continue;
-		
+
 		const collateral = prices[original.collateral.toLowerCase() as Address];
 		const mint = prices[original.stablecoinAddress.toLowerCase() as Address];
 

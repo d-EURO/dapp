@@ -15,14 +15,16 @@ export default function Referrals() {
 	useEffect(() => {
 		if (window.location.hash) {
 			const element = document.querySelector(window.location.hash);
-			element?.scrollIntoView({ behavior: 'smooth' });
+			element?.scrollIntoView({ behavior: "smooth" });
 		}
 	}, []);
 
 	return (
 		<>
 			<Head>
-				<title>{TOKEN_SYMBOL} - {t("referrals.referrals")}</title>
+				<title>
+					{TOKEN_SYMBOL} - {t("referrals.referrals")}
+				</title>
 			</Head>
 
 			<div className="md:mt-8 flex flex-col gap-6 sm:gap-12">

@@ -21,7 +21,9 @@ export default function Governance() {
 	return (
 		<>
 			<Head>
-				<title>{TOKEN_SYMBOL} - {t("governance.title")}</title>
+				<title>
+					{TOKEN_SYMBOL} - {t("governance.title")}
+				</title>
 			</Head>
 
 			<div className="md:mt-10">

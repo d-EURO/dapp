@@ -34,8 +34,8 @@ export function DetailsExpandablePanel({
 	const { t } = useTranslation();
 
 	const effectiveLTV =
-		Number(formatUnits(loanDetails.loanAmount, 18)) * 100 /
-		(Number(formatUnits(loanDetails.requiredCollateral, collateralDecimals)) * collateralPriceDeuro) || 0;
+		(Number(formatUnits(loanDetails.loanAmount, 18)) * 100) /
+			(Number(formatUnits(loanDetails.requiredCollateral, collateralDecimals)) * collateralPriceDeuro) || 0;
 
 	return (
 		<ExpandablePanel title={t("mint.details")}>

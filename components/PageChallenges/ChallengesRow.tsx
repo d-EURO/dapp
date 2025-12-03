@@ -29,7 +29,6 @@ export default function ChallengesRow({ headers, challenge, tab }: Props) {
 	const url = useContractUrl(position?.collateral || zeroAddress);
 	if (!position) return null;
 
-
 	const challengePriceSearch: string | undefined = challengesPrices?.map[challenge.id as ChallengesId];
 	const challengePrice: string = formatUnits(BigInt(challengePriceSearch ?? "0"), 36 - position.collateralDecimals);
 	const start: number = parseInt(challenge.start.toString()) * 1000; // timestamp

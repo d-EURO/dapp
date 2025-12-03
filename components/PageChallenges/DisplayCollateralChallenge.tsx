@@ -15,13 +15,7 @@ interface Props {
 }
 
 // @dev: not used
-export default function DisplayCollateralChallenge({
-	position,
-	challenge,
-	challengeSizeDEURO,
-	challengePrice,
-	className,
-}: Props) {
+export default function DisplayCollateralChallenge({ position, challenge, challengeSizeDEURO, challengePrice, className }: Props) {
 	const url = useContractUrl(position.collateral || zeroAddress);
 
 	const openExplorer = (e: any) => {

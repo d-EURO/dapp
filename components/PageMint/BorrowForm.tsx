@@ -27,15 +27,7 @@ type ApiPositionDefault = {
 import { SelectCollateralModal } from "./SelectCollateralModal";
 import { BorrowingDEUROModal } from "@components/PageMint/BorrowingDEUROModal";
 import { InputTitle } from "@components/Input/InputTitle";
-import {
-	formatBigInt,
-	formatCurrency,
-	shortenAddress,
-	toDate,
-	TOKEN_SYMBOL,
-	toTimestamp,
-	NATIVE_WRAPPED_SYMBOLS
-} from "@utils";
+import { formatBigInt, formatCurrency, shortenAddress, toDate, TOKEN_SYMBOL, toTimestamp, NATIVE_WRAPPED_SYMBOLS } from "@utils";
 import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { RootState, store } from "../../redux/redux.store";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
@@ -138,11 +130,8 @@ export default function PositionCreate({}) {
 		const tokens = Array.from(uniqueTokens.values());
 
 		// If a wrapped-native token (e.g. WBTC, WCBTC) exists, prepend the chain's native coin
-		const wrappedNativeToken = tokens.find((t) =>
-			NATIVE_WRAPPED_SYMBOLS.includes(t.symbol.toLowerCase())
-		);
+		const wrappedNativeToken = tokens.find((t) => NATIVE_WRAPPED_SYMBOLS.includes(t.symbol.toLowerCase()));
 		if (wrappedNativeToken) {
-
 			const nativeToken = {
 				...wrappedNativeToken,
 				symbol: WAGMI_CHAIN.nativeCurrency.symbol,
@@ -248,8 +237,8 @@ export default function PositionCreate({}) {
 	const wethAddress = getWETHAddress(chainId);
 	const wethBalance = balances.find((b) => b.address.toLowerCase() === wethAddress?.toLowerCase());
 	const userAllowance = isNative
-		? (wethBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n)
-		: (collateralUserBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n);
+		? wethBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n
+		: collateralUserBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n;
 	const userBalance = collateralUserBalance?.balanceOf || 0n;
 	const selectedBalance = Boolean(selectedCollateral) ? balancesByAddress[selectedCollateral?.address as Address] : null;
 	const usdLiquidationPrice = formatCurrency(
@@ -303,7 +292,12 @@ export default function PositionCreate({}) {
 		setCollateralAmount(value);
 		if (!selectedPosition) return;
 
-		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(selectedPosition, BigInt(value), BigInt(liquidationPrice), expirationDate || undefined);
+		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(
+			selectedPosition,
+			BigInt(value),
+			BigInt(liquidationPrice),
+			expirationDate || undefined
+		);
 		setLoanDetails(loanDetails);
 		setBorrowedAmount(loanDetails.amountToSendToWallet.toString());
 	};
@@ -314,7 +308,12 @@ export default function PositionCreate({}) {
 		if (!selectedPosition) return;
 		if (!collateralAmount || collateralAmount === "" || collateralAmount === "0") return;
 
-		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(selectedPosition, BigInt(collateralAmount), BigInt(value), expirationDate || undefined);
+		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(
+			selectedPosition,
+			BigInt(collateralAmount),
+			BigInt(value),
+			expirationDate || undefined
+		);
 		setLoanDetails(loanDetails);
 		setBorrowedAmount(loanDetails.amountToSendToWallet.toString());
 	};
@@ -324,14 +323,19 @@ export default function PositionCreate({}) {
 
 		if (!selectedPosition) return;
 
-		const loanDetails = getLoanDetailsByCollateralAndYouGetAmount(selectedPosition, BigInt(collateralAmount), BigInt(value), expirationDate || undefined);
+		const loanDetails = getLoanDetailsByCollateralAndYouGetAmount(
+			selectedPosition,
+			BigInt(collateralAmount),
+			BigInt(value),
+			expirationDate || undefined
+		);
 		setLoanDetails(loanDetails);
 		setLiquidationPrice(loanDetails.startingLiquidationPrice.toString());
 	};
 
 	useEffect(() => {
 		if (!selectedPosition || !collateralAmount || !liquidationPrice || !expirationDate) return;
-		
+
 		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(
 			selectedPosition,
 			BigInt(collateralAmount),
@@ -525,9 +529,9 @@ export default function PositionCreate({}) {
 						loanDetails.loanAmount,
 						toTimestamp(expirationDate),
 						frontendCode,
-						BigInt(liquidationPrice)
+						BigInt(liquidationPrice),
 					],
-					value: BigInt(collateralAmount)
+					value: BigInt(collateralAmount),
 				});
 
 				const toastContent = [
@@ -679,7 +683,10 @@ export default function PositionCreate({}) {
 					},
 				];
 
-				const receipt: TransactionReceipt = await waitForTransactionReceipt(WAGMI_CONFIG, { hash: cloneWriteHash, confirmations: 1 });
+				const receipt: TransactionReceipt = await waitForTransactionReceipt(WAGMI_CONFIG, {
+					hash: cloneWriteHash,
+					confirmations: 1,
+				});
 
 				if (BigInt(liquidationPrice) !== BigInt(selectedPosition?.price)) {
 					const newPositionAddress = parseCloneEventLogs(receipt.logs);
@@ -771,11 +778,15 @@ export default function PositionCreate({}) {
 						{isMaxedOut && selectedPosition && (
 							<div className="self-stretch mt-1 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-md">
 								<div className="text-yellow-800 text-sm font-medium">
-									⚠️ {t("mint.error.position_unavailable_limit_exhausted", {
+									⚠️{" "}
+									{t("mint.error.position_unavailable_limit_exhausted", {
 										available: formatCurrency(formatUnits(BigInt(selectedPosition.availableForClones), 18), 2, 2),
 										symbol: TOKEN_SYMBOL,
-										minCollateral: formatBigInt(BigInt(selectedPosition.minimumCollateral), selectedPosition.collateralDecimals),
-										collateralSymbol: selectedPosition.collateralSymbol
+										minCollateral: formatBigInt(
+											BigInt(selectedPosition.minimumCollateral),
+											selectedPosition.collateralDecimals
+										),
+										collateralSymbol: selectedPosition.collateralSymbol,
 									})}
 								</div>
 							</div>
@@ -860,7 +871,11 @@ export default function PositionCreate({}) {
 							>
 								{isLiquidationPriceTooHigh
 									? t("mint.your_liquidation_price_is_too_high")
-									: t("common.receive") + " " + formatCurrency(formatUnits(BigInt(borrowedAmount), 18), 2) + " " + TOKEN_SYMBOL}
+									: t("common.receive") +
+									  " " +
+									  formatCurrency(formatUnits(BigInt(borrowedAmount), 18), 2) +
+									  " " +
+									  TOKEN_SYMBOL}
 							</Button>
 						) : userAllowance >= BigInt(collateralAmount) ? (
 							<Button

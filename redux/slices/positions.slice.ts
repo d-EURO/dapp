@@ -152,7 +152,9 @@ export const fetchPositionsList =
 			const deniedPositioins = listArray.filter((position) => position.denied);
 			const originalPositions = openPositions.filter((position) => position.isOriginal);
 			const openPositionsByOriginal = originalPositions.map((o) => openPositions.filter((p) => p.original == o.original));
-			const openPositionsByCollateral = collateralAddresses.map((con) => openPositions.filter((position) => position.collateral == con));
+			const openPositionsByCollateral = collateralAddresses.map((con) =>
+				openPositions.filter((position) => position.collateral == con)
+			);
 
 			dispatch(slice.actions.setOpenPositions(openPositions));
 			dispatch(slice.actions.setClosedPositions(closedPositioins));

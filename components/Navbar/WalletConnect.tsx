@@ -15,9 +15,7 @@ const ConnectButton = () => {
 		<>
 			{isDisconnected || !address ? (
 				<Button className="!py-0.5 !px-0 rounded-full" onClick={() => Web3Modal.open()}>
-					<span className="px-3 xs:px-8">
-						{t("common.connect_wallet")}
-					</span>
+					<span className="px-3 xs:px-8">{t("common.connect_wallet")}</span>
 				</Button>
 			) : (
 				<button
@@ -45,10 +43,12 @@ export default function WalletConnect() {
 				<ConnectButton />
 			</div>
 			<div className="h-9 pl-2 pr-0.5 bg-menu-wallet-bg rounded-full border border-menu-wallet-border justify-start items-center gap-4 hidden md:inline-flex">
-				<Link href={`/referrals${carryOnQueryParams}`} className="justify-start items-center gap-2 flex !hover:text-button-text-hover-text group">
-					
-						<img src="/icons/chest.svg" alt="Logo" width={24} height={24} />
-					
+				<Link
+					href={`/referrals${carryOnQueryParams}`}
+					className="justify-start items-center gap-2 flex !hover:text-button-text-hover-text group"
+				>
+					<img src="/icons/chest.svg" alt="Logo" width={24} height={24} />
+
 					<div className="text-menu-active-text text-base font-extrabold leading-tight whitespace-nowrap group-hover:text-button-text-hover-text">
 						{t("common.navbar.my_referrals")}
 					</div>

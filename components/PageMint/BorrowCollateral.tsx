@@ -39,7 +39,7 @@ export function BorrowCollateralCalculate(listByCollateral: PositionQuery[][], p
 		const originals: PositionQuery[] = positions.filter((pos) => pos.isOriginal);
 		const original = originals.at(0);
 		if (!original) continue;
-		
+
 		const collateral = prices[original.collateral.toLowerCase() as Address];
 		const mint = prices[original.stablecoinAddress.toLowerCase() as Address];
 

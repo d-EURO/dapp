@@ -1,6 +1,16 @@
 import { useState } from "react";
 
-export const SvgIconButton = ({ isSelected, onClick, SvgComponent, children }: { isSelected: boolean; onClick: () => void; SvgComponent: React.ComponentType<{color?: string; className?: string}>; children: React.ReactNode }) => {
+export const SvgIconButton = ({
+	isSelected,
+	onClick,
+	SvgComponent,
+	children,
+}: {
+	isSelected: boolean;
+	onClick: () => void;
+	SvgComponent: React.ComponentType<{ color?: string; className?: string }>;
+	children: React.ReactNode;
+}) => {
 	const [isHover, setIsHover] = useState(false);
 	return (
 		<button

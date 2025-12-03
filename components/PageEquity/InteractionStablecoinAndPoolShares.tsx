@@ -181,7 +181,8 @@ export default function InteractionStablecoinAndPoolShares({
 
 	const collateralValue = direction ? amount : deuroResult;
 	const collateralEurValue = formatBigInt(collateralValue);
-	const collateralUsdValue = eurPrice && collateralValue ? formatBigInt(BigInt(Math.floor(eurPrice * 10000)) * collateralValue / 10000n) : formatBigInt(0n);
+	const collateralUsdValue =
+		eurPrice && collateralValue ? formatBigInt((BigInt(Math.floor(eurPrice * 10000)) * collateralValue) / 10000n) : formatBigInt(0n);
 
 	const onChangeAmount = (value: string) => {
 		const valueBigInt = BigInt(value);
@@ -270,10 +271,7 @@ export default function InteractionStablecoinAndPoolShares({
 				},
 				success: {
 					render: (
-						<TxToast
-							title={t("equity.txs.successfully_redeemed", { symbol: POOL_SHARE_TOKEN_SYMBOL })}
-							rows={toastContent}
-						/>
+						<TxToast title={t("equity.txs.successfully_redeemed", { symbol: POOL_SHARE_TOKEN_SYMBOL })} rows={toastContent} />
 					),
 				},
 			});
@@ -314,7 +312,7 @@ export default function InteractionStablecoinAndPoolShares({
 								{selectedFromToken && (
 									<>
 										<div className="text-text-muted3 text-xs font-medium leading-none">
-											{t("common.balance_label")} {" "}
+											{t("common.balance_label")}{" "}
 											{formatCurrency(
 												formatUnits(selectedFromToken?.balanceOf || 0n, selectedFromToken?.decimals || 18)
 											)}{" "}
@@ -392,11 +390,7 @@ export default function InteractionStablecoinAndPoolShares({
 								{t("common.approve")}
 							</Button>
 						) : (
-							<Button
-								isLoading={isRedeeming}
-								
-								onClick={() => handleRedeem()}
-							>
+							<Button isLoading={isRedeeming} onClick={() => handleRedeem()}>
 								{t("equity.redeem")}
 							</Button>
 						)}

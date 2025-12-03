@@ -14,23 +14,35 @@ interface SliderInputOutlinedProps {
 	disabled?: boolean;
 }
 
-export function SliderInputOutlined({ value, onChange, min, max, decimals, isError, errorMessage, usdPrice, disabled }: SliderInputOutlinedProps) {
+export function SliderInputOutlined({
+	value,
+	onChange,
+	min,
+	max,
+	decimals,
+	isError,
+	errorMessage,
+	usdPrice,
+	disabled,
+}: SliderInputOutlinedProps) {
 	const [isFocused, setIsFocused] = useState(false);
 
 	return (
 		<div className="self-stretch relative pb-1.5">
-			<div className={`self-stretch p-2 rounded-xl border-2 border-transparent relative flex-col justify-center items-start gap-2 flex before:absolute before:inset-0 before:rounded-xl before:border before:pointer-events-none before:transition-colors before:duration-200 ${
-				disabled 
-					? "opacity-50 cursor-not-allowed before:border-input-border" 
-					: isFocused 
-						? "before:border-2 before:border-input-borderFocus" 
+			<div
+				className={`self-stretch p-2 rounded-xl border-2 border-transparent relative flex-col justify-center items-start gap-2 flex before:absolute before:inset-0 before:rounded-xl before:border before:pointer-events-none before:transition-colors before:duration-200 ${
+					disabled
+						? "opacity-50 cursor-not-allowed before:border-input-border"
+						: isFocused
+						? "before:border-2 before:border-input-borderFocus"
 						: "before:border-input-border hover:before:border-input-borderHover"
-			}`}>
+				}`}
+			>
 				<div className="h-18 self-stretch justify-between inline-flex flex-col sm:flex-row">
 					<div className="flex-col justify-center items-start inline-flex">
 						<div className="self-stretch px-2 bg-white rounded-xl flex-col justify-center items-start flex">
-						<div className="h-11 self-stretch justify-start items-center gap-1 inline-flex overflow-hidden">
-						<div className="text-input-placeholder text-xl leading-normal">€</div>
+							<div className="h-11 self-stretch justify-start items-center gap-1 inline-flex overflow-hidden">
+								<div className="text-input-placeholder text-xl leading-normal">€</div>
 								<BigNumberInput
 									className={`w-full pl-0 text-input-primary placeholder:text-input-placeholder text-2xl font-medium leading-tight ${
 										isError ? "!text-text-warning" : ""
@@ -84,7 +96,9 @@ export function SliderInputOutlined({ value, onChange, min, max, decimals, isErr
 					</div>
 				</div>
 			</div>
-			{isError && errorMessage && <div className="absolute mt-1.5 text-text-warning text-xs font-medium leading-none">{errorMessage}</div>}
+			{isError && errorMessage && (
+				<div className="absolute mt-1.5 text-text-warning text-xs font-medium leading-none">{errorMessage}</div>
+			)}
 		</div>
 	);
 }

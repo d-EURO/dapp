@@ -108,7 +108,7 @@ export const fetchEcosystem =
 
 			const response4 = await API_CLIENT.get("/ecosystem/stablecoin/info");
 			dispatch(slice.actions.setStablecoinInfo(response4.data as ApiEcosystemStablecoinInfo));
-			
+
 			const response5 = await API_CLIENT.get("/ecosystem/stablecoin/minter/list");
 			dispatch(slice.actions.setStablecoinMinters(response5.data as ApiMinterListing));
 

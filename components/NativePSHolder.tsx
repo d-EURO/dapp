@@ -18,7 +18,9 @@ export default function NativePSHolder({ id, holder, nativePS, votingPower, tota
 			<div className="col-span-1">
 				<AddressLabel address={holder} showCopy showLink />
 			</div>
-			<div className="col-span-1 sm:text-center">{formatBigInt(nativePS)} {POOL_SHARE_TOKEN_SYMBOL}</div>
+			<div className="col-span-1 sm:text-center">
+				{formatBigInt(nativePS)} {POOL_SHARE_TOKEN_SYMBOL}
+			</div>
 			<div className="col-span-1 sm:text-right">{formatBigInt((votingPower * 10000n) / totalVotingPower, 2)} % Votes</div>
 		</AppBox>
 	);

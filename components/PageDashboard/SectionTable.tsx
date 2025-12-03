@@ -5,16 +5,16 @@ import { getCarryOnQueryParams, toQueryString } from "../../utils/url";
 import { useRouter } from "next/router";
 
 export const LinkTitle = ({ children, href }: { children: React.ReactNode; href: string }) => {
-    const router = useRouter();
+	const router = useRouter();
 	const carryOnQueryParams = getCarryOnQueryParams(router);
 	const _href = `${href}${toQueryString(carryOnQueryParams)}`;
-    
-    return (
-        <Link
-            href={_href}
-            className="mb-7 items-center justify-start flex gap-1 text-button-text-default-text hover:text-button-text-hover-text group"
-        >
-            <span className="text-2xl font-black">{children}</span>
+
+	return (
+		<Link
+			href={_href}
+			className="mb-7 items-center justify-start flex gap-1 text-button-text-default-text hover:text-button-text-hover-text group"
+		>
+			<span className="text-2xl font-black">{children}</span>
 			<FontAwesomeIcon icon={faArrowUpRightFromSquare} width={16} height={16} className="group-hover:text-inherit" />
 		</Link>
 	);
@@ -26,11 +26,9 @@ export const HeaderCell = ({ className, children }: { className?: string; childr
 
 export const NoDataRow = ({ className, children }: { className?: string; children: React.ReactNode }) => {
 	return (
-        <>
-            <span className="w-11 pr-3"></span>
-            <span className={`py-[1.125rem] mb-1.5 text-text-muted2 text-base font-[350] leading-tight ${className}`}>
-                {children}
-            </span>
-        </>
+		<>
+			<span className="w-11 pr-3"></span>
+			<span className={`py-[1.125rem] mb-1.5 text-text-muted2 text-base font-[350] leading-tight ${className}`}>{children}</span>
+		</>
 	);
 };

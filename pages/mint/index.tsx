@@ -21,7 +21,9 @@ export default function Borrow() {
 	return (
 		<>
 			<Head>
-				<title>{TOKEN_SYMBOL} - {t("mint.title")}</title>
+				<title>
+					{TOKEN_SYMBOL} - {t("mint.title")}
+				</title>
 			</Head>
 
 			<BorrowForm />

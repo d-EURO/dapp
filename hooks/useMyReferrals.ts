@@ -48,7 +48,7 @@ export const useMyReferrals = () => {
 		`,
 		{
 			pollInterval: 0,
-			skip: !referrals.myFrontendCode
+			skip: !referrals.myFrontendCode,
 		}
 	);
 

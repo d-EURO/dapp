@@ -119,7 +119,7 @@ export default function SavingsInteractionCard() {
 		const valueBigInt = BigInt(value);
 		setAmount(valueBigInt);
 		if (valueBigInt > userBalance + userSavingsBalance + userSavingsInterest) {
-			setError(t('common.error.insufficient_balance', { symbol: fromSymbol }));
+			setError(t("common.error.insufficient_balance", { symbol: fromSymbol }));
 		} else {
 			setError("");
 		}
@@ -166,7 +166,6 @@ export default function SavingsInteractionCard() {
 			refetchBalances();
 		}
 	};
-
 
 	return (
 		<section className="grid grid-cols-1 md:grid-cols-2 gap-4 container mx-auto">

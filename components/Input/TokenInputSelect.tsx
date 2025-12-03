@@ -59,17 +59,19 @@ export default function TokenInputSelect({
 		return { value: o, label: o };
 	});
 	const symbolIdx = symbolOptions.findIndex((o) => o === symbol);
-	const showFootnote = limit >= 0n && limitLabel || note;
+	const showFootnote = (limit >= 0n && limitLabel) || note;
 
 	return (
 		<div>
 			<div className="mb-1 flex gap-2 px-1">
-				<div className="flex-1 text-text-muted text-base font-medium leading-tight">{label || t('common.send')}</div>
+				<div className="flex-1 text-text-muted text-base font-medium leading-tight">{label || t("common.send")}</div>
 				{symbol && (
 					<div
-						className={`flex gap-2 items-center text-text-muted text-base font-medium leading-tight cursor-pointer ${hideMaxLabel && "hidden"}`}
+						className={`flex gap-2 items-center text-text-muted text-base font-medium leading-tight cursor-pointer ${
+							hideMaxLabel && "hidden"
+						}`}
 					>
-						{balanceLabel || t('common.balance_label')}
+						{balanceLabel || t("common.balance_label")}
 						<span>
 							{formatCurrency(formatUnits(max, Number(digit)))} {symbol}
 						</span>
@@ -86,15 +88,11 @@ export default function TokenInputSelect({
 					{output != undefined ? (
 						<div className="px-3 py-2 text-text-disabled font-bold transition-opacity">{output}</div>
 					) : (
-						<div
-							className={`flex h-11 rounded-lg bg-white border ${
-								error ? "border-text-warning" : "border-input-border"
-							}`}
-						>
+						<div className={`flex h-11 rounded-lg bg-white border ${error ? "border-text-warning" : "border-input-border"}`}>
 							<BigNumberInput
 								autofocus={true}
 								decimals={Number(digit)}
-								placeholder={placeholder || t('common.input_placeholder')}
+								placeholder={placeholder || t("common.input_placeholder")}
 								value={value || ""}
 								onChange={(e) => onChange?.(e)}
 								className={`w-full flex-1 p-3 bg-transparent text-lg placeholder:text-left text-right leading-tight font-medium text-input-primary`}
@@ -176,7 +174,7 @@ export default function TokenInputSelect({
 								<components.Menu {...props}>
 									<div className="p-1">
 										<div className="py-2 text-text-muted pointer-events-none text-slate-400 text-center text-base font-normal leading-tight">
-											{t('common.choose_value')}
+											{t("common.choose_value")}
 										</div>
 										{children}
 									</div>
@@ -192,13 +190,12 @@ export default function TokenInputSelect({
 					{limit >= 0n && limitLabel && (
 						<>
 							<span>{limitLabel} :&nbsp;</span>
-						<DisplayAmount amount={limit} currency={symbol} digits={limitDigits} logoSize={6} hideLogo={hideLimitIcon} />
-					</>
-				)}
+							<DisplayAmount amount={limit} currency={symbol} digits={limitDigits} logoSize={6} hideLogo={hideLimitIcon} />
+						</>
+					)}
 					{note && <span>{note}</span>}
 				</div>
 			)}
 		</div>
 	);
 }
-

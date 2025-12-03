@@ -185,7 +185,9 @@ export default function SavingsHistoryCard() {
 				</div>
 				<div className="flex flex-row justify-between">
 					<div className="text-sm font-medium leading-relaxed">{t("savings.total_savers")}</div>
-					<div className="text-sm font-medium leading-tight ">{totalUsers > 0 ? totalUsers.toLocaleString(router?.locale || 'en') : "-"}</div>
+					<div className="text-sm font-medium leading-tight ">
+						{totalUsers > 0 ? totalUsers.toLocaleString(router?.locale || "en") : "-"}
+					</div>
 				</div>
 				<div className="flex flex-row justify-between">
 					<div className="text-sm font-medium leading-relaxed">{t("savings.total_interest_paid")}</div>

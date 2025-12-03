@@ -44,57 +44,61 @@ export const BorrowedManageSection = () => {
 	const position = positions.find((p) => p.position == addressQuery);
 
 	const { balancesByAddress, refetchBalances } = useWalletERC20Balances(
-		position ? [
-			{
-				symbol: position.stablecoinSymbol,
-				address: position.stablecoinAddress,
-				name: position.stablecoinName,
-				allowance: [position.position],
-			},
-		] : []
+		position
+			? [
+					{
+						symbol: position.stablecoinSymbol,
+						address: position.stablecoinAddress,
+						name: position.stablecoinName,
+						allowance: [position.position],
+					},
+			  ]
+			: []
 	);
-	const url = useContractUrl(position?.position || zeroAddress as Address);
-	
+	const url = useContractUrl(position?.position || (zeroAddress as Address));
+
 	const { data, refetch: refetchReadContracts } = useReadContracts({
-		contracts: position ? [
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "principal",
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "price",
-			},
-			{
-				chainId,
-				abi: erc20Abi,
-				address: position.collateral as Address,
-				functionName: "balanceOf",
-				args: [position.position],
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "getInterest",
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "getDebt",
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "fixedAnnualRatePPM",
-			},
-		] : [],
+		contracts: position
+			? [
+					{
+						chainId,
+						address: position.position,
+						abi: PositionV2ABI,
+						functionName: "principal",
+					},
+					{
+						chainId,
+						abi: PositionV2ABI,
+						address: position.position,
+						functionName: "price",
+					},
+					{
+						chainId,
+						abi: erc20Abi,
+						address: position.collateral as Address,
+						functionName: "balanceOf",
+						args: [position.position],
+					},
+					{
+						chainId,
+						abi: PositionV2ABI,
+						address: position.position,
+						functionName: "getInterest",
+					},
+					{
+						chainId,
+						abi: PositionV2ABI,
+						address: position.position,
+						functionName: "getDebt",
+					},
+					{
+						chainId,
+						abi: PositionV2ABI,
+						address: position.position,
+						functionName: "fixedAnnualRatePPM",
+					},
+			  ]
+			: [],
 	});
 
 	const { reserveContribution } = position || {};
@@ -111,14 +115,18 @@ export const BorrowedManageSection = () => {
 	const walletBalance = position ? balancesByAddress?.[position.stablecoinAddress as Address]?.balanceOf || 0n : 0n;
 	const allowance = position ? balancesByAddress?.[position.stablecoinAddress as Address]?.allowance?.[position.position] || 0n : 0n;
 
-	const collBalancePosition: number = position ? Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100 : 0;
+	const collBalancePosition: number = position
+		? Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100
+		: 0;
 	const collTokenPriceMarket = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
-	const collTokenPricePosition: number = position ? Math.round((parseInt(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100 : 0;
-	
+	const collTokenPricePosition: number = position
+		? Math.round((parseInt(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100
+		: 0;
+
 	const marketValueCollateral: number = collBalancePosition * collTokenPriceMarket;
-	
+
 	// Calculate max values for validation (will be 0 if position is undefined)
-	const maxAmountByDepositedCollateral = position 
+	const maxAmountByDepositedCollateral = position
 		? getLoanDetailsByCollateralAndStartingLiqPrice(position, balanceOf, price).amountToSendToWallet
 		: 0n;
 	const maxBeforeAddingMoreCollateral = maxAmountByDepositedCollateral - totalDebt > 0 ? maxAmountByDepositedCollateral - totalDebt : 0n;
@@ -151,13 +159,16 @@ export const BorrowedManageSection = () => {
 			setError(t("common.error.insufficient_balance", { symbol: position.stablecoinSymbol }));
 		} else if (BigInt(amount) > debt) {
 			setError(
-				t("mint.error.amount_greater_than_debt", { amount: formatCurrency(formatUnits(debt, 18)), symbol: position.stablecoinSymbol })
+				t("mint.error.amount_greater_than_debt", {
+					amount: formatCurrency(formatUnits(debt, 18)),
+					symbol: position.stablecoinSymbol,
+				})
 			);
 		} else {
 			setError(null);
 		}
 	}, [isBorrowMore, amount, debt, walletBalance, position, t]);
-	
+
 	// Show loading or redirect if position not found
 	if (!position) {
 		return (
@@ -280,16 +291,16 @@ export const BorrowedManageSection = () => {
 			} else {
 				const userInputAmount = BigInt(amount);
 				const currentInterest = interest;
-				
+
 				const optimalRepayAmount = calculateOptimalRepayAmount({
 					userInputAmount,
-					currentInterest, 
+					currentInterest,
 					walletBalance,
 					reserveContribution: BigInt(position.reserveContribution),
 					principal: principal,
-					fixedAnnualRatePPM: fixedAnnualRatePPM
+					fixedAnnualRatePPM: fixedAnnualRatePPM,
 				});
-				
+
 				payBackHash = await writeContract(WAGMI_CONFIG, {
 					address: position.position,
 					abi: PositionV2ABI,
@@ -337,7 +348,8 @@ export const BorrowedManageSection = () => {
 						<TokenLogo currency={TOKEN_SYMBOL} />
 						<div className="flex flex-col">
 							<span className="text-base font-extrabold leading-tight">
-								<span className="">{reserveContribution ? formatCurrency(formatUnits(debt, 18)) : "-"}</span> {reserveContribution ? TOKEN_SYMBOL : ""}
+								<span className="">{reserveContribution ? formatCurrency(formatUnits(debt, 18)) : "-"}</span>{" "}
+								{reserveContribution ? TOKEN_SYMBOL : ""}
 							</span>
 							<span className="text-xs font-medium text-text-muted2 leading-[1rem]"></span>
 						</div>

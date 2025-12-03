@@ -14,8 +14,18 @@ import { useTranslation } from "next-i18next";
 
 export default function MypositionsTable() {
 	const { t } = useTranslation();
-	const headers: string[] = [t("my_positions.collateral"), t("my_positions.liquidation_price"), t("my_positions.minted"), t("my_positions.state")];
-	const subHeaders: string[] = [t("my_positions.value"), t("my_positions.market_price"), t("my_positions.available"), t("my_positions.time_left")];
+	const headers: string[] = [
+		t("my_positions.collateral"),
+		t("my_positions.liquidation_price"),
+		t("my_positions.minted"),
+		t("my_positions.state"),
+	];
+	const subHeaders: string[] = [
+		t("my_positions.value"),
+		t("my_positions.market_price"),
+		t("my_positions.available"),
+		t("my_positions.time_left"),
+	];
 	const [tab, setTab] = useState<string>(headers[0]);
 	const [reverse, setReverse] = useState<boolean>(false);
 
@@ -71,12 +81,22 @@ export default function MypositionsTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} subHeaders={subHeaders} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol headerClassNames={["pl-10"]} />
+			<TableHeader
+				headers={headers}
+				subHeaders={subHeaders}
+				tab={tab}
+				reverse={reverse}
+				tabOnChange={handleTabOnChange}
+				actionCol
+				headerClassNames={["pl-10"]}
+			/>
 			<TableBody>
 				{sorted.length == 0 ? (
 					<TableRowEmpty>{t("my_positions.no_positions")}</TableRowEmpty>
 				) : (
-					sorted.map((pos) => <MypositionsRow headers={headers} subHeaders={subHeaders} position={pos} key={pos.position} tab={tab} />)
+					sorted.map((pos) => (
+						<MypositionsRow headers={headers} subHeaders={subHeaders} position={pos} key={pos.position} tab={tab} />
+					))
 				)}
 			</TableBody>
 		</Table>

@@ -15,7 +15,17 @@ interface Props {
 	className?: string;
 }
 
-export default function TableHeader({ headers, subHeaders, actionCol, colSpan, tab = "", reverse = false, tabOnChange, headerClassNames, className }: Props) {
+export default function TableHeader({
+	headers,
+	subHeaders,
+	actionCol,
+	colSpan,
+	tab = "",
+	reverse = false,
+	tabOnChange,
+	headerClassNames,
+	className,
+}: Props) {
 	const { t } = useTranslation();
 
 	const handleOnClick = function (active: string) {
@@ -23,8 +33,12 @@ export default function TableHeader({ headers, subHeaders, actionCol, colSpan, t
 	};
 
 	return (
-		<div className={`${className} items-center justify-between rounded-t-xl bg-table-header-primary ${actionCol ? "sm:pr-12" : ""} py-3 px-5 pr-3 sm:py-5 sm:px-8 md:flex`}>
-			<div 
+		<div
+			className={`${className} items-center justify-between rounded-t-xl bg-table-header-primary ${
+				actionCol ? "sm:pr-12" : ""
+			} py-3 px-5 pr-3 sm:py-5 sm:px-8 md:flex`}
+		>
+			<div
 				className="max-md:hidden flex-grow md:grid"
 				style={{ gridTemplateColumns: `repeat(${colSpan || headers.length}, minmax(0, 1fr))` }}
 			>
@@ -36,7 +50,9 @@ export default function TableHeader({ headers, subHeaders, actionCol, colSpan, t
 					>
 						<span
 							className={`text-base font-extrabold transition-colors duration-200 ${!!tab ? "cursor-pointer" : ""} ${
-								tab === header ? "text-table-header-active font-bold" : "text-table-header-default hover:text-table-header-hover"
+								tab === header
+									? "text-table-header-active font-bold"
+									: "text-table-header-default hover:text-table-header-hover"
 							}
 							`}
 						>
@@ -66,7 +82,7 @@ export default function TableHeader({ headers, subHeaders, actionCol, colSpan, t
 							subHeaders ? "items-center" : ""
 						}`}
 					>
-						{t('common.action')}
+						{t("common.action")}
 					</div>
 					{subHeaders ? <span> </span> : null}
 				</div>

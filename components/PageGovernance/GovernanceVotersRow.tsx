@@ -18,7 +18,7 @@ interface Props {
 	voter: VoteData;
 	votesTotal: bigint;
 	connectedWallet?: boolean;
-	tab: string;	
+	tab: string;
 }
 
 export default function GovernanceVotersRow({ headers, voter, votesTotal, connectedWallet, tab }: Props) {
@@ -54,7 +54,12 @@ export default function GovernanceVotersRow({ headers, voter, votesTotal, connec
 
 				const votingPower = votingPowerRatio * votesTotal;
 
-				setDelegateeVotes({ holder: delegatee, nativePS, votingPower, votingPowerRatio: parseFloat(formatUnits(votingPowerRatio, 18)) });
+				setDelegateeVotes({
+					holder: delegatee,
+					nativePS,
+					votingPower,
+					votingPowerRatio: parseFloat(formatUnits(votingPowerRatio, 18)),
+				});
 			};
 
 			fetcher();
@@ -98,7 +103,9 @@ export default function GovernanceVotersRow({ headers, voter, votesTotal, connec
 					</div>
 				</div>
 
-				<div className="flex flex-col">{formatCurrency(formatUnits(voter.nativePS, 18))} {POOL_SHARE_TOKEN_SYMBOL}</div>
+				<div className="flex flex-col">
+					{formatCurrency(formatUnits(voter.nativePS, 18))} {POOL_SHARE_TOKEN_SYMBOL}
+				</div>
 				<div className={`flex flex-col`}>{formatCurrency(voter.votingPowerRatio * 100)}%</div>
 			</TableRow>
 
@@ -116,7 +123,9 @@ export default function GovernanceVotersRow({ headers, voter, votesTotal, connec
 					tab={tab}
 				>
 					<AddressLabelSimple className="text-left" address={delegatee} label="Delegate address" showLink />
-					<div className="flex flex-col">{formatCurrency(formatUnits(isDelegateeVotes?.nativePS || 0n, 18))} {POOL_SHARE_TOKEN_SYMBOL}</div>
+					<div className="flex flex-col">
+						{formatCurrency(formatUnits(isDelegateeVotes?.nativePS || 0n, 18))} {POOL_SHARE_TOKEN_SYMBOL}
+					</div>
 					<div className={`flex flex-col`}>{formatCurrency((isDelegateeVotes?.votingPowerRatio || 0) * 100)}%</div>
 				</TableRow>
 			) : null}

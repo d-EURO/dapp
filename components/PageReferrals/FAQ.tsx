@@ -15,7 +15,9 @@ const ExpandableFAQ = ({ question, answer, separator = true }: { question: strin
 			} flex-col justify-center items-start gap-2 flex`}
 		>
 			<div className="self-stretch justify-start items-center gap-14 inline-flex">
-				<div className="grow shrink basis-0 text-text-primary text-base sm:text-xl font-black leading-tight sm:leading-7">{question}</div>
+				<div className="grow shrink basis-0 text-text-primary text-base sm:text-xl font-black leading-tight sm:leading-7">
+					{question}
+				</div>
 				<FontAwesomeIcon
 					icon={faChevronDown}
 					className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
@@ -65,7 +67,9 @@ export const FAQ = () => {
 								</ul>
 							</div>
 							<span>
-								{t("referrals.in_addition_there_are_sign_up_bonuses_which_are_paid_out_directly_as_soon_as_the_referrer_invests_in_the_saving_equity_or_borrow_module_of_the_deuro_protocol_for_the_first_time")}
+								{t(
+									"referrals.in_addition_there_are_sign_up_bonuses_which_are_paid_out_directly_as_soon_as_the_referrer_invests_in_the_saving_equity_or_borrow_module_of_the_deuro_protocol_for_the_first_time"
+								)}
 							</span>
 							<span>{t("referrals.your_referral_bonus_can_be_claimed_by_you_at_any_time")}</span>
 						</div>

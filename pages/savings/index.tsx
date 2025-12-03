@@ -14,7 +14,9 @@ export default function Savings() {
 	return (
 		<>
 			<Head>
-				<title>{TOKEN_SYMBOL} - {t("savings.title")}</title>
+				<title>
+					{TOKEN_SYMBOL} - {t("savings.title")}
+				</title>
 			</Head>
 
 			<div className="md:mt-8 flex justify-center">

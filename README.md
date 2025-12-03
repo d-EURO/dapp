@@ -60,6 +60,7 @@ export const CONFIG: ConfigEnv = {
 ```
 
 ### Building a docker image
+
 Please note the following when creating a Docker image:
 
 The environment variables are used at build time and cannot be passed at runtime. The environment variables must be set as placeholders in the dockerfile so that they are set via the docker entry point before the application is started.

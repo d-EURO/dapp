@@ -20,35 +20,35 @@ export const CopyLinkButton = ({ text, contentOnCopy }: { text: string; contentO
 
 	const copyReferralLink = async () => {
 		const textToCopy = text.trim();
-		
+
 		try {
 			// Create a temporary textarea element for old browsers or Metamask in mobile
-			const textArea = document.createElement('textarea');
+			const textArea = document.createElement("textarea");
 			textArea.value = textToCopy;
-			textArea.style.position = 'fixed';
-			textArea.style.left = '-999999px';
-			textArea.style.top = '-999999px';
+			textArea.style.position = "fixed";
+			textArea.style.left = "-999999px";
+			textArea.style.top = "-999999px";
 			document.body.appendChild(textArea);
 			textArea.focus();
 			textArea.select();
-			
+
 			// Try to copy using the selection API for old browsers or Metamask in mobile
-			const successful = document?.execCommand?.('copy');
+			const successful = document?.execCommand?.("copy");
 			textArea.remove();
-			
+
 			if (!successful) {
 				// If selection API fails, try clipboard API as fallback
 				if (navigator?.clipboard?.writeText) {
 					await navigator.clipboard.writeText(textToCopy);
 				} else {
-					throw new Error('Copy failed');
+					throw new Error("Copy failed");
 				}
 			}
-			
+
 			setIsCopied(true);
 			setTimeout(() => setIsCopied(false), 2000);
 		} catch (err) {
-			console.error('Failed to copy text:', err);
+			console.error("Failed to copy text:", err);
 		}
 	};
 

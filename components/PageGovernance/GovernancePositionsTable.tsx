@@ -12,17 +12,30 @@ import { INTERNAL_PROTOCOL_POSITIONS } from "@utils";
 
 export default function GovernancePositionsTable() {
 	const { t } = useTranslation();
-	
-	const headers: string[] = [t("governance.collateral"), t("governance.position"), t("governance.limit"), t("governance.interest"), t("governance.time_left")];
-	const subHeaders: string[] = ["", t("governance.owner"), t("governance.reserve"), t("governance.maturity"), t("governance.auction_duration")];
+
+	const headers: string[] = [
+		t("governance.collateral"),
+		t("governance.position"),
+		t("governance.limit"),
+		t("governance.interest"),
+		t("governance.time_left"),
+	];
+	const subHeaders: string[] = [
+		"",
+		t("governance.owner"),
+		t("governance.reserve"),
+		t("governance.maturity"),
+		t("governance.auction_duration"),
+	];
 	const [tab, setTab] = useState<string>(headers[4]);
 	const [reverse, setReverse] = useState<boolean>(true);
 
 	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 
-
-	const matchingPositions: PositionQuery[] = positions.filter((p) => !p.closed && !p.denied && p.start * 1000 > Date.now() && !INTERNAL_PROTOCOL_POSITIONS.includes(p.position));
+	const matchingPositions: PositionQuery[] = positions.filter(
+		(p) => !p.closed && !p.denied && p.start * 1000 > Date.now() && !INTERNAL_PROTOCOL_POSITIONS.includes(p.position)
+	);
 
 	const sorted: PositionQuery[] = sortPositions({
 		positions: matchingPositions,
@@ -43,21 +56,21 @@ export default function GovernancePositionsTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} subHeaders={subHeaders} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol headerClassNames={['text-center']} />
+			<TableHeader
+				headers={headers}
+				subHeaders={subHeaders}
+				tab={tab}
+				reverse={reverse}
+				tabOnChange={handleTabOnChange}
+				actionCol
+				headerClassNames={["text-center"]}
+			/>
 			<TableBody>
 				{sorted.length == 0 ? (
-					<TableRowEmpty>
-						{t("governance.positions_table_empty")}
-					</TableRowEmpty>
+					<TableRowEmpty>{t("governance.positions_table_empty")}</TableRowEmpty>
 				) : (
 					sorted.map((pos) => (
-						<GovernancePositionsRow
-							key={pos.position}
-							headers={headers}
-							subHeaders={subHeaders}
-							position={pos}
-							tab={tab}
-						/>
+						<GovernancePositionsRow key={pos.position} headers={headers} subHeaders={subHeaders} position={pos} tab={tab} />
 					))
 				)}
 			</TableBody>

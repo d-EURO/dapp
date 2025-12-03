@@ -163,13 +163,19 @@ export default function MypositionsRow({ headers, subHeaders, position, tab }: P
 				<span className={liquidationPct < 110 ? `text-md font-bold text-text-warning` : "text-md "}>
 					{formatCurrency(liquidationDEURO, 2, 2)} {TOKEN_SYMBOL}
 				</span>
-				<span className="text-sm text-text-subheader">{formatCurrency(collTokenPrice / deuroPrice, 2, 2)} {TOKEN_SYMBOL}</span>
+				<span className="text-sm text-text-subheader">
+					{formatCurrency(collTokenPrice / deuroPrice, 2, 2)} {TOKEN_SYMBOL}
+				</span>
 			</div>
 
 			{/* Loan Value */}
 			<div className="flex flex-col">
-				<span className="text-md ">{formatCurrency(loanDEURO, 2, 2)} {TOKEN_SYMBOL}</span>
-				<span className="text-sm text-text-subheader">{formatCurrency(balance * liquidationDEURO - loanDEURO, 2, 2)} {TOKEN_SYMBOL}</span>
+				<span className="text-md ">
+					{formatCurrency(loanDEURO, 2, 2)} {TOKEN_SYMBOL}
+				</span>
+				<span className="text-sm text-text-subheader">
+					{formatCurrency(balance * liquidationDEURO - loanDEURO, 2, 2)} {TOKEN_SYMBOL}
+				</span>
 			</div>
 
 			{/* State */}

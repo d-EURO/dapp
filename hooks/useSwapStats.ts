@@ -6,46 +6,53 @@ import { ADDRESS, StablecoinBridgeABI } from "@juicedollar/jusd";
 
 const getTokenContractBasics = (chainId: number, address: Address, account: Address, bridgeAddress: Address) => {
 	return [
-		{ // Balance of the user in the wallet
+		{
+			// Balance of the user in the wallet
 			chainId,
 			address,
 			abi: erc20Abi,
 			functionName: "balanceOf",
 			args: [account],
 		},
-		{ // Symbol of the token
+		{
+			// Symbol of the token
 			chainId,
 			address,
 			abi: erc20Abi,
 			functionName: "symbol",
 		},
-		{ // Allowance of the user to the bridge
+		{
+			// Allowance of the user to the bridge
 			chainId,
 			address,
 			abi: erc20Abi,
 			functionName: "allowance",
 			args: [account, bridgeAddress],
 		},
-		{ // Balance of the bridge
+		{
+			// Balance of the bridge
 			chainId,
 			address,
 			abi: erc20Abi,
 			functionName: "balanceOf",
 			args: [bridgeAddress],
 		},
-		{ // Decimals of the token
+		{
+			// Decimals of the token
 			chainId,
 			address,
 			abi: erc20Abi,
 			functionName: "decimals",
 		},
-		{ // Limit of the bridge
+		{
+			// Limit of the bridge
 			chainId,
 			address: bridgeAddress,
 			abi: StablecoinBridgeABI,
 			functionName: "limit",
 		},
-		{ // Minted coins of the bridge
+		{
+			// Minted coins of the bridge
 			chainId,
 			address: bridgeAddress,
 			abi: StablecoinBridgeABI,
@@ -64,8 +71,8 @@ const parseStablecoinStats = (data: any, fromIndex: number) => {
 		limit: data ? decodeBigIntCall(data[fromIndex + 5]) : BigInt(0),
 		minted: data ? decodeBigIntCall(data[fromIndex + 6]) : BigInt(0),
 		remaining: data ? decodeBigIntCall(data[fromIndex + 5]) - decodeBigIntCall(data[fromIndex + 6]) : BigInt(0),
-	}
-}
+	};
+};
 
 export const useSwapStats = () => {
 	const chainId = WAGMI_CHAIN.id as number;

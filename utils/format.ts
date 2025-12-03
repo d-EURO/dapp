@@ -12,7 +12,7 @@ export const toTimestamp = (value: Date) => {
 
 export function toDate(time: bigint | number | string) {
 	const v: bigint = BigInt(time);
-	return new Date(Number(v) * 1000);	
+	return new Date(Number(v) * 1000);
 }
 
 export enum FormatType {

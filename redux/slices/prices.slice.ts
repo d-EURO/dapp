@@ -1,5 +1,12 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
-import { PricesState, DispatchBoolean, DispatchApiPriceMapping, DispatchApiPriceERC20Mapping, DispatchApiPriceERC20, DispatchPriceQueryCurrencies } from "./prices.types";
+import {
+	PricesState,
+	DispatchBoolean,
+	DispatchApiPriceMapping,
+	DispatchApiPriceERC20Mapping,
+	DispatchApiPriceERC20,
+	DispatchPriceQueryCurrencies,
+} from "./prices.types";
 import { ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping, PriceQueryCurrencies } from "@juicedollar/api";
 import { API_CLIENT } from "../../app.config";
 import { zeroAddress } from "viem";
@@ -69,7 +76,12 @@ export const actions = slice.actions;
 
 // --------------------------------------------------------------------------------
 export const fetchPricesList =
-	() => async (dispatch: Dispatch<DispatchBoolean | DispatchApiPriceMapping | DispatchApiPriceERC20Mapping | DispatchApiPriceERC20 | DispatchPriceQueryCurrencies>) => {
+	() =>
+	async (
+		dispatch: Dispatch<
+			DispatchBoolean | DispatchApiPriceMapping | DispatchApiPriceERC20Mapping | DispatchApiPriceERC20 | DispatchPriceQueryCurrencies
+		>
+	) => {
 		// ---------------------------------------------------------------
 		console.log("Loading [REDUX]: PricesList");
 

@@ -29,7 +29,7 @@ export function BigNumberInput({
 	className,
 	disabled,
 	onFocus,
-	onBlur,	
+	onBlur,
 }: BigNumberInputProps) {
 	const inputRef = React.useRef<any>(null);
 

@@ -35,7 +35,8 @@ const SavingsRow = ({
 };
 
 export const MySavings = () => {
-	const { userSavingsBalance, totalEarnedInterest, interestToBeCollected, isReinvesting, isClaiming, claimInterest, handleReinvest } = useSavingsInterest();
+	const { userSavingsBalance, totalEarnedInterest, interestToBeCollected, isReinvesting, isClaiming, claimInterest, handleReinvest } =
+		useSavingsInterest();
 	const { t } = useTranslation();
 
 	const savingsData = userSavingsBalance > 0n || totalEarnedInterest > 0n || interestToBeCollected > 0n;
@@ -62,11 +63,21 @@ export const MySavings = () => {
 			</div>
 			{savingsData && (
 				<div className="w-full flex-1 pt-10 flex items-end gap-4">
-					<Button className="w-full h-10" disabled={interestToBeCollected === 0n} isLoading={isReinvesting} onClick={handleReinvest}>
+					<Button
+						className="w-full h-10"
+						disabled={interestToBeCollected === 0n}
+						isLoading={isReinvesting}
+						onClick={handleReinvest}
+					>
 						<FontAwesomeIcon icon={faRotateRight} />
 						{t("dashboard.reinvest")}
 					</Button>
-					<SecondaryButton className="w-full h-10" disabled={interestToBeCollected === 0n} isLoading={isClaiming} onClick={claimInterest}>
+					<SecondaryButton
+						className="w-full h-10"
+						disabled={interestToBeCollected === 0n}
+						isLoading={isClaiming}
+						onClick={claimInterest}
+					>
 						<Image src="/icons/ph_hand-coins-black.svg" alt="arrow-right" width={20} height={20} />
 						{t("dashboard.collect_interest")}
 					</SecondaryButton>

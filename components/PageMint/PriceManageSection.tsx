@@ -34,42 +34,44 @@ export const PriceManageSection = () => {
 	const position = positions.find((p) => p.position == addressQuery);
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
-	const url = useContractUrl(position?.position || zeroAddress as Address);
+	const url = useContractUrl(position?.position || (zeroAddress as Address));
 
 	const { data, refetch: refetchReadContracts } = useReadContracts({
-		contracts: position ? [
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "principal",
-			},
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "price",
-			},
-			{
-				chainId,
-				abi: erc20Abi,
-				address: position.collateral as Address,
-				functionName: "balanceOf",
-				args: [position.position],
-			},
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "start",
-			},
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "getCollateralRequirement",
-			},
-		] : [],
+		contracts: position
+			? [
+					{
+						chainId,
+						address: position.position,
+						abi: PositionV2ABI,
+						functionName: "principal",
+					},
+					{
+						chainId,
+						address: position.position,
+						abi: PositionV2ABI,
+						functionName: "price",
+					},
+					{
+						chainId,
+						abi: erc20Abi,
+						address: position.collateral as Address,
+						functionName: "balanceOf",
+						args: [position.position],
+					},
+					{
+						chainId,
+						address: position.position,
+						abi: PositionV2ABI,
+						functionName: "start",
+					},
+					{
+						chainId,
+						address: position.position,
+						abi: PositionV2ABI,
+						functionName: "getCollateralRequirement",
+					},
+			  ]
+			: [],
 	});
 
 	const principal = data?.[0]?.result || 0n;
@@ -94,10 +96,10 @@ export const PriceManageSection = () => {
 		const bounds = principal + availableForMinting;
 		const maxByBounds = collateralBalance > 0n ? (bounds * 10n ** 18n) / collateralBalance : 0n;
 		const maxBy2x = startTime > 0n && BigInt(Math.floor(Date.now() / 1000)) >= startTime ? currentPrice * 2n : maxByBounds;
-		
+
 		// Take minimum of bounds and 2x limit
 		maxPrice = maxByBounds < maxBy2x ? maxByBounds : maxBy2x;
-		
+
 		// Cap at market value to prevent undercollateralization
 		if (collateralPrice > 0) {
 			const maxByMarketValue = BigInt(Math.floor(collateralPrice * 10 ** priceDecimals));
@@ -109,10 +111,10 @@ export const PriceManageSection = () => {
 	const [initializedPosition, setInitializedPosition] = useState<string | null>(null);
 	useEffect(() => {
 		if (!position) return;
-		
+
 		// Only initialize if this is a different position or first load
 		if (initializedPosition === position.position) return;
-		
+
 		if (minPrice > 0 && minPrice <= maxPrice) {
 			const initialPrice = currentPrice > minPrice ? currentPrice : minPrice;
 			setNewPrice(initialPrice.toString());
@@ -123,7 +125,7 @@ export const PriceManageSection = () => {
 	// Validate price input
 	useEffect(() => {
 		if (!position) return;
-		
+
 		if (minPrice > maxPrice) {
 			setNewPrice("");
 			setError(t("mint.error.insufficient_collateral_for_requirements"));
@@ -205,9 +207,7 @@ export const PriceManageSection = () => {
 
 			{isMintingExhausted && minPrice === maxPrice && (
 				<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-					<div className="text-sm text-yellow-800">
-						{t("mint.minting_limit_exhausted_info")}
-					</div>
+					<div className="text-sm text-yellow-800">{t("mint.minting_limit_exhausted_info")}</div>
 				</div>
 			)}
 

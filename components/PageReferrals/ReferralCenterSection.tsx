@@ -15,7 +15,6 @@ const ExplanationItem = ({ icon, title, description }: { icon: string; title: st
 	</div>
 );
 
-
 export const ReferralCenterSection = () => {
 	const { t } = useTranslation();
 
@@ -26,7 +25,7 @@ export const ReferralCenterSection = () => {
 					<div className="self-stretch flex-col justify-start items-start gap-5 inline-flex sm:w-1/2">
 						<div className="flex-col justify-start items-start gap-3 flex">
 							<div className="w-8 h-8 sm:w-11 sm:h-11 bg-borders-primary rounded-full flex justify-center items-center">
-							  <Image src="/icons/chest.svg" width={42} height={42} alt="Chest" />
+								<Image src="/icons/chest.svg" width={42} height={42} alt="Chest" />
 							</div>
 							<div className="text-text-primary text-2xl sm:text-4xl font-black !leading-none">
 								{t("referrals.referral_center")}

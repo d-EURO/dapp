@@ -10,7 +10,14 @@ import {
 	SavingsState,
 	DispatchApiSavingsLeaderboard,
 } from "./savings.types";
-import { ApiLeadrateInfo, ApiLeadrateProposed, ApiLeadrateRate, ApiSavingsInfo, ApiSavingsUserTable, ApiSavingsUserLeaderboard } from "@juicedollar/api";
+import {
+	ApiLeadrateInfo,
+	ApiLeadrateProposed,
+	ApiLeadrateRate,
+	ApiSavingsInfo,
+	ApiSavingsUserTable,
+	ApiSavingsUserLeaderboard,
+} from "@juicedollar/api";
 import { Address, zeroAddress } from "viem";
 import { logApiError } from "../../utils/errorLogger";
 
@@ -96,26 +103,26 @@ export const fetchSavings =
 			// ---------------------------------------------------------------
 			// Query raw data from backend api
 			const response1 = await API_CLIENT.get("/savings/leadrate/info");
-		dispatch(slice.actions.setLeadrateInfo(response1.data as ApiLeadrateInfo));
+			dispatch(slice.actions.setLeadrateInfo(response1.data as ApiLeadrateInfo));
 
-		const response2 = await API_CLIENT.get("/savings/leadrate/proposals");
-		dispatch(slice.actions.setLeadrateProposed(response2.data as ApiLeadrateProposed));
+			const response2 = await API_CLIENT.get("/savings/leadrate/proposals");
+			dispatch(slice.actions.setLeadrateProposed(response2.data as ApiLeadrateProposed));
 
-		const response3 = await API_CLIENT.get("/savings/leadrate/rates");
-		dispatch(slice.actions.setLeadrateRate(response3.data as ApiLeadrateRate));
+			const response3 = await API_CLIENT.get("/savings/leadrate/rates");
+			dispatch(slice.actions.setLeadrateRate(response3.data as ApiLeadrateRate));
 
-		const response4 = await API_CLIENT.get("/savings/core/info");
-		dispatch(slice.actions.setSavingsInfo(response4.data as ApiSavingsInfo));
+			const response4 = await API_CLIENT.get("/savings/core/info");
+			dispatch(slice.actions.setSavingsInfo(response4.data as ApiSavingsInfo));
 
-		const response6 = await API_CLIENT.get(`/savings/core/user/${zeroAddress}`);
-		dispatch(slice.actions.setSavingsAllUserTable(response6.data as ApiSavingsUserTable));
+			const response6 = await API_CLIENT.get(`/savings/core/user/${zeroAddress}`);
+			dispatch(slice.actions.setSavingsAllUserTable(response6.data as ApiSavingsUserTable));
 
-		if (account == undefined) {
-			dispatch(slice.actions.setSavingsUserTable(undefined));
-		} else {
-			const response5 = await API_CLIENT.get(`/savings/core/user/${account}`);
-			dispatch(slice.actions.setSavingsUserTable(response5.data as ApiSavingsUserTable));
-		}
+			if (account == undefined) {
+				dispatch(slice.actions.setSavingsUserTable(undefined));
+			} else {
+				const response5 = await API_CLIENT.get(`/savings/core/user/${account}`);
+				dispatch(slice.actions.setSavingsUserTable(response5.data as ApiSavingsUserTable));
+			}
 
 			const response7 = await API_CLIENT.get("/savings/core/info/leaderboard");
 			dispatch(slice.actions.setSavingsLeaderboard(response7.data as ApiSavingsUserLeaderboard[]));

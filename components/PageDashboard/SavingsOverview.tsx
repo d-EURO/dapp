@@ -12,11 +12,7 @@ import { useContractUrl } from "@hooks";
 
 const StatsBox = ({ title, value, isLast }: { title: string; value?: string | React.ReactNode; isLast?: boolean }) => {
 	return (
-		<div
-			className={`2md:p-8 p-5 flex flex-col 2md:gap-2 gap-1 flex-1 ${
-				!isLast ? "border-r border-borders-dividerLight" : ""
-			}`}
-		>
+		<div className={`2md:p-8 p-5 flex flex-col 2md:gap-2 gap-1 flex-1 ${!isLast ? "border-r border-borders-dividerLight" : ""}`}>
 			<span className="text-base font-[350] leading-tight">{title}</span>
 			<span className="text-lg font-[900]">{value}</span>
 		</div>
@@ -46,7 +42,10 @@ const SavingsOverview = () => {
 					<StatsBox title={t("dashboard.total_savings")} value={formatCurrency(formatUnits(totalSavings, 18)) || undefined} />
 				</div>
 				<div className="w-full flex-row justify-start items-start flex overflow-hidden">
-					<StatsBox title={t("dashboard.total_interest_paid")} value={totalInterest !== undefined ? formatCurrency(totalInterest) : "-"} />
+					<StatsBox
+						title={t("dashboard.total_interest_paid")}
+						value={totalInterest !== undefined ? formatCurrency(totalInterest) : "-"}
+					/>
 					<StatsBox
 						title={t("dashboard.contract_address")}
 						value={

@@ -17,7 +17,9 @@ export default function ChallengesPage() {
 	return (
 		<>
 			<Head>
-				<title>{TOKEN_SYMBOL} - {t("challenges.title")}</title>
+				<title>
+					{TOKEN_SYMBOL} - {t("challenges.title")}
+				</title>
 			</Head>
 
 			<div className="md:mt-8">
