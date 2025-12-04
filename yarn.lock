@@ -296,10 +296,26 @@
     ts-node "^10.9.1"
     typescript "^5.2.2"
 
-"@deuro/eurocoin@^1.0.13", "@deuro/eurocoin@^1.0.15":
+"@deuro/eurocoin@^1.0.13":
   version "1.0.15"
   resolved "https://registry.yarnpkg.com/@deuro/eurocoin/-/eurocoin-1.0.15.tgz#b135928d6457707537736ae1cd8c0df6310096e5"
   integrity sha512-oGwKnYbyQbPpDtbEu1lImph2n8GdxThXkWYecBNL0n7pDw9OkwL1Ytjxh2eGdl5FCn2x5bJAjzltDw2sWTJLNw==
+  dependencies:
+    "@deuro/eurocoin" "^1.0.13"
+    "@flashbots/ethers-provider-bundle" "^1.0.0"
+    hardhat-abi-exporter "^2.10.0"
+    hardhat-contract-sizer "^2.5.1"
+    prettier "^3.3.3"
+    prettier-plugin-solidity "^1.4.1"
+    prompt "^1.3.0"
+    solhint "^5.0.5"
+    ts-node "^10.9.1"
+    typescript "^5.2.2"
+
+"@deuro/eurocoin@^1.0.17":
+  version "1.0.17"
+  resolved "https://registry.yarnpkg.com/@deuro/eurocoin/-/eurocoin-1.0.17.tgz#4b8d5b019946e8610afa0beaa4611df55e170b21"
+  integrity sha512-lq6WnClb2RJk/vh5qG0Vs1Zn+JYVsIv+gG0MMPWwBOI8NANtwRIIKqvN/0ZIxL7v2+mq5hsDyPw4SizugJKlmw==
   dependencies:
     "@deuro/eurocoin" "^1.0.13"
     "@flashbots/ethers-provider-bundle" "^1.0.0"
