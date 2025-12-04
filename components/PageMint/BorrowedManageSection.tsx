@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import TokenLogo from "@components/TokenLogo";
 import { NormalInputOutlined } from "@components/Input/NormalInputOutlined";
 import Button from "@components/Button";
@@ -16,6 +16,7 @@ import { erc20Abi } from "viem";
 import { useAccount, useChainId } from "wagmi";
 import { useReadContracts } from "wagmi";
 import { getLoanDetailsByCollateralAndStartingLiqPrice, getLoanDetailsByCollateralAndYouGetAmount } from "../../utils/loanCalculations";
+import { calculateCollateralizationPercentage } from "../../utils/collateralizationPercentage";
 import { renderErrorTxToast } from "@components/TxToast";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
@@ -27,6 +28,7 @@ import { SvgIconButton } from "./PlusMinusButtons";
 import Link from "next/link";
 import { useContractUrl } from "../../hooks/useContractUrl";
 import { calculateOptimalRepayAmount, calculateTimeBuffer } from "../../utils/dynamicRepayCalculations";
+import { ErrorDisplay } from "@components/ErrorDisplay";
 
 export const BorrowedManageSection = () => {
 	const [amount, setAmount] = useState("");
@@ -115,16 +117,6 @@ export const BorrowedManageSection = () => {
 	const walletBalance = position ? balancesByAddress?.[position.stablecoinAddress as Address]?.balanceOf || 0n : 0n;
 	const allowance = position ? balancesByAddress?.[position.stablecoinAddress as Address]?.allowance?.[position.position] || 0n : 0n;
 
-	const collBalancePosition: number = position
-		? Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100
-		: 0;
-	const collTokenPriceMarket = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
-	const collTokenPricePosition: number = position
-		? Math.round((parseInt(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100
-		: 0;
-
-	const marketValueCollateral: number = collBalancePosition * collTokenPriceMarket;
-
 	// Calculate max values for validation (will be 0 if position is undefined)
 	const maxAmountByDepositedCollateral = position
 		? getLoanDetailsByCollateralAndStartingLiqPrice(position, balanceOf, price).amountToSendToWallet
@@ -169,6 +161,11 @@ export const BorrowedManageSection = () => {
 		}
 	}, [isBorrowMore, amount, debt, walletBalance, position, t]);
 
+	const cachedPercentage = useRef<number>(0);
+	const calculatedPercentage = position ? calculateCollateralizationPercentage(position, prices) : 0;
+	if (calculatedPercentage > 0) cachedPercentage.current = calculatedPercentage;
+	const collateralizationPercentage = cachedPercentage.current;
+
 	// Show loading or redirect if position not found
 	if (!position) {
 		return (
@@ -177,8 +174,6 @@ export const BorrowedManageSection = () => {
 			</div>
 		);
 	}
-	const positionValueCollateral: number = collBalancePosition * collTokenPricePosition;
-	const collateralizationPercentage: number = Math.round((marketValueCollateral / positionValueCollateral) * 10000) / 100;
 
 	const handleMaxAmount = () => {
 		if (isBorrowMore) {
@@ -386,7 +381,7 @@ export const BorrowedManageSection = () => {
 							</div>
 						}
 					/>
-					{error && <div className="ml-1 text-text-warning text-sm">{error}</div>}
+					<ErrorDisplay error={error} />
 				</div>
 				<div className="w-full mt-1.5 px-4 py-2 rounded-xl bg-[#FDF2E2] flex flex-row justify-between items-center text-base font-extrabold text-[#272B38]">
 					<span>{t("mint.collateralization")}</span>

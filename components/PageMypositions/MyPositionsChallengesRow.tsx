@@ -7,7 +7,7 @@ import TokenLogo from "@components/TokenLogo";
 import { formatCurrency } from "../../utils/format";
 import { useContractUrl } from "@hooks";
 import MyPositionsChallengesCancel from "./MyPositionsChallengesCancel";
-import { TOKEN_SYMBOL } from "@utils";
+import { TOKEN_SYMBOL, normalizeTokenSymbol } from "@utils";
 
 interface Props {
 	headers: string[];
@@ -76,21 +76,23 @@ export default function MyPositionsChallengesRow({ headers, challenge, tab }: Pr
 				{/* desktop view */}
 				<div className="max-md:hidden flex flex-row items-center">
 					<span className="mr-3 cursor-pointer" onClick={openExplorer}>
-						<TokenLogo currency={position.collateralSymbol} />
+						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</span>
-					<span className={`col-span-2 text-md font-extrabold`}>{`${formatCurrency(challengeRemainingSize, 2, 2)} ${
-						position.collateralSymbol
-					}`}</span>
+					<span className={`col-span-2 text-md font-extrabold`}>{`${formatCurrency(
+						challengeRemainingSize,
+						2,
+						2
+					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</span>
 				</div>
 
 				{/* mobile view */}
 				<div className="md:hidden flex flex-row items-center">
 					<div className="mr-3 cursor-pointer" onClick={openExplorer}>
-						<TokenLogo currency={position.collateralSymbol} />
+						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</div>
-					<div className={`col-span-2 text-md  font-semibold`}>{`${formatCurrency(challengeRemainingSize)} ${
+					<div className={`col-span-2 text-md  font-semibold`}>{`${formatCurrency(challengeRemainingSize)} ${normalizeTokenSymbol(
 						position.collateralSymbol
-					}`}</div>
+					)}`}</div>
 				</div>
 			</div>
 

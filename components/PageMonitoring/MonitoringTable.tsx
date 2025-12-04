@@ -10,6 +10,7 @@ import MonitoringRow from "./MonitoringRow";
 import { useState } from "react";
 import { useTranslation } from "next-i18next";
 import { INTERNAL_PROTOCOL_POSITIONS } from "@utils";
+import { calculateCollateralizationPercentage } from "../../utils/collateralizationPercentage";
 
 export default function MonitoringTable() {
 	const { t } = useTranslation();

@@ -24,8 +24,10 @@ const getLoanDuration = (position: PositionQuery, customExpirationDate?: Date) =
 const getMiscelaneousLoanDetails = (position: PositionQuery, loanAmount: bigint, collateralAmount: bigint, customExpirationDate?: Date) => {
 	const { fixedAnnualRatePPM, annualInterestPPM, collateralDecimals, reserveContribution } = position;
 
-	const apr = Number((BigInt(fixedAnnualRatePPM) * 100n) / 1_000_000n);
-	const effectiveInterest = (fixedAnnualRatePPM / 10 ** 6 / (1 - reserveContribution / 10 ** 6)) * 100;
+	const ratePpm = BigInt(fixedAnnualRatePPM ?? annualInterestPPM ?? 0);
+	const apr = Number((ratePpm * 100n) / 1_000_000n);
+	const effectiveInterest =
+		(Number(fixedAnnualRatePPM ?? annualInterestPPM ?? 0) / 1_000_000 / (1 - (reserveContribution ?? 0) / 1_000_000)) * 100;
 	const selectedPeriod = getLoanDuration(position, customExpirationDate);
 	const interestUntilExpiration =
 		(BigInt(selectedPeriod) * BigInt(annualInterestPPM) * BigInt(loanAmount)) / BigInt(ONE_YEAR_IN_SECONDS * 1_000_000);

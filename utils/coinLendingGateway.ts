@@ -1,3 +1,11 @@
+import { Address } from "viem";
+import { testnet, mainnet } from "../chains";
+
+export const COIN_LENDING_GATEWAY_ADDRESS: Record<number, Address> = {
+	[testnet.id]: "0x44B0727688F1839c2BF7b74686F04Cba0CfE89D6",
+	[mainnet.id]: "0x0000000000000000000000000000000000000000",
+};
+
 // CoinLendingGateway ABI - temporary until exported from @juicedollar/jusd
 export const CoinLendingGatewayABI = [
 	{

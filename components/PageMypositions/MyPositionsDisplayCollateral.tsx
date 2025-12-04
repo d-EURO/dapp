@@ -1,4 +1,4 @@
-import { formatCurrency, TOKEN_SYMBOL } from "@utils";
+import { formatCurrency, TOKEN_SYMBOL, normalizeTokenSymbol } from "@utils";
 import dynamic from "next/dynamic";
 import { useContractUrl } from "../../hooks/useContractUrl";
 import { formatUnits, zeroAddress } from "viem";
@@ -28,13 +28,13 @@ export default function MyPositionsDisplayCollateral({ position, collateralPrice
 		<div className={`flex items-center ${className}`}>
 			<Link href={url} onClick={openExplorer}>
 				<div className="mr-3 cursor-pointer">
-					<TokenLogo currency={position.collateralSymbol} />
+					<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 				</div>
 			</Link>
 
 			<div className="flex flex-col">
 				<span className={`text-left text-text-primary font-bold leading-tight`}>
-					{formatCurrency(collateralSize, 2, 2) + " " + position.collateralSymbol}
+					{formatCurrency(collateralSize, 2, 2) + " " + normalizeTokenSymbol(position.collateralSymbol)}
 				</span>
 				<span className="text-left text-text-subheader text-sm leading-tight">
 					{formatCurrency(collateralValue, 2, 2)} {TOKEN_SYMBOL}

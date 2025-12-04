@@ -10,7 +10,9 @@ import { useRouter } from "next/router";
 import { useContractUrl } from "@hooks";
 import Button from "@components/Button";
 import { useTranslation } from "next-i18next";
-import { getCarryOnQueryParams, TOKEN_SYMBOL, toQueryString } from "@utils";
+import { getCarryOnQueryParams, TOKEN_SYMBOL, toQueryString, normalizeTokenSymbol } from "@utils";
+import { calculateCollateralizationPercentage } from "../../utils/collateralizationPercentage";
+import { useRef } from "react";
 
 interface Props {
 	headers: string[];
@@ -28,14 +30,10 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 	const url = useContractUrl(position.collateral || zeroAddress);
 	const maturity: number = (position.expiration * 1000 - Date.now()) / 1000 / 60 / 60 / 24;
 
-	const collBalancePosition: number = Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100;
-	const collTokenPriceMarket = prices[position.collateral.toLowerCase() as Address]?.price?.eur || 0;
-	const collTokenPricePosition: number =
-		Math.round((parseInt(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100;
-
-	const marketValueCollateral: number = collBalancePosition * collTokenPriceMarket;
-	const positionValueCollateral: number = collBalancePosition * collTokenPricePosition;
-	const collateralizationPercentage: number = Math.round((marketValueCollateral / positionValueCollateral) * 10000) / 100;
+	const cachedPercentage = useRef<number>(0);
+	const calculatedPercentage = calculateCollateralizationPercentage(position, prices);
+	if (calculatedPercentage > 0) cachedPercentage.current = calculatedPercentage;
+	const collateralizationPercentage = cachedPercentage.current;
 
 	const digits: number = position.collateralDecimals;
 	const positionChallenges = challenges?.map?.[position.position.toLowerCase() as Address] ?? [];
@@ -77,21 +75,21 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 				{/* desktop view */}
 				<div className="max-md:hidden flex flex-row items-center">
 					<span className="mr-3 cursor-pointer" onClick={openExplorer}>
-						<TokenLogo currency={position.collateralSymbol} />
+						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</span>
-					<span className={`col-span-2 text-md font-extrabold text-text-primary`}>{`${formatCurrency(collBalancePosition)} ${
-						position.collateralSymbol
-					}`}</span>
+					<span className={`col-span-2 text-md font-extrabold text-text-primary`}>{`${formatCurrency(
+						collateralizationPercentage
+					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</span>
 				</div>
 
 				{/* mobile view */}
 				<div className="md:hidden flex flex-row items-center py-1 mb-3">
 					<div className="mr-4 cursor-pointer" onClick={openExplorer}>
-						<TokenLogo currency={position.collateralSymbol} />
+						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</div>
-					<div className={`col-span-2 text-md text-text-primary font-semibold`}>{`${formatCurrency(collBalancePosition)} ${
-						position.collateralSymbol
-					}`}</div>
+					<div className={`col-span-2 text-md text-text-primary font-semibold`}>{`${formatCurrency(
+						collateralizationPercentage
+					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</div>
 				</div>
 			</div>
 

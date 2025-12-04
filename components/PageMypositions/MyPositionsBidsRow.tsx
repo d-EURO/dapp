@@ -10,7 +10,7 @@ import { useRouter as useNavigation } from "next/navigation";
 import Button from "@components/Button";
 import { useAccount } from "wagmi";
 import AppBox from "@components/AppBox";
-import { TOKEN_SYMBOL } from "@utils";
+import { TOKEN_SYMBOL, normalizeTokenSymbol } from "@utils";
 
 interface Props {
 	headers: string[];
@@ -57,21 +57,21 @@ export default function MyPositionsBidsRow({ headers, bid, tab }: Props) {
 				{/* desktop view */}
 				<div className="max-md:hidden flex flex-row items-center">
 					<span className="mr-3 cursor-pointer" onClick={openExplorer}>
-						<TokenLogo currency={position.collateralSymbol} />
+						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</span>
 					<span className={`col-span-2 text-md font-extrabold`}>{`${formatCurrency(
 						formatUnits(bid.filledSize, position.collateralDecimals)
-					)} ${position.collateralSymbol}`}</span>
+					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</span>
 				</div>
 
 				{/* mobile view */}
 				<div className="md:hidden flex flex-row items-center">
 					<div className="mr-3 cursor-pointer" onClick={openExplorer}>
-						<TokenLogo currency={position.collateralSymbol} />
+						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</div>
 					<div className={`col-span-2 text-md  font-semibold`}>{`${formatCurrency(
 						formatUnits(bid.filledSize, position.collateralDecimals)
-					)} ${position.collateralSymbol}`}</div>
+					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</div>
 				</div>
 			</div>
 

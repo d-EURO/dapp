@@ -12,6 +12,7 @@ interface SliderInputOutlinedProps {
 	errorMessage?: string;
 	usdPrice?: string;
 	disabled?: boolean;
+	hideTrailingZeros?: boolean;
 }
 
 export function SliderInputOutlined({
@@ -24,6 +25,7 @@ export function SliderInputOutlined({
 	errorMessage,
 	usdPrice,
 	disabled,
+	hideTrailingZeros,
 }: SliderInputOutlinedProps) {
 	const [isFocused, setIsFocused] = useState(false);
 
@@ -54,6 +56,7 @@ export function SliderInputOutlined({
 									onFocus={() => setIsFocused(true)}
 									onBlur={() => setIsFocused(false)}
 									disabled={disabled}
+									hideTrailingZeros={hideTrailingZeros}
 								/>
 							</div>
 						</div>

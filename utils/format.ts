@@ -80,6 +80,17 @@ export const formatBigInt = (value?: bigint, units = 18, displayDec = 2): string
 	return displayNum;
 };
 
+export const formatUnitsClean = (value: bigint, decimals: number): string => {
+	const formatted = formatUnits(value, decimals);
+	return formatted.replace(/\.0+$/, "").replace(/(\.\d*[1-9])0+$/, "$1");
+};
+
+export const roundToWholeUnits = (value: string, decimals: number): string => {
+	if (!value) return value;
+	const rounded = (BigInt(value) / BigInt(10 ** decimals)) * BigInt(10 ** decimals);
+	return rounded.toString();
+};
+
 export const shortenString = (str: string) => {
 	return str.substring(0, 6) + "..." + str.substring(str.length - 4);
 };

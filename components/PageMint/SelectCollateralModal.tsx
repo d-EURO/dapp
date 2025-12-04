@@ -22,7 +22,7 @@ type SelectCollateralModalProps<T extends TokenOption> = {
 	isOpen: boolean;
 	setIsOpen: (isOpen: boolean) => void;
 	options: T[];
-	onTokenSelect: (option: T, index: number, options: T[]) => void;
+	onTokenSelect: (option: T) => void;
 	additionalRows?: React.ReactNode;
 };
 
@@ -36,8 +36,8 @@ export function SelectCollateralModal<T extends TokenOption>({
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const { t } = useTranslation();
 
-	const handleTokenSelect = (option: T, index: number, options: T[]) => {
-		onTokenSelect(option, index, options);
+	const handleTokenSelect = (option: T, _index: number, _options: T[]) => {
+		onTokenSelect(option);
 		setIsOpen(false);
 	};
 
@@ -61,15 +61,6 @@ export function SelectCollateralModal<T extends TokenOption>({
 							onClick={() => handleTokenSelect(option, i, optList)}
 						/>
 					))}
-				<div className="flex flex-row justify-center items-center w-full border-t border-card-content-secondary mt-1 pt-1">
-					<Link
-						href="/mint/create"
-						className="text-base leading-tight py-3 px-3 flex flex-row justify-center items-center w-full hover:bg-card-content-secondary rounded-lg"
-					>
-						<FontAwesomeIcon icon={faPlus} className="mr-2" />
-						<span className="text-base leading-tight">{t("mint.add_new_token")}</span>
-					</Link>
-				</div>
 			</div>
 		</TokenSelectModal>
 	);

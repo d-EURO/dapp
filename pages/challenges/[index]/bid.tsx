@@ -5,7 +5,7 @@ import AppBox from "@components/AppBox";
 import TokenInput from "@components/Input/TokenInput";
 import DisplayAmount from "@components/DisplayAmount";
 import { Address, erc20Abi, formatUnits, maxUint256, zeroAddress } from "viem";
-import { ContractUrl, formatBigInt, formatCurrency, formatDate, shortenAddress, TOKEN_SYMBOL } from "@utils";
+import { ContractUrl, formatBigInt, formatCurrency, formatDate, shortenAddress, TOKEN_SYMBOL, normalizeTokenSymbol } from "@utils";
 import Link from "next/link";
 import Button from "@components/Button";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
@@ -195,7 +195,7 @@ export default function ChallengePlaceBid() {
 			const toastContent = [
 				{
 					title: t("challenges.txs.bid_amount"),
-					value: formatBigInt(amount, position.collateralDecimals) + " " + position.collateralSymbol,
+					value: formatBigInt(amount, position.collateralDecimals) + " " + normalizeTokenSymbol(position.collateralSymbol),
 				},
 				{
 					title: t("challenges.txs.expected", { symbol: TOKEN_SYMBOL }),
@@ -245,7 +245,7 @@ export default function ChallengePlaceBid() {
 								value={amount.toString()}
 								onChange={onChangeAmount}
 								digit={position.collateralDecimals}
-								symbol={position.collateralSymbol}
+								symbol={normalizeTokenSymbol(position.collateralSymbol)}
 								error={error}
 								placeholder={t("common.collateral_amount")}
 								balanceLabel={t("common.available_label")}
@@ -267,7 +267,7 @@ export default function ChallengePlaceBid() {
 								<DisplayLabel label={t("common.available")} />
 								<DisplayAmount
 									amount={remainingSize}
-									currency={position.collateralSymbol}
+									currency={normalizeTokenSymbol(position.collateralSymbol)}
 									address={position.collateral}
 									digits={position.collateralDecimals}
 									className="mt-4"
@@ -287,7 +287,7 @@ export default function ChallengePlaceBid() {
 								<DisplayLabel label={t("challenges.initially_available")} />
 								<DisplayAmount
 									amount={challenge.size || 0n}
-									currency={position.collateralSymbol}
+									currency={normalizeTokenSymbol(position.collateralSymbol)}
 									address={position.collateral}
 									digits={position.collateralDecimals}
 									className="mt-4"

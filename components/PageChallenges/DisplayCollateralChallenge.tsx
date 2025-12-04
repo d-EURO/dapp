@@ -1,4 +1,4 @@
-import { formatCurrency } from "@utils";
+import { formatCurrency, normalizeTokenSymbol } from "@utils";
 import dynamic from "next/dynamic";
 import { useContractUrl } from "../../hooks/useContractUrl";
 import { zeroAddress } from "viem";
@@ -27,18 +27,19 @@ export default function DisplayCollateralChallenge({ position, challenge, challe
 		(parseInt(challenge.size.toString()) - parseInt(challenge.filledSize.toString())) / 10 ** position.collateralDecimals;
 	const challengeRemainingPriceDEURO: number = challengePrice / 10 ** (36 - position.collateralDecimals);
 	const challengeAuctionPriceColor: string = challengeRemainingPriceDEURO <= challengeSizeDEURO ? "text-green-300" : "text-red-300";
+	const displaySymbol = normalizeTokenSymbol(position.collateralSymbol);
 
 	return (
 		<div className={`flex items-center ${className}`}>
 			<Link href={url} onClick={openExplorer}>
 				<div className="mr-4">
-					<TokenLogo currency={position.collateralSymbol} />
+					<TokenLogo currency={displaySymbol} />
 				</div>
 			</Link>
 
 			<div className="flex flex-col text-text-primary">
 				<span className={`font-bold`}>
-					{challengeRemainingSize > 0 ? formatCurrency(challengeRemainingSize, 2, 2) : "-.--"} {position.collateralSymbol}
+					{challengeRemainingSize > 0 ? formatCurrency(challengeRemainingSize, 2, 2) : "-.--"} {displaySymbol}
 				</span>
 				<span className={`text-sm ${challengeAuctionPriceColor}`}>
 					{formatCurrency(challengeRemainingPriceDEURO, 2, 2) || "0.00"} {position.stablecoinSymbol}

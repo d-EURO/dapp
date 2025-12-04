@@ -11,7 +11,7 @@ import { writeContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
 import { useChainId, useReadContracts } from "wagmi";
 import { Address } from "viem/accounts";
-import { getCarryOnQueryParams, shortenAddress, toDate, toQueryString, toTimestamp } from "@utils";
+import { getCarryOnQueryParams, shortenAddress, toDate, toQueryString, toTimestamp, normalizeTokenSymbol } from "@utils";
 import { toast } from "react-toastify";
 import { TxToast } from "@components/TxToast";
 import { useSelector } from "react-redux";
@@ -177,10 +177,20 @@ export const ExpirationManageSection = () => {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approvingHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("common.txs.title", { symbol: position.collateralSymbol })} rows={toastContent} />,
+					render: (
+						<TxToast
+							title={t("common.txs.title", { symbol: normalizeTokenSymbol(position.collateralSymbol) })}
+							rows={toastContent}
+						/>
+					),
 				},
 				success: {
-					render: <TxToast title={t("common.txs.success", { symbol: position.collateralSymbol })} rows={toastContent} />,
+					render: (
+						<TxToast
+							title={t("common.txs.success", { symbol: normalizeTokenSymbol(position.collateralSymbol) })}
+							rows={toastContent}
+						/>
+					),
 				},
 			});
 
@@ -295,7 +305,7 @@ export const ExpirationManageSection = () => {
 					isLoading={isTxOnGoing}
 					disabled={isTxOnGoing || !targetPosition}
 				>
-					{t("common.approve")} {position.collateralSymbol}
+					{t("common.approve")} {normalizeTokenSymbol(position.collateralSymbol)}
 				</Button>
 			) : !deuroAllowance ? (
 				<Button

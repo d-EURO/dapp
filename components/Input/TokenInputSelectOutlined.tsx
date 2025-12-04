@@ -24,6 +24,7 @@ interface TokenInputSelectOutlinedProps {
 	adornamentRow?: React.ReactNode;
 	notEditable?: boolean;
 	label?: string;
+	hideTokenSelector?: boolean;
 }
 
 export function TokenInputSelectOutlined({
@@ -37,6 +38,7 @@ export function TokenInputSelectOutlined({
 	adornamentRow,
 	notEditable = false,
 	label,
+	hideTokenSelector = false,
 }: TokenInputSelectOutlinedProps) {
 	const [isFocused, setIsFocused] = useState(false);
 	const { t } = useTranslation();
@@ -81,24 +83,34 @@ export function TokenInputSelectOutlined({
 								onBlur={handleOnBlur}
 							/>
 						</div>
-						<button
-							className={`min-w-40 h-11 px-3 py-2.5 bg-input-bg rounded-lg justify-between items-center flex shrink-0 gap-1 hover:bg-button-secondary-hover-bg transition-colors duration-200 ${
-								notEditable ? "border border-borders-dividerLight" : ""
-							}`}
-							onClick={onSelectTokenClick}
-						>
-							{selectedToken ? (
-								<div className="flex items-center">
-									<span className="flex items-center mr-1.5">
-										<TokenLogo currency={selectedToken.symbol} size={5} />
-									</span>
-									<span className="text-lg font-medium leading-tight flex items-center">{selectedToken.symbol}</span>
-								</div>
-							) : (
-								<div className="text-input-label text-lg font-medium leading-normal">{t("common.select_token")}</div>
-							)}
-							<FontAwesomeIcon icon={faChevronDown} className="w-4.5 h-4.5 relative overflow-hidden" />
-						</button>
+						{!hideTokenSelector && (
+							<button
+								className={`min-w-40 h-11 px-3 py-2.5 bg-input-bg rounded-lg justify-between items-center flex shrink-0 gap-1 hover:bg-button-secondary-hover-bg transition-colors duration-200 ${
+									notEditable ? "border border-borders-dividerLight" : ""
+								}`}
+								onClick={onSelectTokenClick}
+							>
+								{selectedToken ? (
+									<div className="flex items-center">
+										<span className="flex items-center mr-1.5">
+											<TokenLogo currency={selectedToken.symbol} size={5} />
+										</span>
+										<span className="text-lg font-medium leading-tight flex items-center">{selectedToken.symbol}</span>
+									</div>
+								) : (
+									<div className="text-input-label text-lg font-medium leading-normal">{t("common.select_token")}</div>
+								)}
+								<FontAwesomeIcon icon={faChevronDown} className="w-4.5 h-4.5 relative overflow-hidden" />
+							</button>
+						)}
+						{hideTokenSelector && selectedToken && (
+							<div className="min-w-40 h-11 px-3 py-2.5 bg-input-bg rounded-lg justify-center items-center flex shrink-0 gap-1.5">
+								<span className="flex items-center">
+									<TokenLogo currency={selectedToken.symbol} size={5} />
+								</span>
+								<span className="text-lg font-medium leading-tight">{selectedToken.symbol}</span>
+							</div>
+						)}
 					</div>
 					{adornamentRow}
 				</div>

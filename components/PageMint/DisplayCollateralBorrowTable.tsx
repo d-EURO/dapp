@@ -4,6 +4,7 @@ import { zeroAddress } from "viem";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { normalizeTokenSymbol } from "@utils";
 
 const TokenLogo = dynamic(() => import("../TokenLogo"), { ssr: false });
 
@@ -24,16 +25,18 @@ export default function DisplayCollateralBorrowTable({ bold = true, symbol, symb
 		window.open(url, "_blank");
 	};
 
+	const displaySymbol = normalizeTokenSymbol(symbol);
+
 	return (
 		<Link href={url} onClick={openExplorer}>
 			<div className={`flex items-center ${className}`}>
 				<div className="mr-3">
-					<TokenLogo currency={symbol} />
+					<TokenLogo currency={displaySymbol} />
 				</div>
 
 				<div className="flex flex-col">
 					<span className={`text-left text-base text-text-primary leading-tight ${bold && "font-bold"}`}>
-						{symbol}
+						{displaySymbol}
 						<span className="text-xs font-normal">{` ${symbolTiny}`}</span>
 						<FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 ml-2 cursor-pointer" />
 					</span>
