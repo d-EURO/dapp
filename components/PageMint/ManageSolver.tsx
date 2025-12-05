@@ -31,7 +31,6 @@ import { ExpirationManageSection } from "./ExpirationManageSection";
 import { AddCircleOutlineIcon } from "@components/SvgComponents/add_circle_outline";
 import { RemoveCircleOutlineIcon } from "@components/SvgComponents/remove_circle_outline";
 import { SvgIconButton } from "./PlusMinusButtons";
-import { DetailsExpandablePanel } from "@components/PageMint/DetailsExpandablePanel";
 import { getLoanDetailsByCollateralAndStartingLiqPrice } from "../../utils/loanCalculations";
 import Link from "next/link";
 import { useContractUrl } from "../../hooks/useContractUrl";
@@ -82,6 +81,15 @@ export const ManageSolver = () => {
 						args: [position.position],
 					},
 					{ chainId, abi: PositionV2ABI, address: position.position, functionName: "getDebt" },
+					{ chainId, address: position.position, abi: PositionV2ABI, functionName: "cooldown" },
+					{ chainId, address: position.position, abi: PositionV2ABI, functionName: "minimumCollateral" },
+					{
+						chainId,
+						abi: erc20Abi,
+						address: ADDRESS[chainId]?.juiceDollar as Address,
+						functionName: "allowance",
+						args: [userAddress as Address, position.position as Address],
+					},
 			  ]
 			: [],
 	});
@@ -90,6 +98,44 @@ export const ManageSolver = () => {
 	const liqPrice = data?.[1]?.result || 1n;
 	const collateralBalance = data?.[2]?.result || 0n;
 	const currentDebt = data?.[3]?.result || 0n;
+	const cooldown = data?.[4]?.result || 0n;
+	const minimumCollateral = data?.[5]?.result || 0n;
+	const jusdAllowance = data?.[6]?.result || 0n;
+
+	const now = BigInt(Math.floor(Date.now() / 1000));
+	const cooldownBigInt = BigInt(cooldown);
+	const isInCooldown = cooldownBigInt > now;
+	const cooldownRemaining = isInCooldown ? Number(cooldownBigInt - now) : 0;
+	const cooldownRemainingFormatted = isInCooldown
+		? `${Math.floor(cooldownRemaining / 3600)}h ${Math.floor((cooldownRemaining % 3600) / 60)}m`
+		: null;
+
+	const getPriceRatio = (newPrice: bigint) => (liqPrice > 0n ? Number(newPrice) / Number(liqPrice) : 0);
+	const isPriceTooHigh = (newPrice: bigint) => getPriceRatio(newPrice) > 2;
+	const isBelowMinCollateral = (newCollateral: bigint) =>
+		newCollateral > 0n && newCollateral < BigInt(minimumCollateral) && principal > 0n;
+	const isInsufficientCollateral = (newCollateral: bigint, newDebt: bigint, newPrice: bigint) => {
+		if (newDebt === 0n || newCollateral === 0n) return false;
+		const collateralValue = newCollateral * newPrice;
+		const debtRequired = newDebt * BigInt(1e18);
+		return collateralValue < debtRequired;
+	};
+	const isUndercollateralizedAtCurrentPrice = (newCollateral: bigint, newPrice: bigint) => {
+		if (newPrice <= liqPrice || principal === 0n) return false;
+		const collateralValue = newCollateral * liqPrice;
+		const debtRequired = principal * BigInt(1e18);
+		return collateralValue < debtRequired;
+	};
+
+	const getRequiredRepayAmount = (outcome: SolverOutcome | null) => {
+		if (!outcome || outcome.deltaDebt >= 0n) return 0n;
+		return -outcome.deltaDebt;
+	};
+
+	const needsJusdApproval = (outcome: SolverOutcome | null) => {
+		const repayAmount = getRequiredRepayAmount(outcome);
+		return repayAmount > 0n && jusdAllowance < repayAmount;
+	};
 
 	const currentPosition: SolverPosition | null = useMemo(() => {
 		if (!position) return null;
@@ -226,11 +272,53 @@ export const ManageSolver = () => {
 
 	const isNativeWrappedPosition = position && NATIVE_WRAPPED_SYMBOLS.includes(position.collateralSymbol.toLowerCase());
 
+	const handleApproveJusd = async () => {
+		if (!position || !outcome) return;
+		try {
+			setIsTxOnGoing(true);
+			const repayAmount = getRequiredRepayAmount(outcome);
+			const approveHash = await writeContract(WAGMI_CONFIG, {
+				address: ADDRESS[chainId]?.juiceDollar as Address,
+				abi: erc20Abi,
+				functionName: "approve",
+				args: [position.position as Address, repayAmount * 2n],
+			});
+
+			const toastContent = [
+				{
+					title: t("common.txs.amount"),
+					value: formatCurrency(formatUnits(repayAmount, 18)) + ` ${position.stablecoinSymbol}`,
+				},
+				{
+					title: t("common.txs.transaction"),
+					hash: approveHash,
+				},
+			];
+
+			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveHash, confirmations: 1 }), {
+				pending: {
+					render: <TxToast title={t("common.txs.approving", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
+				},
+				success: {
+					render: <TxToast title={t("common.txs.success", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
+				},
+			});
+			await refetchReadContracts();
+		} catch (error) {
+			toast.error(renderErrorTxToast(error));
+		} finally {
+			setIsTxOnGoing(false);
+		}
+	};
+
 	const handleExecute = async () => {
 		if (!outcome || !outcome.isValid || !position) return;
 
 		try {
 			setIsTxOnGoing(true);
+
+			const hasWithdraw = outcome.txPlan.includes("WITHDRAW");
+			const withdrawHandlesRepay = hasWithdraw && outcome.deltaDebt < 0n;
 
 			for (const action of outcome.txPlan) {
 				if (action === "DEPOSIT") {
@@ -272,7 +360,7 @@ export const ManageSolver = () => {
 						address: position.position,
 						abi: PositionV2ABI,
 						functionName: "adjust",
-						args: [principal, outcome.next.collateral, outcome.next.liqPrice, false],
+						args: [outcome.next.debt, outcome.next.collateral, outcome.next.liqPrice, isNativeWrappedPosition],
 					});
 
 					const toastContent = [
@@ -328,6 +416,7 @@ export const ManageSolver = () => {
 						},
 					});
 				} else if (action === "REPAY") {
+					if (withdrawHandlesRepay) continue;
 					const repayAmount = -outcome.deltaDebt;
 					const repayHash = await writeContract(WAGMI_CONFIG, {
 						address: position.position,
@@ -682,6 +771,60 @@ export const ManageSolver = () => {
 	if (step === "PREVIEW" && outcome) {
 		return (
 			<div className="flex flex-col gap-y-6">
+				{isInCooldown && outcome.next.liqPrice > liqPrice && (
+					<AppBox className="ring-2 ring-orange-300 bg-orange-50 dark:bg-orange-900/10">
+						<div className="text-sm text-text-title font-medium">
+							Position in cooldown - Price increases blocked for: <strong>{cooldownRemainingFormatted}</strong>
+						</div>
+						<div className="text-xs text-text-muted2 mt-1">
+							Ends: {new Date(Number(cooldownBigInt) * 1000).toLocaleString()}
+						</div>
+					</AppBox>
+				)}
+
+				{isPriceTooHigh(outcome.next.liqPrice) && (
+					<AppBox className="ring-2 ring-red-300 bg-red-50 dark:bg-red-900/10">
+						<div className="text-sm text-text-title font-medium">Price increase exceeds 2x limit</div>
+						<div className="text-xs text-text-muted2 mt-1">
+							Max allowed: {formatCurrency(formatUnits(liqPrice * 2n, priceDecimals), 0)} JUSD (current:{" "}
+							{formatCurrency(formatUnits(liqPrice, priceDecimals), 0)} → new:{" "}
+							{formatCurrency(formatUnits(outcome.next.liqPrice, priceDecimals), 0)})
+						</div>
+					</AppBox>
+				)}
+
+				{isBelowMinCollateral(outcome.next.collateral) && (
+					<AppBox className="ring-2 ring-red-300 bg-red-50 dark:bg-red-900/10">
+						<div className="text-sm text-text-title font-medium">Collateral below minimum</div>
+						<div className="text-xs text-text-muted2 mt-1">
+							Min required: {formatUnits(BigInt(minimumCollateral), position?.collateralDecimals || 18)}{" "}
+							{normalizeTokenSymbol(position?.collateralSymbol || "")} (you have outstanding debt)
+						</div>
+					</AppBox>
+				)}
+
+				{isUndercollateralizedAtCurrentPrice(outcome.next.collateral, outcome.next.liqPrice) && (
+					<AppBox className="ring-2 ring-red-300 bg-red-50 dark:bg-red-900/10">
+						<div className="text-sm text-text-title font-medium">Insufficient collateral at current price</div>
+						<div className="text-xs text-text-muted2 mt-1">
+							Contract withdraws collateral BEFORE adjusting price. At current price (
+							{formatCurrency(formatUnits(liqPrice, priceDecimals), 0)} JUSD),
+							{formatUnits(outcome.next.collateral, position?.collateralDecimals || 18)}{" "}
+							{normalizeTokenSymbol(position?.collateralSymbol || "")} is not enough to cover the debt.
+						</div>
+						<div className="text-xs text-text-muted3 mt-1">
+							Try: Increase price first (triggers cooldown), then withdraw after cooldown ends.
+						</div>
+					</AppBox>
+				)}
+
+				{isInsufficientCollateral(outcome.next.collateral, outcome.next.debt, outcome.next.liqPrice) && (
+					<AppBox className="ring-2 ring-red-300 bg-red-50 dark:bg-red-900/10">
+						<div className="text-sm text-text-title font-medium">Insufficient collateral for new debt</div>
+						<div className="text-xs text-text-muted2 mt-1">Collateral value too low. Add more collateral or borrow less.</div>
+					</AppBox>
+				)}
+
 				{!outcome.isValid && (
 					<div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
 						<div className="text-sm text-red-800 dark:text-red-200">{outcome.errorMessage || t("mint.calculation_error")}</div>
@@ -716,11 +859,28 @@ export const ManageSolver = () => {
 
 						<div className="text-center text-sm text-text-muted2">{t("mint.execute_transaction_note")}</div>
 
+						{needsJusdApproval(outcome) && (
+							<AppBox className="ring-2 ring-orange-300 bg-orange-50 dark:bg-orange-900/10">
+								<div className="text-sm text-text-title font-medium">Approval required</div>
+								<div className="text-xs text-text-muted2 mt-1">
+									Approve {formatCurrency(formatUnits(getRequiredRepayAmount(outcome), 18))} {position?.stablecoinSymbol}{" "}
+									for repayment
+								</div>
+							</AppBox>
+						)}
+
 						<ManageButtons
 							onBack={() => setStep("CHOOSE_STRATEGY")}
-							onAction={handleExecute}
-							actionLabel={t("mint.confirm_execute")}
+							onAction={needsJusdApproval(outcome) ? handleApproveJusd : handleExecute}
+							actionLabel={needsJusdApproval(outcome) ? t("common.approve") : t("mint.confirm_execute")}
 							isLoading={isTxOnGoing}
+							disabled={
+								(isInCooldown && outcome.next.liqPrice > liqPrice) ||
+								isPriceTooHigh(outcome.next.liqPrice) ||
+								isBelowMinCollateral(outcome.next.collateral) ||
+								isUndercollateralizedAtCurrentPrice(outcome.next.collateral, outcome.next.liqPrice) ||
+								isInsufficientCollateral(outcome.next.collateral, outcome.next.debt, outcome.next.liqPrice)
+							}
 						/>
 					</>
 				)}
