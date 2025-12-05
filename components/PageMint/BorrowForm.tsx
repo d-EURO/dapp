@@ -325,6 +325,7 @@ export default function PositionCreate({}) {
 					loanDetails.loanAmount,
 					toTimestamp(expirationDate),
 					BigInt(liquidationPrice),
+					frontendCode,
 				],
 				value: BigInt(collateralAmount),
 			});
