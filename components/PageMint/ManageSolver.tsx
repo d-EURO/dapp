@@ -356,6 +356,40 @@ export const ManageSolver = () => {
 						},
 					});
 				} else if (action === "WITHDRAW") {
+					if (outcome.next.collateral === 0n && principal > 0n) {
+						const repayHash = await writeContract(WAGMI_CONFIG, {
+							address: position.position,
+							abi: PositionV2ABI,
+							functionName: "repayFull",
+						});
+
+						const repayToastContent = [
+							{
+								title: t("common.txs.transaction"),
+								hash: repayHash,
+							},
+						];
+
+						await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: repayHash, confirmations: 1 }), {
+							pending: {
+								render: (
+									<TxToast
+										title={t("mint.txs.pay_back", { symbol: position.stablecoinSymbol })}
+										rows={repayToastContent}
+									/>
+								),
+							},
+							success: {
+								render: (
+									<TxToast
+										title={t("mint.txs.pay_back_success", { symbol: position.stablecoinSymbol })}
+										rows={repayToastContent}
+									/>
+								),
+							},
+						});
+					}
+
 					const withdrawHash = await writeContract(WAGMI_CONFIG, {
 						address: position.position,
 						abi: PositionV2ABI,
@@ -418,12 +452,23 @@ export const ManageSolver = () => {
 				} else if (action === "REPAY") {
 					if (withdrawHandlesRepay) continue;
 					const repayAmount = -outcome.deltaDebt;
-					const repayHash = await writeContract(WAGMI_CONFIG, {
-						address: position.position,
-						abi: PositionV2ABI,
-						functionName: "repay",
-						args: [repayAmount],
-					});
+
+					let repayHash: `0x${string}`;
+
+					if (outcome.next.debt === 0n) {
+						repayHash = await writeContract(WAGMI_CONFIG, {
+							address: position.position,
+							abi: PositionV2ABI,
+							functionName: "repayFull",
+						});
+					} else {
+						repayHash = await writeContract(WAGMI_CONFIG, {
+							address: position.position,
+							abi: PositionV2ABI,
+							functionName: "repay",
+							args: [repayAmount],
+						});
+					}
 
 					const toastContent = [
 						{
@@ -711,7 +756,17 @@ export const ManageSolver = () => {
 	}
 	if (step === "CHOOSE_STRATEGY") {
 		const { value: currentValue } = getValueInfo(selectedTarget!);
-		const strategies = getStrategiesForTarget(selectedTarget!, BigInt(newValue) > currentValue);
+		const allStrategies = getStrategiesForTarget(selectedTarget!, BigInt(newValue) > currentValue);
+
+		const hasNoDebt = currentDebt === 0n || currentDebt < 1000n;
+		const isRemovingCollateral = selectedTarget === "COLLATERAL" && BigInt(newValue) < currentValue;
+
+		const strategies = allStrategies.filter((strat) => {
+			if (hasNoDebt && isRemovingCollateral && strat.strategy === "KEEP_LIQ_PRICE") {
+				return false;
+			}
+			return true;
+		});
 
 		const getStrategyOutcome = (strategy: Strategy) => {
 			if (!currentPosition || !selectedTarget || !newValue) return null;

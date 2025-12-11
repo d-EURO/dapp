@@ -276,12 +276,13 @@ export const BorrowedManageSection = () => {
 
 			let payBackHash: `0x${string}` = zeroAddress as `0x${string}`;
 
-			if (amount.toString() === debt.toString()) {
+			const isPayingFullDebt = BigInt(amount) >= debt;
+
+			if (isPayingFullDebt) {
 				payBackHash = await writeContract(WAGMI_CONFIG, {
 					address: position.position,
 					abi: PositionV2ABI,
-					functionName: "adjust",
-					args: [BigInt(0), BigInt(0), BigInt(position.price), false],
+					functionName: "repayFull",
 				});
 			} else {
 				const userInputAmount = BigInt(amount);

@@ -36,6 +36,37 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 	}
 
 	if (currentDebt === 0n || currentDebt < 1000n) {
+		if (target === "COLLATERAL") {
+			const newCollateral = BigInt(newValue as bigint);
+
+			return {
+				next: { ...pos, collateral: newCollateral },
+				deltaCollateral: newCollateral - currentCollateral,
+				deltaDebt: 0n,
+				deltaLiqPrice: 0n,
+				txPlan: newCollateral < currentCollateral ? ["WITHDRAW"] : ["DEPOSIT"],
+				isValid: true,
+			};
+		}
+
+		if (target === "LOAN" && BigInt(newValue) > 0n) {
+			const newDebt = BigInt(newValue);
+
+			return {
+				next: {
+					...pos,
+					debt: newDebt,
+					collateral: currentCollateral,
+					liqPrice: currentLiqPrice,
+				},
+				deltaCollateral: 0n,
+				deltaDebt: newDebt,
+				deltaLiqPrice: 0n,
+				txPlan: ["BORROW"],
+				isValid: true,
+			};
+		}
+
 		return {
 			next: pos,
 			deltaCollateral: 0n,
@@ -43,7 +74,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 			deltaLiqPrice: 0n,
 			txPlan: [],
 			isValid: false,
-			errorMessage: "Cannot calculate when debt is zero or extremely small",
+			errorMessage: "Cannot adjust price when debt is zero",
 		};
 	}
 
@@ -53,22 +84,31 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 		let newDebt = currentDebt;
 		let newLiqPrice = currentLiqPrice;
 
-		// Apply the selected adjustment
 		if (target === "COLLATERAL") {
 			newCollateral = BigInt(newValue as bigint);
-			if (newCollateral <= 0n) throw new Error("Collateral must be positive");
+
+			if (newCollateral === 0n && currentDebt > 0n) {
+				if (strategy === "KEEP_LOAN") {
+					throw new Error("Must repay debt before withdrawing all collateral");
+				}
+			}
+
+			if (newCollateral < 0n) throw new Error("Collateral cannot be negative");
 
 			if (strategy === "KEEP_LOAN") {
-				// Keep loan constant, calculate new price proportionally
 				newDebt = currentDebt;
-				// Calculate new price: newPrice = currentPrice * currentCollateral / newCollateral
-				// Add 1% safety margin to ensure position stays properly collateralized
-				const calculatedPrice = (currentLiqPrice * currentCollateral) / newCollateral;
-				const safetyMargin = calculatedPrice / 100n; // 1% buffer
-				newLiqPrice = calculatedPrice + safetyMargin;
+				if (newCollateral > 0n) {
+					const calculatedPrice = (currentLiqPrice * currentCollateral) / newCollateral;
+					const safetyMargin = calculatedPrice / 100n;
+					newLiqPrice = calculatedPrice + safetyMargin;
+				}
 			} else {
 				newLiqPrice = currentLiqPrice;
-				newDebt = (newLiqPrice * newCollateral) / k;
+				if (newCollateral === 0n && currentDebt > 0n) {
+					newDebt = 0n;
+				} else {
+					newDebt = (newLiqPrice * newCollateral) / k;
+				}
 			}
 		} else if (target === "LIQ_PRICE") {
 			newLiqPrice = BigInt(newValue as bigint);
