@@ -120,6 +120,11 @@ export const ManageSolver = () => {
 		const debtRequired = newDebt * BigInt(1e18);
 		return collateralValue < debtRequired;
 	};
+	const exceedsPositionPriceLimit = (newCollateral: bigint, newDebt: bigint) => {
+		if (!position || newDebt === 0n || newCollateral === 0n) return false;
+		const maxDebtAtPositionPrice = (BigInt(position.price) * newCollateral) / BigInt(1e18);
+		return newDebt > maxDebtAtPositionPrice;
+	};
 	const isUndercollateralizedAtCurrentPrice = (newCollateral: bigint, newPrice: bigint) => {
 		if (newPrice <= liqPrice || principal === 0n) return false;
 		const collateralValue = newCollateral * liqPrice;
@@ -880,6 +885,19 @@ export const ManageSolver = () => {
 					</AppBox>
 				)}
 
+				{exceedsPositionPriceLimit(outcome.next.collateral, outcome.next.debt) && (
+					<AppBox className="ring-2 ring-red-300 bg-red-50 dark:bg-red-900/10">
+						<div className="text-sm text-text-title font-medium">Exceeds position price limit</div>
+						<div className="text-xs text-text-muted2 mt-1">
+							Max mintable at position price ({formatCurrency(formatUnits(BigInt(position?.price || 0), priceDecimals), 0)}{" "}
+							JUSD):{" "}
+							{formatCurrency(formatUnits((BigInt(position?.price || 0) * outcome.next.collateral) / BigInt(1e18), 18), 2)}{" "}
+							JUSD
+						</div>
+						<div className="text-xs text-text-muted3 mt-1">Add more collateral to borrow this amount.</div>
+					</AppBox>
+				)}
+
 				{!outcome.isValid && (
 					<div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
 						<div className="text-sm text-red-800 dark:text-red-200">{outcome.errorMessage || t("mint.calculation_error")}</div>
@@ -934,7 +952,8 @@ export const ManageSolver = () => {
 								isPriceTooHigh(outcome.next.liqPrice) ||
 								isBelowMinCollateral(outcome.next.collateral) ||
 								isUndercollateralizedAtCurrentPrice(outcome.next.collateral, outcome.next.liqPrice) ||
-								isInsufficientCollateral(outcome.next.collateral, outcome.next.debt, outcome.next.liqPrice)
+								isInsufficientCollateral(outcome.next.collateral, outcome.next.debt, outcome.next.liqPrice) ||
+								exceedsPositionPriceLimit(outcome.next.collateral, outcome.next.debt)
 							}
 						/>
 					</>
