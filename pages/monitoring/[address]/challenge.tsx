@@ -6,7 +6,16 @@ import DisplayAmount from "@components/DisplayAmount";
 import TokenInput from "@components/Input/TokenInput";
 import { erc20Abi, zeroAddress } from "viem";
 import { useEffect, useState } from "react";
-import { ContractUrl, formatBigInt, formatDuration, shortenAddress, TOKEN_SYMBOL } from "@utils";
+import {
+	ContractUrl,
+	formatBigInt,
+	formatDuration,
+	shortenAddress,
+	TOKEN_SYMBOL,
+	normalizeTokenSymbol,
+	NATIVE_WRAPPED_SYMBOLS,
+} from "@utils";
+import { useNativeBalance } from "../../../hooks/useNativeBalance";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { Address } from "viem";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -31,7 +40,7 @@ export default function PositionChallenge() {
 	const [isNavigating, setNavigating] = useState(false);
 
 	const [userAllowance, setUserAllowance] = useState(0n);
-	const [userBalance, setUserBalance] = useState(0n);
+	const [userErc20Balance, setUserErc20Balance] = useState(0n);
 
 	const { data } = useBlockNumber({ watch: true });
 	const account = useAccount();
@@ -47,7 +56,10 @@ export default function PositionChallenge() {
 
 	const { t } = useTranslation();
 
-	// ---------------------------------------------------------------------------
+	const nativeBalance = useNativeBalance();
+	const isNativeWrappedPosition = position && NATIVE_WRAPPED_SYMBOLS.includes(position.collateralSymbol.toLowerCase());
+	const userBalance = isNativeWrappedPosition ? nativeBalance.balance || 0n : userErc20Balance;
+
 	useEffect(() => {
 		const acc: Address | undefined = account.address;
 		const fc: Address = ADDRESS[WAGMI_CHAIN.id].juiceDollar;
@@ -61,7 +73,7 @@ export default function PositionChallenge() {
 				functionName: "balanceOf",
 				args: [acc],
 			});
-			setUserBalance(_balanceColl);
+			setUserErc20Balance(_balanceColl);
 
 			const _allowanceColl = await readContract(WAGMI_CONFIG, {
 				address: position.collateral,
@@ -95,7 +107,7 @@ export default function PositionChallenge() {
 		}
 		setAmount(valueBigInt);
 		if (valueBigInt > userBalance) {
-			setError(t("common.error.insufficient_balance", { symbol: position.collateralSymbol }));
+			setError(t("common.error.insufficient_balance", { symbol: normalizeTokenSymbol(position.collateralSymbol) }));
 		} else if (valueBigInt > BigInt(position.collateralBalance) && !belowMinBalance) {
 			setError(t("monitoring.error.amount_cannot_be_larger_than_position"));
 		} else if (valueBigInt < BigInt(position.minimumCollateral) && !belowMinBalance) {
@@ -119,7 +131,7 @@ export default function PositionChallenge() {
 			const toastContent = [
 				{
 					title: t("common.txs.amount"),
-					value: formatBigInt(amount, position.collateralDecimals) + " " + position.collateralSymbol,
+					value: formatBigInt(amount, position.collateralDecimals) + " " + normalizeTokenSymbol(position.collateralSymbol),
 				},
 				{
 					title: t("common.txs.spender"),
@@ -133,10 +145,20 @@ export default function PositionChallenge() {
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveWriteHash, confirmations: 1 }), {
 				pending: {
-					render: <TxToast title={t("common.txs.approving", { symbol: position.collateralSymbol })} rows={toastContent} />,
+					render: (
+						<TxToast
+							title={t("common.txs.title", { symbol: normalizeTokenSymbol(position.collateralSymbol) })}
+							rows={toastContent}
+						/>
+					),
 				},
 				success: {
-					render: <TxToast title={t("common.txs.title")} rows={toastContent} />,
+					render: (
+						<TxToast
+							title={t("common.txs.success", { symbol: normalizeTokenSymbol(position.collateralSymbol) })}
+							rows={toastContent}
+						/>
+					),
 				},
 			});
 		} catch (error) {
@@ -160,7 +182,7 @@ export default function PositionChallenge() {
 			const toastContent = [
 				{
 					title: t("monitoring.txs.size"),
-					value: formatBigInt(amount, position.collateralDecimals) + " " + position.collateralSymbol,
+					value: formatBigInt(amount, position.collateralDecimals) + " " + normalizeTokenSymbol(position.collateralSymbol),
 				},
 				{
 					title: t("common.txs.price"),
@@ -206,7 +228,7 @@ export default function PositionChallenge() {
 					<div className="bg-card-body-primary shadow-card rounded-xl p-4 flex flex-col gap-y-4">
 						<div className="text-lg font-bold text-center mt-3">{t("monitoring.challenge_title")}</div>
 						<TokenInput
-							symbol={position.collateralSymbol}
+							symbol={normalizeTokenSymbol(position.collateralSymbol)}
 							max={userBalance}
 							balanceLabel={t("common.your_balance")}
 							digit={position.collateralDecimals}
@@ -241,7 +263,7 @@ export default function PositionChallenge() {
 								<DisplayLabel label={t("monitoring.collateral_in_position")} />
 								<DisplayAmount
 									amount={BigInt(position.collateralBalance)}
-									currency={position.collateralSymbol}
+									currency={normalizeTokenSymbol(position.collateralSymbol)}
 									digits={position.collateralDecimals}
 									address={position.collateral}
 									className="mt-2"
@@ -251,7 +273,7 @@ export default function PositionChallenge() {
 								<DisplayLabel label={t("monitoring.minimum_amount")} />
 								<DisplayAmount
 									amount={BigInt(position.minimumCollateral)}
-									currency={position.collateralSymbol}
+									currency={normalizeTokenSymbol(position.collateralSymbol)}
 									digits={position.collateralDecimals}
 									address={position.collateral}
 									className="mt-2"
@@ -289,14 +311,14 @@ export default function PositionChallenge() {
 							<ol className="flex flex-col gap-y-2 pl-6 [&>li]:list-decimal">
 								<li>
 									{t("monitoring.challenge_description_how_it_works_phase_1", {
-										symbol: position.collateralSymbol,
+										symbol: normalizeTokenSymbol(position.collateralSymbol),
 										price: formatBigInt(BigInt(position.price), 36 - position.collateralDecimals),
 										token: TOKEN_SYMBOL,
 									})}
 								</li>
 								<li>
 									{t("monitoring.challenge_description_how_it_works_phase_2", {
-										symbol: position.collateralSymbol,
+										symbol: normalizeTokenSymbol(position.collateralSymbol),
 										price: formatBigInt(BigInt(position.price), 36 - position.collateralDecimals),
 										token: TOKEN_SYMBOL,
 									})}

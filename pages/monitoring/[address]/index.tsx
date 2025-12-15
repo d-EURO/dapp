@@ -4,7 +4,7 @@ import Link from "next/link";
 import AppBox from "@components/AppBox";
 import DisplayLabel from "@components/DisplayLabel";
 import DisplayAmount from "@components/DisplayAmount";
-import { formatDate, getCarryOnQueryParams, shortenAddress, TOKEN_SYMBOL, toQueryString } from "@utils";
+import { formatDate, getCarryOnQueryParams, shortenAddress, TOKEN_SYMBOL, toQueryString, normalizeTokenSymbol } from "@utils";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { useContractUrl } from "@hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -95,7 +95,7 @@ export default function PositionDetail() {
 								<DisplayLabel label={t("monitoring.collateral")} />
 								<DisplayAmount
 									amount={BigInt(position.collateralBalance)}
-									currency={position.collateralSymbol}
+									currency={normalizeTokenSymbol(position.collateralSymbol)}
 									digits={position.collateralDecimals}
 									address={position.collateral}
 									className="mt-2"
@@ -221,7 +221,7 @@ function ActiveAuctionsRow({ position, challenge }: Props) {
 					<DisplayAmount
 						amount={BigInt(challenge.size - challenge.filledSize)}
 						digits={position.collateralDecimals}
-						currency={position.collateralSymbol}
+						currency={normalizeTokenSymbol(position.collateralSymbol)}
 						address={position.collateral}
 						className="mt-2"
 					/>
