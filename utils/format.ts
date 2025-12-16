@@ -80,11 +80,6 @@ export const formatBigInt = (value?: bigint, units = 18, displayDec = 2): string
 	return displayNum;
 };
 
-export const formatUnitsClean = (value: bigint, decimals: number): string => {
-	const formatted = formatUnits(value, decimals);
-	return formatted.replace(/\.0+$/, "").replace(/(\.\d*[1-9])0+$/, "$1");
-};
-
 export const roundToWholeUnits = (value: string, decimals: number): string => {
 	if (!value) return value;
 	const rounded = (BigInt(value) / BigInt(10 ** decimals)) * BigInt(10 ** decimals);
