@@ -24,7 +24,8 @@ import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { fetchPositionsList } from "../../redux/slices/positions.slice";
 import Button from "@components/Button";
 import { SectionTitle } from "@components/SectionTitle";
-import { Target, Strategy, solveManage, getStrategiesForTarget, SolverPosition, SolverOutcome } from "../../utils/positionSolver";
+import { Strategy, solveManage, getStrategiesForTarget, SolverPosition, SolverOutcome } from "../../utils/positionSolver";
+import { AdjustPosition, Target } from "./AdjustPosition";
 import { NormalInputOutlined } from "@components/Input/NormalInputOutlined";
 import { SliderInputOutlined } from "@components/Input/SliderInputOutlined";
 import { ExpirationManageSection } from "./ExpirationManageSection";
@@ -187,7 +188,7 @@ export const ManageSolver = () => {
 			return;
 		}
 		try {
-			const value = selectedTarget === "EXPIRATION" ? Number(newValue) : BigInt(newValue);
+			const value = selectedTarget === Target.EXPIRATION ? Number(newValue) : BigInt(newValue);
 			setOutcome(solveManage(currentPosition, selectedTarget, selectedStrategy, value));
 		} catch (error) {
 			setOutcome(null);
@@ -202,7 +203,7 @@ export const ManageSolver = () => {
 
 		const delta = BigInt(deltaAmount || 0);
 
-		if (!isIncrease && selectedTarget === "COLLATERAL" && delta > collateralBalance) {
+		if (!isIncrease && selectedTarget === Target.COLLATERAL && delta > collateralBalance) {
 			setDeltaAmountError(t("mint.error.amount_greater_than_position_balance"));
 		} else {
 			setDeltaAmountError(null);
@@ -228,9 +229,9 @@ export const ManageSolver = () => {
 	};
 
 	const getPreviewItems = (outcome: SolverOutcome) => [
-		{ label: t("mint.collateral"), value: outcome.next.collateral, delta: outcome.deltaCollateral, target: "COLLATERAL" as Target },
-		{ label: t("mint.liquidation_price"), value: outcome.next.liqPrice, delta: outcome.deltaLiqPrice, target: "LIQ_PRICE" as Target },
-		{ label: t("mint.loan_amount"), value: outcome.next.debt, delta: outcome.deltaDebt, target: "LOAN" as Target },
+		{ label: t("mint.collateral"), value: outcome.next.collateral, delta: outcome.deltaCollateral, target: Target.COLLATERAL },
+		{ label: t("mint.liquidation_price"), value: outcome.next.liqPrice, delta: outcome.deltaLiqPrice, target: Target.LIQ_PRICE },
+		{ label: t("mint.loan_amount"), value: outcome.next.debt, delta: outcome.deltaDebt, target: Target.LOAN },
 	];
 
 	const renderPreviewItems = (items: ReturnType<typeof getPreviewItems>) => (
@@ -259,10 +260,10 @@ export const ManageSolver = () => {
 
 	const getActionValue = (action: string, outcome: SolverOutcome) => {
 		const values = {
-			DEPOSIT: formatValue(outcome.deltaCollateral, "COLLATERAL"),
-			WITHDRAW: formatValue(-outcome.deltaCollateral, "COLLATERAL"),
-			BORROW: formatValue(outcome.deltaDebt, "LOAN"),
-			REPAY: formatValue(-outcome.deltaDebt, "LOAN"),
+			DEPOSIT: formatValue(outcome.deltaCollateral, Target.COLLATERAL),
+			WITHDRAW: formatValue(-outcome.deltaCollateral, Target.COLLATERAL),
+			BORROW: formatValue(outcome.deltaDebt, Target.LOAN),
+			REPAY: formatValue(-outcome.deltaDebt, Target.LOAN),
 		};
 		return values[action as keyof typeof values] || "";
 	};
@@ -512,116 +513,22 @@ export const ManageSolver = () => {
 		}
 	};
 	if (step === "SELECT_TARGET") {
-		const targets = [
-			{
-				id: "COLLATERAL" as const,
-				label: t("mint.collateral"),
-				desc: t("mint.adjust_collateral_description"),
-				value: collateralBalance,
-				decimals: position.collateralDecimals,
-				currency: normalizeTokenSymbol(position.collateralSymbol),
-			},
-			{
-				id: "LIQ_PRICE" as const,
-				label: t("mint.liquidation_price"),
-				desc: t("mint.adjust_liq_price_description"),
-				value: liqPrice,
-				decimals: priceDecimals,
-				currency: position.stablecoinSymbol,
-			},
-			{
-				id: "LOAN" as const,
-				label: t("mint.loan_amount"),
-				desc: t("mint.adjust_loan_amount_description"),
-				value: currentDebt,
-				decimals: 18,
-				currency: position.stablecoinSymbol,
-			},
-			{
-				id: "EXPIRATION" as const,
-				label: t("mint.expiration"),
-				desc: t("mint.adjust_expiration_description"),
-				value: null,
-				decimals: 0,
-				currency: "",
-			},
-		];
-
-		const handleConfirm = () => {
-			if (!selectedTarget) return;
-			setStep(selectedTarget === "EXPIRATION" ? "PREVIEW" : "ENTER_VALUE");
-		};
-
-		// Get dynamic button text based on selection
-		const getButtonText = () => {
-			if (!selectedTarget) return t("mint.adjust_position");
-
-			switch (selectedTarget) {
-				case "COLLATERAL":
-					return `${t("mint.adjust")} ${t("mint.collateral")}`;
-				case "LIQ_PRICE":
-					return `${t("mint.adjust")} ${t("mint.liquidation_price")}`;
-				case "LOAN":
-					return `${t("mint.adjust")} ${t("mint.loan_amount")}`;
-				case "EXPIRATION":
-					return `${t("mint.adjust")} ${t("mint.expiration")}`;
-				default:
-					return t("mint.adjust_position");
-			}
+		const handleSelectTarget = (target: Target) => {
+			setSelectedTarget(target);
+			setStep(target === Target.EXPIRATION ? "PREVIEW" : "ENTER_VALUE");
 		};
 
 		return (
-			<div className="flex flex-col gap-y-4">
-				<Link href={url} target="_blank">
-					<div className="text-lg font-bold underline text-center">
-						{t("monitoring.position")} {shortenAddress(position.position)}
-						<FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 ml-2" />
-					</div>
-				</Link>
-
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-					{targets.map((target) => (
-						<button
-							key={target.id}
-							onClick={() => setSelectedTarget(target.id)}
-							className="text-left hover:opacity-80 transition-opacity"
-						>
-							<AppBox
-								className={`h-full transition-all ${
-									selectedTarget === target.id
-										? "ring-2 ring-orange-300 bg-orange-50 dark:bg-orange-900/10"
-										: "hover:ring-2 hover:ring-orange-300"
-								}`}
-							>
-								<DisplayLabel label={target.label} />
-								{target.value !== null ? (
-									<DisplayAmount
-										amount={target.value}
-										currency={target.currency}
-										digits={target.decimals}
-										className="mt-2"
-									/>
-								) : (
-									<div className="mt-2">
-										<b>{formatDate(position.expiration)}</b>
-									</div>
-								)}
-							</AppBox>
-						</button>
-					))}
-				</div>
-
-				<div className="text-center">
-					<p className="text-sm text-text-muted2">{t("mint.select_parameter_to_modify")}</p>
-				</div>
-
-				<Button onClick={handleConfirm} disabled={!selectedTarget} className="text-lg leading-snug !font-extrabold">
-					{getButtonText()}
-				</Button>
-			</div>
+			<AdjustPosition
+				position={position}
+				collateralBalance={collateralBalance}
+				currentDebt={currentDebt}
+				liqPrice={liqPrice}
+				onSelectTarget={handleSelectTarget}
+			/>
 		);
 	}
-	if (selectedTarget === "EXPIRATION" && step === "PREVIEW") {
+	if (selectedTarget === Target.EXPIRATION && step === "PREVIEW") {
 		return (
 			<div className="flex flex-col gap-y-4">
 				<button onClick={handleReset} className="text-left text-primary hover:text-primary-hover text-sm font-medium">
@@ -640,11 +547,11 @@ export const ManageSolver = () => {
 
 		const getAdjustTitle = () => {
 			switch (selectedTarget) {
-				case "COLLATERAL":
+				case Target.COLLATERAL:
 					return `${t("mint.adjust")} ${t("mint.collateral")}`;
-				case "LIQ_PRICE":
+				case Target.LIQ_PRICE:
 					return `${t("mint.adjust")} ${t("mint.liquidation_price")}`;
-				case "LOAN":
+				case Target.LOAN:
 					return `${t("mint.adjust")} ${t("mint.loan_amount")}`;
 				default:
 					return t("mint.enter_change_amount");
@@ -682,7 +589,7 @@ export const ManageSolver = () => {
 						</div>
 					</div>
 
-					{selectedTarget === "LIQ_PRICE" ? (
+					{selectedTarget === Target.LIQ_PRICE ? (
 						<SliderInputOutlined
 							value={deltaAmount}
 							onChange={(val) => setDeltaAmount(roundToWholeUnits(val, priceDecimals))}
@@ -705,14 +612,14 @@ export const ManageSolver = () => {
 									<div className="h-7 justify-end items-center gap-2.5 flex">
 										<div className="text-input-label text-xs font-medium leading-none">
 											{formatUnits(
-												isIncrease && selectedTarget === "COLLATERAL" ? walletBalance : currentValue,
+												isIncrease && selectedTarget === Target.COLLATERAL ? walletBalance : currentValue,
 												decimals
 											)}{" "}
 											{unit}
 										</div>
 										<MaxButton
 											disabled={
-												(isIncrease && selectedTarget === "COLLATERAL" && walletBalance === 0n) ||
+												(isIncrease && selectedTarget === Target.COLLATERAL && walletBalance === 0n) ||
 												(!isIncrease && currentValue === 0n)
 											}
 											onClick={handleMaxClick}
@@ -764,7 +671,7 @@ export const ManageSolver = () => {
 		const allStrategies = getStrategiesForTarget(selectedTarget!, BigInt(newValue) > currentValue);
 
 		const hasNoDebt = currentDebt === 0n || currentDebt < 1000n;
-		const isRemovingCollateral = selectedTarget === "COLLATERAL" && BigInt(newValue) < currentValue;
+		const isRemovingCollateral = selectedTarget === Target.COLLATERAL && BigInt(newValue) < currentValue;
 
 		const strategies = allStrategies.filter((strat) => {
 			if (hasNoDebt && isRemovingCollateral && strat.strategy === "KEEP_LIQ_PRICE") {
@@ -776,7 +683,7 @@ export const ManageSolver = () => {
 		const getStrategyOutcome = (strategy: Strategy) => {
 			if (!currentPosition || !selectedTarget || !newValue) return null;
 			try {
-				const value = selectedTarget === "EXPIRATION" ? Number(newValue) : BigInt(newValue);
+				const value = selectedTarget === Target.EXPIRATION ? Number(newValue) : BigInt(newValue);
 				return solveManage(currentPosition, selectedTarget, strategy, value);
 			} catch (error) {
 				return null;

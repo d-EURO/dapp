@@ -1,4 +1,6 @@
-export type Target = "COLLATERAL" | "LIQ_PRICE" | "LOAN" | "EXPIRATION";
+import { Target } from "@components/PageMint/AdjustPosition";
+
+export { Target };
 export type Strategy = "KEEP_LOAN" | "KEEP_LIQ_PRICE" | "KEEP_COLLATERAL" | "DATE_ONLY";
 export type TxAction = "DEPOSIT" | "WITHDRAW" | "BORROW" | "REPAY" | "UPDATE_EXPIRATION";
 
@@ -23,8 +25,7 @@ export interface SolverOutcome {
 export function solveManage(pos: SolverPosition, target: Target, strategy: Strategy, newValue: bigint | number): SolverOutcome {
 	const { collateral: currentCollateral, debt: currentDebt, liqPrice: currentLiqPrice, expiration } = pos;
 
-	// Expiration - special case
-	if (target === "EXPIRATION") {
+	if (target === Target.EXPIRATION) {
 		return {
 			next: { ...pos, expiration: Number(newValue) },
 			deltaCollateral: 0n,
@@ -36,7 +37,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 	}
 
 	if (currentDebt === 0n || currentDebt < 1000n) {
-		if (target === "COLLATERAL") {
+		if (target === Target.COLLATERAL) {
 			const newCollateral = BigInt(newValue as bigint);
 
 			return {
@@ -49,7 +50,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 			};
 		}
 
-		if (target === "LOAN" && BigInt(newValue) > 0n) {
+		if (target === Target.LOAN && BigInt(newValue) > 0n) {
 			const newDebt = BigInt(newValue);
 
 			return {
@@ -84,7 +85,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 		let newDebt = currentDebt;
 		let newLiqPrice = currentLiqPrice;
 
-		if (target === "COLLATERAL") {
+		if (target === Target.COLLATERAL) {
 			newCollateral = BigInt(newValue as bigint);
 
 			if (newCollateral === 0n && currentDebt > 0n) {
@@ -110,7 +111,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 					newDebt = (newLiqPrice * newCollateral) / k;
 				}
 			}
-		} else if (target === "LIQ_PRICE") {
+		} else if (target === Target.LIQ_PRICE) {
 			newLiqPrice = BigInt(newValue as bigint);
 			if (newLiqPrice <= 0n) throw new Error("Liquidation price must be positive");
 
@@ -121,7 +122,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 				newCollateral = currentCollateral;
 				newDebt = (newLiqPrice * newCollateral) / k;
 			}
-		} else if (target === "LOAN") {
+		} else if (target === Target.LOAN) {
 			newDebt = BigInt(newValue as bigint);
 			if (newDebt < 0n) throw new Error("Loan cannot be negative");
 
@@ -165,7 +166,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 
 //Get strategy options for a target parameter
 export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
-	if (target === "EXPIRATION") {
+	if (target === Target.EXPIRATION) {
 		return [
 			{
 				strategy: "DATE_ONLY" as Strategy,
@@ -177,7 +178,7 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 	}
 
 	const strategies = {
-		COLLATERAL: {
+		[Target.COLLATERAL]: {
 			increase: [
 				{
 					strategy: "KEEP_LOAN" as Strategy,
@@ -207,7 +208,7 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 				},
 			],
 		},
-		LIQ_PRICE: {
+		[Target.LIQ_PRICE]: {
 			increase: [
 				{
 					strategy: "KEEP_LOAN" as Strategy,
@@ -237,7 +238,7 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 				},
 			],
 		},
-		LOAN: {
+		[Target.LOAN]: {
 			increase: [
 				{
 					strategy: "KEEP_LIQ_PRICE" as Strategy,
