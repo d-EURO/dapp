@@ -1,8 +1,21 @@
 import { Target } from "@components/PageMint/AdjustPosition";
 
 export { Target };
-export type Strategy = "KEEP_LOAN" | "KEEP_LIQ_PRICE" | "KEEP_COLLATERAL" | "DATE_ONLY";
-export type TxAction = "DEPOSIT" | "WITHDRAW" | "BORROW" | "REPAY" | "UPDATE_EXPIRATION";
+
+export enum Strategy {
+	KEEP_LOAN = "KEEP_LOAN",
+	KEEP_LIQ_PRICE = "KEEP_LIQ_PRICE",
+	KEEP_COLLATERAL = "KEEP_COLLATERAL",
+	DATE_ONLY = "DATE_ONLY",
+}
+
+export enum TxAction {
+	DEPOSIT = "DEPOSIT",
+	WITHDRAW = "WITHDRAW",
+	BORROW = "BORROW",
+	REPAY = "REPAY",
+	UPDATE_EXPIRATION = "UPDATE_EXPIRATION",
+}
 
 export interface SolverPosition {
 	collateral: bigint;
@@ -31,7 +44,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 			deltaCollateral: 0n,
 			deltaDebt: 0n,
 			deltaLiqPrice: 0n,
-			txPlan: ["UPDATE_EXPIRATION"],
+			txPlan: [TxAction.UPDATE_EXPIRATION],
 			isValid: true,
 		};
 	}
@@ -45,7 +58,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 				deltaCollateral: newCollateral - currentCollateral,
 				deltaDebt: 0n,
 				deltaLiqPrice: 0n,
-				txPlan: newCollateral < currentCollateral ? ["WITHDRAW"] : ["DEPOSIT"],
+				txPlan: newCollateral < currentCollateral ? [TxAction.WITHDRAW] : [TxAction.DEPOSIT],
 				isValid: true,
 			};
 		}
@@ -63,7 +76,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 				deltaCollateral: 0n,
 				deltaDebt: newDebt,
 				deltaLiqPrice: 0n,
-				txPlan: ["BORROW"],
+				txPlan: [TxAction.BORROW],
 				isValid: true,
 			};
 		}
@@ -89,14 +102,14 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 			newCollateral = BigInt(newValue as bigint);
 
 			if (newCollateral === 0n && currentDebt > 0n) {
-				if (strategy === "KEEP_LOAN") {
+				if (strategy === Strategy.KEEP_LOAN) {
 					throw new Error("Must repay debt before withdrawing all collateral");
 				}
 			}
 
 			if (newCollateral < 0n) throw new Error("Collateral cannot be negative");
 
-			if (strategy === "KEEP_LOAN") {
+			if (strategy === Strategy.KEEP_LOAN) {
 				newDebt = currentDebt;
 				if (newCollateral > 0n) {
 					const calculatedPrice = (currentLiqPrice * currentCollateral) / newCollateral;
@@ -115,7 +128,7 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 			newLiqPrice = BigInt(newValue as bigint);
 			if (newLiqPrice <= 0n) throw new Error("Liquidation price must be positive");
 
-			if (strategy === "KEEP_LOAN") {
+			if (strategy === Strategy.KEEP_LOAN) {
 				newDebt = currentDebt;
 				newCollateral = (k * newDebt) / newLiqPrice;
 			} else {
@@ -126,9 +139,10 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 			newDebt = BigInt(newValue as bigint);
 			if (newDebt < 0n) throw new Error("Loan cannot be negative");
 
-			if (strategy === "KEEP_LIQ_PRICE") {
+			if (strategy === Strategy.KEEP_LIQ_PRICE) {
 				newLiqPrice = currentLiqPrice;
-				newCollateral = (k * newDebt) / newLiqPrice;
+				const baseCollateral = (k * newDebt) / newLiqPrice;
+				newCollateral = baseCollateral + baseCollateral / 100n;
 			} else {
 				newCollateral = currentCollateral;
 				newLiqPrice = (k * newDebt) / newCollateral;
@@ -138,10 +152,10 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 		const deltaCollateral = newCollateral - currentCollateral;
 		const deltaDebt = newDebt - currentDebt;
 		const txPlan: TxAction[] = [];
-		if (deltaCollateral > 0n) txPlan.push("DEPOSIT");
-		if (deltaCollateral < 0n) txPlan.push("WITHDRAW");
-		if (deltaDebt > 0n) txPlan.push("BORROW");
-		if (deltaDebt < 0n) txPlan.push("REPAY");
+		if (deltaCollateral > 0n) txPlan.push(TxAction.DEPOSIT);
+		if (deltaCollateral < 0n) txPlan.push(TxAction.WITHDRAW);
+		if (deltaDebt > 0n) txPlan.push(TxAction.BORROW);
+		if (deltaDebt < 0n) txPlan.push(TxAction.REPAY);
 
 		return {
 			next: { collateral: newCollateral, debt: newDebt, liqPrice: newLiqPrice, expiration },
@@ -169,7 +183,7 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 	if (target === Target.EXPIRATION) {
 		return [
 			{
-				strategy: "DATE_ONLY" as Strategy,
+				strategy: Strategy.DATE_ONLY,
 				label: "Extend expiration",
 				description: "Pay interest to extend loan",
 				consequence: "Interest payment required",
@@ -181,13 +195,13 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 		[Target.COLLATERAL]: {
 			increase: [
 				{
-					strategy: "KEEP_LOAN" as Strategy,
+					strategy: Strategy.KEEP_LOAN,
 					label: "Keep loan constant",
 					description: "Add collateral only",
 					consequence: "Lower liquidation price (safer)",
 				},
 				{
-					strategy: "KEEP_LIQ_PRICE" as Strategy,
+					strategy: Strategy.KEEP_LIQ_PRICE,
 					label: "Keep price constant",
 					description: "Add collateral & borrow more",
 					consequence: "Loan increases",
@@ -195,13 +209,13 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 			],
 			decrease: [
 				{
-					strategy: "KEEP_LOAN" as Strategy,
+					strategy: Strategy.KEEP_LOAN,
 					label: "Keep loan constant",
 					description: "Remove collateral only",
 					consequence: "Higher liquidation price (riskier)",
 				},
 				{
-					strategy: "KEEP_LIQ_PRICE" as Strategy,
+					strategy: Strategy.KEEP_LIQ_PRICE,
 					label: "Keep price constant",
 					description: "Remove collateral & repay",
 					consequence: "Loan decreases",
@@ -211,13 +225,13 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 		[Target.LIQ_PRICE]: {
 			increase: [
 				{
-					strategy: "KEEP_LOAN" as Strategy,
+					strategy: Strategy.KEEP_LOAN,
 					label: "Keep loan constant",
 					description: "Remove collateral",
 					consequence: "Collateral decreases",
 				},
 				{
-					strategy: "KEEP_COLLATERAL" as Strategy,
+					strategy: Strategy.KEEP_COLLATERAL,
 					label: "Keep collateral constant",
 					description: "Borrow more",
 					consequence: "Loan increases",
@@ -225,13 +239,13 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 			],
 			decrease: [
 				{
-					strategy: "KEEP_LOAN" as Strategy,
+					strategy: Strategy.KEEP_LOAN,
 					label: "Keep loan constant",
 					description: "Add collateral",
 					consequence: "Collateral increases",
 				},
 				{
-					strategy: "KEEP_COLLATERAL" as Strategy,
+					strategy: Strategy.KEEP_COLLATERAL,
 					label: "Keep collateral constant",
 					description: "Repay loan",
 					consequence: "Loan decreases",
@@ -241,13 +255,13 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 		[Target.LOAN]: {
 			increase: [
 				{
-					strategy: "KEEP_LIQ_PRICE" as Strategy,
+					strategy: Strategy.KEEP_LIQ_PRICE,
 					label: "Keep price constant",
 					description: "Add collateral",
 					consequence: "Collateral increases",
 				},
 				{
-					strategy: "KEEP_COLLATERAL" as Strategy,
+					strategy: Strategy.KEEP_COLLATERAL,
 					label: "Keep collateral constant",
 					description: "Borrow more",
 					consequence: "Higher liquidation price (riskier)",
@@ -255,13 +269,13 @@ export function getStrategiesForTarget(target: Target, isIncrease: boolean) {
 			],
 			decrease: [
 				{
-					strategy: "KEEP_LIQ_PRICE" as Strategy,
+					strategy: Strategy.KEEP_LIQ_PRICE,
 					label: "Keep price constant",
 					description: "Remove collateral",
 					consequence: "Collateral decreases",
 				},
 				{
-					strategy: "KEEP_COLLATERAL" as Strategy,
+					strategy: Strategy.KEEP_COLLATERAL,
 					label: "Keep collateral constant",
 					description: "Repay loan",
 					consequence: "Lower liquidation price (safer)",

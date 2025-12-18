@@ -7,12 +7,10 @@ import { Address, formatUnits, zeroAddress, erc20Abi } from "viem";
 import {
 	formatCurrency,
 	normalizeTokenSymbol,
-	shortenAddress,
 	getDisplayDecimals,
 	formatPositionValue,
 	formatPositionDelta,
 	NATIVE_WRAPPED_SYMBOLS,
-	formatDate,
 	roundToWholeUnits,
 } from "@utils";
 import { useReadContracts, useChainId, useAccount } from "wagmi";
@@ -22,9 +20,8 @@ import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { fetchPositionsList } from "../../redux/slices/positions.slice";
-import Button from "@components/Button";
 import { SectionTitle } from "@components/SectionTitle";
-import { Strategy, solveManage, getStrategiesForTarget, SolverPosition, SolverOutcome } from "../../utils/positionSolver";
+import { Strategy, TxAction, solveManage, getStrategiesForTarget, SolverPosition, SolverOutcome } from "../../utils/positionSolver";
 import { AdjustPosition, Target } from "./AdjustPosition";
 import { NormalInputOutlined } from "@components/Input/NormalInputOutlined";
 import { SliderInputOutlined } from "@components/Input/SliderInputOutlined";
@@ -33,17 +30,13 @@ import { AddCircleOutlineIcon } from "@components/SvgComponents/add_circle_outli
 import { RemoveCircleOutlineIcon } from "@components/SvgComponents/remove_circle_outline";
 import { SvgIconButton } from "./PlusMinusButtons";
 import { getLoanDetailsByCollateralAndStartingLiqPrice } from "../../utils/loanCalculations";
-import Link from "next/link";
 import { useContractUrl } from "../../hooks/useContractUrl";
 import AppBox from "@components/AppBox";
-import DisplayLabel from "@components/DisplayLabel";
-import DisplayAmount from "@components/DisplayAmount";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { MaxButton } from "@components/Input/MaxButton";
 import { usePositionMaxAmounts } from "../../hooks/usePositionMaxAmounts";
 import { ErrorDisplay } from "@components/ErrorDisplay";
 import { ManageButtons } from "@components/ManageButtons";
+import { AdjustLoan } from "./AdjustLoan";
 
 type Step = "SELECT_TARGET" | "ENTER_VALUE" | "CHOOSE_STRATEGY" | "PREVIEW";
 
@@ -96,12 +89,16 @@ export const ManageSolver = () => {
 	});
 
 	const principal = data?.[0]?.result || 0n;
-	const liqPrice = data?.[1]?.result || 1n;
+	const positionPriceLimit = data?.[1]?.result || 1n;
 	const collateralBalance = data?.[2]?.result || 0n;
 	const currentDebt = data?.[3]?.result || 0n;
 	const cooldown = data?.[4]?.result || 0n;
 	const minimumCollateral = data?.[5]?.result || 0n;
 	const jusdAllowance = data?.[6]?.result || 0n;
+
+	const collateralDecimals = position?.collateralDecimals || 18;
+	const liqPrice =
+		collateralBalance > 0n ? (currentDebt * BigInt(10 ** (36 - collateralDecimals))) / collateralBalance : positionPriceLimit;
 
 	const now = BigInt(Math.floor(Date.now() / 1000));
 	const cooldownBigInt = BigInt(cooldown);
@@ -323,11 +320,11 @@ export const ManageSolver = () => {
 		try {
 			setIsTxOnGoing(true);
 
-			const hasWithdraw = outcome.txPlan.includes("WITHDRAW");
+			const hasWithdraw = outcome.txPlan.includes(TxAction.WITHDRAW);
 			const withdrawHandlesRepay = hasWithdraw && outcome.deltaDebt < 0n;
 
 			for (const action of outcome.txPlan) {
-				if (action === "DEPOSIT") {
+				if (action === TxAction.DEPOSIT) {
 					const depositAmount = outcome.deltaCollateral;
 
 					const adjustHash = await writeContract(WAGMI_CONFIG, {
@@ -361,7 +358,7 @@ export const ManageSolver = () => {
 							render: <TxToast title={t("mint.txs.adding_collateral_success")} rows={toastContent} />,
 						},
 					});
-				} else if (action === "WITHDRAW") {
+				} else if (action === TxAction.WITHDRAW) {
 					if (outcome.next.collateral === 0n && principal > 0n) {
 						const repayHash = await writeContract(WAGMI_CONFIG, {
 							address: position.position,
@@ -426,7 +423,7 @@ export const ManageSolver = () => {
 							render: <TxToast title={t("mint.txs.removing_collateral_success")} rows={toastContent} />,
 						},
 					});
-				} else if (action === "BORROW") {
+				} else if (action === TxAction.BORROW) {
 					const borrowHash = await writeContract(WAGMI_CONFIG, {
 						address: position.position,
 						abi: PositionV2ABI,
@@ -455,7 +452,7 @@ export const ManageSolver = () => {
 							),
 						},
 					});
-				} else if (action === "REPAY") {
+				} else if (action === TxAction.REPAY) {
 					if (withdrawHandlesRepay) continue;
 					const repayAmount = -outcome.deltaDebt;
 
@@ -525,6 +522,9 @@ export const ManageSolver = () => {
 				currentDebt={currentDebt}
 				liqPrice={liqPrice}
 				onSelectTarget={handleSelectTarget}
+				isInCooldown={isInCooldown}
+				cooldownRemainingFormatted={cooldownRemainingFormatted}
+				cooldownEndsAt={isInCooldown ? new Date(Number(cooldownBigInt) * 1000) : undefined}
 			/>
 		);
 	}
@@ -540,6 +540,27 @@ export const ManageSolver = () => {
 		);
 	}
 
+	if (step === "ENTER_VALUE" && selectedTarget === "LOAN") {
+		return (
+			<AdjustLoan
+				position={position}
+				collateralBalance={collateralBalance}
+				currentDebt={currentDebt}
+				liqPrice={liqPrice}
+				principal={principal}
+				currentPosition={currentPosition}
+				walletBalance={walletBalance}
+				jusdAllowance={jusdAllowance}
+				refetchAllowance={refetchReadContracts}
+				onBack={handleReset}
+				onSuccess={handleReset}
+				isInCooldown={isInCooldown}
+				cooldownRemainingFormatted={cooldownRemainingFormatted}
+				cooldownEndsAt={isInCooldown ? new Date(Number(cooldownBigInt) * 1000) : undefined}
+			/>
+		);
+	}
+
 	if (step === "ENTER_VALUE") {
 		const { value: currentValue, decimals, unit } = getValueInfo(selectedTarget!);
 		const delta = BigInt(deltaAmount || 0);
@@ -551,8 +572,6 @@ export const ManageSolver = () => {
 					return `${t("mint.adjust")} ${t("mint.collateral")}`;
 				case Target.LIQ_PRICE:
 					return `${t("mint.adjust")} ${t("mint.liquidation_price")}`;
-				case Target.LOAN:
-					return `${t("mint.adjust")} ${t("mint.loan_amount")}`;
 				default:
 					return t("mint.enter_change_amount");
 			}
@@ -561,7 +580,6 @@ export const ManageSolver = () => {
 		const handleMaxClick = () => {
 			const maxAmounts = {
 				COLLATERAL: isIncrease ? walletBalance : currentValue,
-				LOAN: currentValue,
 				LIQ_PRICE: currentValue,
 				EXPIRATION: 0n,
 			};
@@ -674,7 +692,7 @@ export const ManageSolver = () => {
 		const isRemovingCollateral = selectedTarget === Target.COLLATERAL && BigInt(newValue) < currentValue;
 
 		const strategies = allStrategies.filter((strat) => {
-			if (hasNoDebt && isRemovingCollateral && strat.strategy === "KEEP_LIQ_PRICE") {
+			if (hasNoDebt && isRemovingCollateral && strat.strategy === Strategy.KEEP_LIQ_PRICE) {
 				return false;
 			}
 			return true;

@@ -23,9 +23,21 @@ interface AdjustPositionProps {
 	currentDebt: bigint;
 	liqPrice: bigint;
 	onSelectTarget: (target: Target) => void;
+	isInCooldown?: boolean;
+	cooldownRemainingFormatted?: string | null;
+	cooldownEndsAt?: Date;
 }
 
-export const AdjustPosition = ({ position, collateralBalance, currentDebt, liqPrice, onSelectTarget }: AdjustPositionProps) => {
+export const AdjustPosition = ({
+	position,
+	collateralBalance,
+	currentDebt,
+	liqPrice,
+	onSelectTarget,
+	isInCooldown,
+	cooldownRemainingFormatted,
+	cooldownEndsAt,
+}: AdjustPositionProps) => {
 	const { t } = useTranslation();
 	const url = useContractUrl((position.position as Address) || zeroAddress);
 	const priceDecimals = 36 - (position.collateralDecimals || 18);

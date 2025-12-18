@@ -37,11 +37,9 @@ export const renderErrorTxStackToast = (error: any, limit: number, t?: any) => {
 	);
 };
 
-export const TxToast = (props: {
-	title: string;
-	rows: { title: string; value?: string | JSX.Element; hash?: Hash }[];
-	success?: boolean;
-}) => {
+export type TxToastRowType = { title: string; value?: string | JSX.Element; hash?: Hash };
+
+export const TxToast = (props: { title: string; rows: TxToastRowType[]; success?: boolean }) => {
 	const { title, rows, success = true } = props;
 	const chain = WAGMI_CHAIN;
 	let reasonLine: number;
