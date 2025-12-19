@@ -71,7 +71,9 @@
 			"price": "Preis:",
 			"receive": "Empfangen:",
 			"shares": "Anteile:",
-			"failed": "Transaktion fehlgeschlagen"
+			"failed": "Transaktion fehlgeschlagen",
+			"approving": "Genehmigung...",
+			"approved": "Genehmigt"
 		},
 		"error": {
 			"insufficient_balance": "Nicht genügend {{symbol}} in deiner Wallet.",
@@ -128,6 +130,7 @@
 		"token_select_modal_title": "Besicherungsasset auswählen",
 		"details": "Details",
 		"loan_amount": "Darlehensbetrag",
+		"amount_lended": "Geliehener Betrag",
 		"retained_reserve": "Gehaltene Reserve",
 		"expected_interest": "Erwartete Zinsen für den gewählten Zeitraum",
 		"effective_annual_interest": "Effektiver Jahreszins",
@@ -208,7 +211,8 @@
 		"needs_higher_liq_price": "Die Position benötigt einen höheren Liquidationspreis",
 		"more_collateral": "Mehr Sicherheit",
 		"higher_liq_price": "Höherer Liquidationspreis",
-		"cooldown_warning": "Preiserhöhung löst Abkühlphase aus ({{days}} {{dayLabel}})",
+		"cooldown_warning": "Die Preiserhöhung löst eine 3-tägige Abkühlphase aus. Danach können Sie den gewünschten Betrag ausleihen.",
+		"adjust_liq_price_btn": "Liquidationspreis anpassen",
 		"cooldown_ends_at": "Endet: {{date}}",
 		"cooldown_please_wait": "Diese Position ist in der Abkühlphase, bitte warten ({{remaining}})",
 		"confirm_close_position": "Bestätigen & Position schließen",
@@ -235,6 +239,9 @@
 		"deposit_collateral": "Sicherheit einzahlen",
 		"withdraw_collateral": "Sicherheit abheben",
 		"repay_loan": "Kredit zurückzahlen",
+		"repay": "Zurückzahlen",
+		"lend": "Leihen",
+		"lending": "Ausleihen",
 		"error": {
 			"could_not_obtain_token_data": "Tokendaten konnten nicht abgerufen werden.",
 			"token_decimals_should_be_less_than_24": "Die Nachkommastellen des Tokens sollten kleiner als 24 sein.",
@@ -271,7 +278,8 @@
 			"extending": "Position verlängern",
 			"extending_success": "Position erfolgreich verlängert",
 			"adjusting_price": "Positionspreis wird angepasst...",
-			"adjusting_price_success": "Positionspreis erfolgreich angepasst"
+			"adjusting_price_success": "Positionspreis erfolgreich angepasst",
+			"adjust_success": "Position erfolgreich angepasst"
 		}
 	},
 	"my_positions": {

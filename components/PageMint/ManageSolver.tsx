@@ -38,7 +38,12 @@ import { ErrorDisplay } from "@components/ErrorDisplay";
 import { ManageButtons } from "@components/ManageButtons";
 import { AdjustLoan } from "./AdjustLoan";
 
-type Step = "SELECT_TARGET" | "ENTER_VALUE" | "CHOOSE_STRATEGY" | "PREVIEW";
+enum Step {
+	SELECT_TARGET = "SELECT_TARGET",
+	ENTER_VALUE = "ENTER_VALUE",
+	CHOOSE_STRATEGY = "CHOOSE_STRATEGY",
+	PREVIEW = "PREVIEW",
+}
 
 export const ManageSolver = () => {
 	const { t } = useTranslation();
@@ -52,7 +57,7 @@ export const ManageSolver = () => {
 
 	const { walletBalance } = usePositionMaxAmounts(position);
 
-	const [step, setStep] = useState<Step>("SELECT_TARGET");
+	const [step, setStep] = useState<Step>(Step.SELECT_TARGET);
 	const [selectedTarget, setSelectedTarget] = useState<Target | null>(null);
 	const [deltaAmount, setDeltaAmount] = useState<string>("");
 	const [isIncrease, setIsIncrease] = useState(true);
@@ -193,7 +198,7 @@ export const ManageSolver = () => {
 	}, [currentPosition, selectedTarget, newValue, selectedStrategy]);
 
 	useEffect(() => {
-		if (step !== "ENTER_VALUE" || !selectedTarget || !deltaAmount) {
+		if (step !== Step.ENTER_VALUE || !selectedTarget || !deltaAmount) {
 			setDeltaAmountError(null);
 			return;
 		}
@@ -266,7 +271,7 @@ export const ManageSolver = () => {
 	};
 
 	const handleReset = () => {
-		setStep("SELECT_TARGET");
+		setStep(Step.SELECT_TARGET);
 		setSelectedTarget(null);
 		setNewValue("");
 		setSelectedStrategy(null);
@@ -509,10 +514,10 @@ export const ManageSolver = () => {
 			setIsTxOnGoing(false);
 		}
 	};
-	if (step === "SELECT_TARGET") {
+	if (step === Step.SELECT_TARGET) {
 		const handleSelectTarget = (target: Target) => {
 			setSelectedTarget(target);
-			setStep(target === Target.EXPIRATION ? "PREVIEW" : "ENTER_VALUE");
+			setStep(target === Target.EXPIRATION ? Step.PREVIEW : Step.ENTER_VALUE);
 		};
 
 		return (
@@ -528,7 +533,7 @@ export const ManageSolver = () => {
 			/>
 		);
 	}
-	if (selectedTarget === Target.EXPIRATION && step === "PREVIEW") {
+	if (selectedTarget === Target.EXPIRATION && step === Step.PREVIEW) {
 		return (
 			<div className="flex flex-col gap-y-4">
 				<button onClick={handleReset} className="text-left text-primary hover:text-primary-hover text-sm font-medium">
@@ -540,7 +545,7 @@ export const ManageSolver = () => {
 		);
 	}
 
-	if (step === "ENTER_VALUE" && selectedTarget === "LOAN") {
+	if (step === Step.ENTER_VALUE && selectedTarget === Target.LOAN) {
 		return (
 			<AdjustLoan
 				position={position}
@@ -553,7 +558,8 @@ export const ManageSolver = () => {
 				jusdAllowance={jusdAllowance}
 				refetchAllowance={refetchReadContracts}
 				onBack={handleReset}
-				onSuccess={handleReset}
+				onSuccess={() => refetchReadContracts()}
+				onFullRepaySuccess={() => router.push("/dashboard")}
 				isInCooldown={isInCooldown}
 				cooldownRemainingFormatted={cooldownRemainingFormatted}
 				cooldownEndsAt={isInCooldown ? new Date(Number(cooldownBigInt) * 1000) : undefined}
@@ -561,7 +567,7 @@ export const ManageSolver = () => {
 		);
 	}
 
-	if (step === "ENTER_VALUE") {
+	if (step === Step.ENTER_VALUE) {
 		const { value: currentValue, decimals, unit } = getValueInfo(selectedTarget!);
 		const delta = BigInt(deltaAmount || 0);
 		const calculatedNewValue = isIncrease ? currentValue + delta : currentValue - delta;
@@ -676,7 +682,7 @@ export const ManageSolver = () => {
 					onBack={handleReset}
 					onAction={() => {
 						setNewValue(calculatedNewValue.toString());
-						setStep("CHOOSE_STRATEGY");
+						setStep(Step.CHOOSE_STRATEGY);
 					}}
 					actionLabel={isIncrease ? t("common.add") : t("common.remove")}
 					disabled={!deltaAmount || delta === 0n || Boolean(deltaAmountError)}
@@ -684,7 +690,7 @@ export const ManageSolver = () => {
 			</div>
 		);
 	}
-	if (step === "CHOOSE_STRATEGY") {
+	if (step === Step.CHOOSE_STRATEGY) {
 		const { value: currentValue } = getValueInfo(selectedTarget!);
 		const allStrategies = getStrategiesForTarget(selectedTarget!, BigInt(newValue) > currentValue);
 
@@ -744,8 +750,8 @@ export const ManageSolver = () => {
 				</div>
 
 				<ManageButtons
-					onBack={() => setStep("ENTER_VALUE")}
-					onAction={() => setStep("PREVIEW")}
+					onBack={() => setStep(Step.ENTER_VALUE)}
+					onAction={() => setStep(Step.PREVIEW)}
 					actionLabel={t("mint.preview_changes")}
 					disabled={!selectedStrategy}
 				/>
@@ -753,7 +759,7 @@ export const ManageSolver = () => {
 		);
 	}
 
-	if (step === "PREVIEW" && outcome) {
+	if (step === Step.PREVIEW && outcome) {
 		return (
 			<div className="flex flex-col gap-y-6">
 				{isInCooldown && outcome.next.liqPrice > liqPrice && (
@@ -868,7 +874,7 @@ export const ManageSolver = () => {
 						)}
 
 						<ManageButtons
-							onBack={() => setStep("CHOOSE_STRATEGY")}
+							onBack={() => setStep(Step.CHOOSE_STRATEGY)}
 							onAction={needsJusdApproval(outcome) ? handleApproveJusd : handleExecute}
 							actionLabel={needsJusdApproval(outcome) ? t("common.approve") : t("mint.confirm_execute")}
 							isLoading={isTxOnGoing}

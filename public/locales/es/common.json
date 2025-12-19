@@ -71,7 +71,9 @@
 			"price": "Precio:",
 			"receive": "Recibir:",
 			"shares": "Acciones:",
-			"failed": "Transacción fallida"
+			"failed": "Transacción fallida",
+			"approving": "Aprobando...",
+			"approved": "Aprobado"
 		},
 		"error": {
 			"insufficient_balance": "No hay suficientes {{symbol}} en su monedero.",
@@ -128,6 +130,7 @@
 		"token_select_modal_title": "Seleccionar Activo Colateral",
 		"details": "Detalles",
 		"loan_amount": "Monto del Préstamo",
+		"amount_lended": "Monto Prestado",
 		"retained_reserve": "Reserva Retenida",
 		"expected_interest": "Interés esperado para el período seleccionado",
 		"effective_annual_interest": "Interés Anual Efectivo",
@@ -208,7 +211,8 @@
 		"needs_higher_liq_price": "La posición necesita un precio de liquidación más alto",
 		"more_collateral": "Más colateral",
 		"higher_liq_price": "Precio de liquidación más alto",
-		"cooldown_warning": "El aumento de precio activará un período de cooldown ({{days}} {{dayLabel}})",
+		"cooldown_warning": "El aumento de precio activará un período de cooldown de 3 días. Después de eso, podrás pedir prestado el monto solicitado.",
+		"adjust_liq_price_btn": "Ajustar precio de liquidación",
 		"cooldown_ends_at": "Finaliza: {{date}}",
 		"cooldown_please_wait": "Esta posición está en cooldown, por favor espera ({{remaining}})",
 		"confirm_close_position": "Confirmar y Cerrar Posición",
@@ -235,6 +239,9 @@
 		"deposit_collateral": "Depositar Colateral",
 		"withdraw_collateral": "Retirar Colateral",
 		"repay_loan": "Pagar Préstamo",
+		"repay": "Pagar",
+		"lend": "Prestar",
+		"lending": "Prestando",
 		"error": {
 			"could_not_obtain_token_data": "No se pudieron obtener los datos del token",
 			"token_decimals_should_be_less_than_24": "Los decimales del token deben ser inferiores a 24.",
@@ -271,7 +278,8 @@
 			"extending": "Extendiendo posición",
 			"extending_success": "Posición extendida correctamente",
 			"adjusting_price": "Ajustando precio de posición...",
-			"adjusting_price_success": "Precio de posición ajustado exitosamente"
+			"adjusting_price_success": "Precio de posición ajustado exitosamente",
+			"adjust_success": "Posición ajustada exitosamente"
 		}
 	},
 	"my_positions": {

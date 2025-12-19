@@ -1,6 +1,12 @@
 import { PositionQuery } from "@juicedollar/api";
 import { toDate } from "./format";
 
+export const getRetainedReserve = (principal: bigint, reserveContribution: number): bigint =>
+	(principal * BigInt(reserveContribution)) / 1_000_000n;
+
+export const getAmountLended = (principal: bigint, reserveContribution: number): bigint =>
+	principal - getRetainedReserve(principal, reserveContribution);
+
 export type LoanDetails = {
 	loanAmount: bigint;
 	apr: number;
@@ -62,8 +68,8 @@ export const getLoanDetailsByCollateralAndLiqPrice = (
 		(BigInt(ONE_YEAR_IN_SECONDS * 1_000_000) + BigInt(selectedPeriod) * BigInt(annualInterestPPM));
 	const interestUntilExpiration = loanAmountEndOfPeriod - loanAmountAtStartOfPeriod;
 
-	const borrowersReserveContribution = (BigInt(reserveContribution) * loanAmountAtStartOfPeriod) / 1_000_000n;
-	const amountToSendToWallet = loanAmountAtStartOfPeriod - borrowersReserveContribution;
+	const borrowersReserveContribution = getRetainedReserve(loanAmountAtStartOfPeriod, reserveContribution);
+	const amountToSendToWallet = getAmountLended(loanAmountAtStartOfPeriod, reserveContribution);
 
 	const { effectiveInterest, apr } = getMiscelaneousLoanDetails(position, loanAmountEndOfPeriod, collateralAmount, customExpirationDate);
 
@@ -96,8 +102,8 @@ export const getLoanDetailsByCollateralAndStartingLiqPrice = (
 	const decimalsAdjustment = collateralDecimals === 0 ? BigInt(1e36) : BigInt(1e18);
 	const loanAmountStartOfPeriod = (collateralAmount * startingLiquidationPrice) / decimalsAdjustment;
 
-	const borrowersReserveContribution = (BigInt(reserveContribution) * loanAmountStartOfPeriod) / 1_000_000n;
-	const amountToSendToWallet = loanAmountStartOfPeriod - borrowersReserveContribution;
+	const borrowersReserveContribution = getRetainedReserve(loanAmountStartOfPeriod, reserveContribution);
+	const amountToSendToWallet = getAmountLended(loanAmountStartOfPeriod, reserveContribution);
 
 	const { effectiveInterest, apr, interestUntilExpiration } = getMiscelaneousLoanDetails(
 		position,
@@ -139,7 +145,7 @@ export const getLoanDetailsByCollateralAndYouGetAmount = (
 	const loanAmountStartOfPeriod = (amountToSendToWallet * 1_000_000n) / (1_000_000n - BigInt(reserveContribution));
 	const startingLiquidationPrice =
 		collateralAmount === 0n ? BigInt(0) : (loanAmountStartOfPeriod * decimalsAdjustment) / collateralAmount;
-	const borrowersReserveContribution = (BigInt(reserveContribution) * loanAmountStartOfPeriod) / 1_000_000n;
+	const borrowersReserveContribution = getRetainedReserve(loanAmountStartOfPeriod, reserveContribution);
 
 	const { effectiveInterest, apr, interestUntilExpiration, liquidationPriceAtEnd } = getMiscelaneousLoanDetails(
 		position,

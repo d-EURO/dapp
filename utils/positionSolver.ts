@@ -145,7 +145,8 @@ export function solveManage(pos: SolverPosition, target: Target, strategy: Strat
 				newCollateral = baseCollateral + baseCollateral / 100n;
 			} else {
 				newCollateral = currentCollateral;
-				newLiqPrice = (k * newDebt) / newCollateral;
+				const maxDebtAtCurrentParams = (currentLiqPrice * currentCollateral) / BigInt(1e18);
+				newLiqPrice = newDebt <= maxDebtAtCurrentParams ? currentLiqPrice : (k * newDebt) / newCollateral;
 			}
 		}
 

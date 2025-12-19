@@ -70,7 +70,10 @@
 			"collateral": "Garantie :",
 			"price": "Prix :",
 			"receive": "Recevoir :",
-			"shares": "Actions :"
+			"shares": "Actions :",
+			"failed": "Transaction échouée",
+			"approving": "Approbation en cours...",
+			"approved": "Approuvé"
 		},
 		"error": {
 			"insufficient_balance": "Solde insuffisant de {{symbol}} dans votre portefeuille.",
@@ -127,6 +130,7 @@
 		"token_select_modal_title": "Sélectionner l’actif de garantie",
 		"details": "Détails",
 		"loan_amount": "Montant du prêt",
+		"amount_lended": "Montant Prêté",
 		"retained_reserve": "Réserve conservée",
 		"expected_interest": "Intérêts escomptés pour la période sélectionnée",
 		"effective_annual_interest": "Taux annuel effectif global",
@@ -207,7 +211,8 @@
 		"needs_higher_liq_price": "La position a besoin d'un prix de liquidation plus élevé",
 		"more_collateral": "Plus de garantie",
 		"higher_liq_price": "Prix de liquidation plus élevé",
-		"cooldown_warning": "L'augmentation du prix déclenchera une période de refroidissement ({{days}} {{dayLabel}})",
+		"cooldown_warning": "L'augmentation du prix déclenchera une période de refroidissement de 3 jours. Après cela, vous pourrez emprunter le montant demandé.",
+		"adjust_liq_price_btn": "Ajuster le prix de liquidation",
 		"cooldown_ends_at": "Fin: {{date}}",
 		"cooldown_please_wait": "Cette position est en refroidissement, veuillez patienter ({{remaining}})",
 		"confirm_close_position": "Confirmer et Fermer la Position",
@@ -234,6 +239,9 @@
 		"deposit_collateral": "Déposer des Garanties",
 		"withdraw_collateral": "Retirer des Garanties",
 		"repay_loan": "Rembourser le Prêt",
+		"repay": "Rembourser",
+		"lend": "Prêter",
+		"lending": "Prêt en cours",
 		"error": {
 			"could_not_obtain_token_data": "Impossible d'obtenir les données du token",
 			"token_decimals_should_be_less_than_24": "Les décimales du token doivent être inférieures à 24.",
@@ -270,7 +278,8 @@
 			"extending": "Prolongation de la position",
 			"extending_success": "Position prolongée avec succès",
 			"adjusting_price": "Ajustement du prix de la position...",
-			"adjusting_price_success": "Prix de la position ajusté avec succès"
+			"adjusting_price_success": "Prix de la position ajusté avec succès",
+			"adjust_success": "Position ajustée avec succès"
 		}
 	},
 	"my_positions": {

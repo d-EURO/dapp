@@ -71,7 +71,9 @@
 			"price": "Price:",
 			"receive": "Receive:",
 			"shares": "Shares:",
-			"failed": "Transaction Failed"
+			"failed": "Transaction Failed",
+			"approving": "Approving...",
+			"approved": "Approved"
 		},
 		"error": {
 			"insufficient_balance": "Not enough {{symbol}} in your wallet.",
@@ -128,6 +130,7 @@
 		"token_select_modal_title": "Select Collateral Asset",
 		"details": "Details",
 		"loan_amount": "Loan Amount",
+		"amount_lended": "Amount Lended",
 		"retained_reserve": "Retained Reserve",
 		"expected_interest": "Expected interest for the selected period",
 		"effective_annual_interest": "Effective Annual Interest",
@@ -208,7 +211,8 @@
 		"needs_higher_liq_price": "The position needs higher liquidation price",
 		"more_collateral": "More collateral",
 		"higher_liq_price": "Higher liquidation price",
-		"cooldown_warning": "Price increase will trigger cooldown period ({{days}} {{dayLabel}})",
+		"cooldown_warning": "Price increase will trigger a 3-day cooldown period. After that, you can borrow the requested amount.",
+		"adjust_liq_price_btn": "Adjust liquidation price",
 		"cooldown_ends_at": "Ends: {{date}}",
 		"cooldown_please_wait": "This position is in cooldown, please wait ({{remaining}})",
 		"confirm_close_position": "Confirm & Close Position",
@@ -235,6 +239,9 @@
 		"deposit_collateral": "Deposit Collateral",
 		"withdraw_collateral": "Withdraw Collateral",
 		"repay_loan": "Repay Loan",
+		"repay": "Repay",
+		"lend": "Lend",
+		"lending": "Lending",
 		"error": {
 			"could_not_obtain_token_data": "Could not obtain token data",
 			"token_decimals_should_be_less_than_24": "Token decimals should be less than 24.",
@@ -271,7 +278,8 @@
 			"extending": "Extending position",
 			"extending_success": "Successfully extended position",
 			"adjusting_price": "Adjusting position price...",
-			"adjusting_price_success": "Position price adjusted successfully"
+			"adjusting_price_success": "Position price adjusted successfully",
+			"adjust_success": "Position adjusted successfully"
 		}
 	},
 	"my_positions": {
