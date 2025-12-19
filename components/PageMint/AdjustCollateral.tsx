@@ -43,7 +43,6 @@ interface AdjustCollateralProps {
 	isInCooldown: boolean;
 	cooldownRemainingFormatted: string | null;
 	cooldownEndsAt?: Date;
-	onBack: () => void;
 	onSuccess: () => void;
 }
 
@@ -61,7 +60,6 @@ export const AdjustCollateral = ({
 	isInCooldown,
 	cooldownRemainingFormatted,
 	cooldownEndsAt,
-	onBack,
 	onSuccess,
 }: AdjustCollateralProps) => {
 	const { t } = useTranslation();
@@ -480,12 +478,6 @@ export const AdjustCollateral = ({
 			>
 				{getButtonLabel()}
 			</Button>
-
-			<div className="text-center">
-				<span className="text-sm text-text-muted2 cursor-pointer hover:text-text-title transition-colors" onClick={onBack}>
-					{t("common.back")}
-				</span>
-			</div>
 		</div>
 	);
 };
