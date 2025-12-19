@@ -37,6 +37,7 @@ import { usePositionMaxAmounts } from "../../hooks/usePositionMaxAmounts";
 import { ErrorDisplay } from "@components/ErrorDisplay";
 import { ManageButtons } from "@components/ManageButtons";
 import { AdjustLoan } from "./AdjustLoan";
+import { AdjustCollateral } from "./AdjustCollateral";
 
 enum Step {
 	SELECT_TARGET = "SELECT_TARGET",
@@ -89,6 +90,13 @@ export const ManageSolver = () => {
 						functionName: "allowance",
 						args: [userAddress as Address, position.position as Address],
 					},
+					{
+						chainId,
+						abi: erc20Abi,
+						address: ADDRESS[chainId]?.juiceDollar as Address,
+						functionName: "balanceOf",
+						args: [userAddress as Address],
+					},
 			  ]
 			: [],
 	});
@@ -100,6 +108,7 @@ export const ManageSolver = () => {
 	const cooldown = data?.[4]?.result || 0n;
 	const minimumCollateral = data?.[5]?.result || 0n;
 	const jusdAllowance = data?.[6]?.result || 0n;
+	const jusdBalance = data?.[7]?.result || 0n;
 
 	const collateralDecimals = position?.collateralDecimals || 18;
 	const liqPrice =
@@ -563,6 +572,28 @@ export const ManageSolver = () => {
 				isInCooldown={isInCooldown}
 				cooldownRemainingFormatted={cooldownRemainingFormatted}
 				cooldownEndsAt={isInCooldown ? new Date(Number(cooldownBigInt) * 1000) : undefined}
+			/>
+		);
+	}
+
+	if (step === Step.ENTER_VALUE && selectedTarget === Target.COLLATERAL) {
+		return (
+			<AdjustCollateral
+				position={position}
+				collateralBalance={collateralBalance}
+				currentDebt={currentDebt}
+				positionPrice={positionPriceLimit}
+				principal={principal}
+				walletBalance={walletBalance}
+				minimumCollateral={minimumCollateral}
+				jusdBalance={jusdBalance}
+				jusdAllowance={jusdAllowance}
+				refetchAllowance={refetchReadContracts}
+				isInCooldown={isInCooldown}
+				cooldownRemainingFormatted={cooldownRemainingFormatted}
+				cooldownEndsAt={isInCooldown ? new Date(Number(cooldownBigInt) * 1000) : undefined}
+				onBack={handleReset}
+				onSuccess={handleReset}
 			/>
 		);
 	}
