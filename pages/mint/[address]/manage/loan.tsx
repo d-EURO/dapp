@@ -21,6 +21,7 @@ export default function ManageLoan() {
 		liqPrice,
 		walletBalance,
 		jusdAllowance,
+		jusdBalance,
 		isInCooldown,
 		cooldownRemainingFormatted,
 		cooldownEndsAt,
@@ -60,6 +61,7 @@ export default function ManageLoan() {
 						currentPosition={currentPosition}
 						walletBalance={walletBalance}
 						jusdAllowance={jusdAllowance}
+						jusdBalance={jusdBalance}
 						refetchAllowance={refetch}
 						onSuccess={refetch}
 						onFullRepaySuccess={() => router.push("/dashboard")}

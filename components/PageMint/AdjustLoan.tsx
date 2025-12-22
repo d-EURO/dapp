@@ -35,6 +35,7 @@ interface AdjustLoanProps {
 	currentPosition: SolverPosition;
 	walletBalance: bigint;
 	jusdAllowance: bigint;
+	jusdBalance: bigint;
 	refetchAllowance: () => void;
 	onSuccess: () => void;
 	onFullRepaySuccess: () => void;
@@ -52,6 +53,7 @@ export const AdjustLoan = ({
 	currentPosition,
 	walletBalance,
 	jusdAllowance,
+	jusdBalance,
 	refetchAllowance,
 	onSuccess,
 	onFullRepaySuccess,
@@ -185,14 +187,24 @@ export const AdjustLoan = ({
 		}
 	}, [currentPosition, deltaAmount, isIncrease, strategies, currentDebt, collateralBalance, liqPrice]);
 
-	useEffect(() => {
-		if (!deltaAmount || isIncrease) return setDeltaAmountError(null);
-		const delta = BigInt(deltaAmount || 0);
-		const exceedsMax = delta > maxDelta && maxDelta > 0n;
-		setDeltaAmountError(exceedsMax ? t("mint.error.amount_greater_than_max_to_remove") : null);
-	}, [deltaAmount, isIncrease, maxDelta, t]);
-
 	const repayAmount = useMemo(() => (!outcome || outcome.deltaDebt >= 0n ? 0n : -outcome.deltaDebt), [outcome]);
+
+	useEffect(() => {
+		if (!deltaAmount || isIncrease) {
+			setDeltaAmountError(null);
+			return;
+		}
+
+		const delta = BigInt(deltaAmount || 0);
+		const error =
+			repayAmount > jusdBalance
+				? t("mint.insufficient_balance", { symbol: position.stablecoinSymbol })
+				: delta > maxDelta && maxDelta > 0n
+				? t("mint.error.amount_greater_than_max_to_remove")
+				: null;
+
+		setDeltaAmountError(error);
+	}, [deltaAmount, isIncrease, maxDelta, repayAmount, jusdBalance, position.stablecoinSymbol, t]);
 	const needsApproval = repayAmount > 0n && jusdAllowance < repayAmount;
 	const handleMaxClick = () => setDeltaAmount(maxDelta.toString());
 
