@@ -213,6 +213,9 @@
 		"more_collateral": "Plus de garantie",
 		"higher_liq_price": "Prix de liquidation plus élevé",
 		"cooldown_warning": "L'augmentation du prix déclenchera une période de refroidissement de 3 jours. Après cela, vous pourrez emprunter le montant demandé.",
+		"price_increase_cooldown_warning": "L'augmentation du prix déclenchera une période de refroidissement de 3 jours.",
+		"after_cooldown_can_withdraw": "Après le refroidissement, vous pourrez retirer {{amount}} {{symbol}} ou emprunter plus.",
+		"price_below_collateral_limit": "Le prix ne peut pas descendre en dessous de {{min}} {{symbol}} (limite de collatéral).",
 		"adjust_liq_price_btn": "Ajuster le prix de liquidation",
 		"cooldown_ends_at": "Fin: {{date}}",
 		"cooldown_please_wait": "Cette position est en refroidissement, veuillez patienter ({{remaining}})",
@@ -248,6 +251,8 @@
 		"repay_loan": "Rembourser le Prêt",
 		"repay": "Rembourser",
 		"lend": "Prêter",
+		"increase": "Augmenter",
+		"reduce": "Réduire",
 		"lending": "Prêt en cours",
 		"error": {
 			"could_not_obtain_token_data": "Impossible d'obtenir les données du token",

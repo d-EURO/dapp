@@ -15,9 +15,8 @@ export default function ManageLiquidationPrice() {
 
 	const {
 		position,
-		liqPrice,
+		positionPrice,
 		priceDecimals,
-		jusdAllowance,
 		isInCooldown,
 		cooldownRemainingFormatted,
 		cooldownEndsAt,
@@ -50,9 +49,8 @@ export default function ManageLiquidationPrice() {
 					<SectionTitle className="!mb-0 text-center !text-xl">{t("mint.adjust_your_borrowing_position")}</SectionTitle>
 					<AdjustLiqPrice
 						position={position}
-						liqPrice={liqPrice}
+						positionPrice={positionPrice}
 						priceDecimals={priceDecimals}
-						jusdAllowance={jusdAllowance}
 						currentPosition={currentPosition}
 						isInCooldown={isInCooldown}
 						cooldownRemainingFormatted={cooldownRemainingFormatted}

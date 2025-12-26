@@ -213,6 +213,9 @@
 		"more_collateral": "Más colateral",
 		"higher_liq_price": "Precio de liquidación más alto",
 		"cooldown_warning": "El aumento de precio activará un período de cooldown de 3 días. Después de eso, podrás pedir prestado el monto solicitado.",
+		"price_increase_cooldown_warning": "El aumento de precio activará un período de cooldown de 3 días.",
+		"after_cooldown_can_withdraw": "Después del cooldown podrás retirar {{amount}} {{symbol}} o pedir más préstamo.",
+		"price_below_collateral_limit": "El precio no puede bajar de {{min}} {{symbol}} (límite de colateral).",
 		"adjust_liq_price_btn": "Ajustar precio de liquidación",
 		"cooldown_ends_at": "Finaliza: {{date}}",
 		"cooldown_please_wait": "Esta posición está en cooldown, por favor espera ({{remaining}})",
@@ -248,6 +251,8 @@
 		"repay_loan": "Pagar Préstamo",
 		"repay": "Pagar",
 		"lend": "Prestar",
+		"increase": "Aumentar",
+		"reduce": "Reducir",
 		"lending": "Prestando",
 		"error": {
 			"could_not_obtain_token_data": "No se pudieron obtener los datos del token",
