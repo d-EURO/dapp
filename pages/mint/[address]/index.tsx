@@ -55,7 +55,7 @@ export default function PositionBorrow({}) {
 		setExpirationDate(toDate(position.expiration));
 
 		if (!amount) {
-			const initMintAmount: bigint = BigInt(formatUnits(BigInt(position.price) * BigInt(position.minimumCollateral), 18));
+			const initMintAmount = (BigInt(position.price) * BigInt(position.minimumCollateral)) / BigInt(1e18);
 			setAmount(initMintAmount);
 		}
 

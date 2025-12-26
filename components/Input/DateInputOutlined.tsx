@@ -6,13 +6,22 @@ import { useState } from "react";
 interface DateInputOutlinedProps {
 	value: Date | undefined | null;
 	onChange: (date: Date | null) => void;
+	minDate?: Date | undefined | null;
 	maxDate?: Date | undefined | null;
 	rightAdornment?: React.ReactNode;
 	placeholderText?: string;
 	className?: string;
 }
 
-export function DateInputOutlined({ value, maxDate, onChange, rightAdornment, placeholderText, className }: DateInputOutlinedProps) {
+export function DateInputOutlined({
+	value,
+	minDate,
+	maxDate,
+	onChange,
+	rightAdornment,
+	placeholderText,
+	className,
+}: DateInputOutlinedProps) {
 	const [isFocused, setIsFocused] = useState(false);
 
 	return (
@@ -34,6 +43,7 @@ export function DateInputOutlined({ value, maxDate, onChange, rightAdornment, pl
 					dateFormat={"yyyy-MM-dd"}
 					selected={value}
 					onChange={onChange}
+					minDate={minDate}
 					maxDate={maxDate}
 					onFocus={() => setIsFocused(true)}
 					onBlur={() => setIsFocused(false)}
