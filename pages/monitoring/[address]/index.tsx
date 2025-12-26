@@ -168,9 +168,7 @@ export default function PositionDetail() {
 							<Button
 								className="h-10 col-span-2 md:col-span-1 md:col-start-1 order-3 md:order-1"
 								onClick={() =>
-									navigate.push(
-										`/mint/${position.position}/manage/collateral${toQueryString(getCarryOnQueryParams(router))}`
-									)
+									navigate.push(`/mint/${position.position}/manage${toQueryString(getCarryOnQueryParams(router))}`)
 								}
 							>
 								{t("dashboard.manage")}
