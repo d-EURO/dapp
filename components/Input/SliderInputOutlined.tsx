@@ -1,6 +1,7 @@
 import { formatUnits } from "viem";
 import { BigNumberInput } from "./BigNumberInput";
 import { useState } from "react";
+import TokenLogo from "@components/TokenLogo";
 
 interface SliderInputOutlinedProps {
 	value: string;
@@ -44,7 +45,7 @@ export function SliderInputOutlined({
 					<div className="flex-col justify-center items-start inline-flex">
 						<div className="self-stretch px-2 bg-white rounded-xl flex-col justify-center items-start flex">
 							<div className="h-11 self-stretch justify-start items-center gap-1 inline-flex overflow-hidden">
-								<div className="text-input-placeholder text-xl leading-normal">€</div>
+								<TokenLogo currency="JUSD" size={6} />
 								<BigNumberInput
 									className={`w-full pl-0 text-input-primary placeholder:text-input-placeholder text-2xl font-medium leading-tight ${
 										isError ? "!text-text-warning" : ""

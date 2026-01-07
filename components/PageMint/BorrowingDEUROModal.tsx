@@ -50,7 +50,7 @@ export function BorrowingDEUROModal({
 					<div className="h-20 px-3 py-4 justify-center items-center gap-3 inline-flex overflow-hidden">
 						<div className="justify-center items-center gap-2.5 flex">
 							<div className="w-10 h-10 justify-center items-center flex">
-								<TokenLogo currency="deuro" size={10} />
+								<TokenLogo currency="JUSD" size={10} />
 							</div>
 						</div>
 						<div className="text-[28px] font-medium leading-normal">{youGet}</div>
