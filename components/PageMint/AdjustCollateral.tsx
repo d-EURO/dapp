@@ -8,7 +8,6 @@ import { AddCircleOutlineIcon } from "@components/SvgComponents/add_circle_outli
 import { RemoveCircleOutlineIcon } from "@components/SvgComponents/remove_circle_outline";
 import { SvgIconButton } from "./PlusMinusButtons";
 import { MaxButton } from "@components/Input/MaxButton";
-import { ErrorDisplay } from "@components/ErrorDisplay";
 import Button from "@components/Button";
 import { PositionQuery } from "@juicedollar/api";
 import { useAccount } from "wagmi";
@@ -88,8 +87,9 @@ export const AdjustCollateral = ({
 
 	const minCollateralNeeded = currentDebt > 0n ? (currentDebt * BigInt(1e18)) / positionPrice : 0n;
 	const minCollateralWithBuffer = (minCollateralNeeded * 101n) / 100n;
-	const maxRemovableWithoutAdjustment = collateralBalance > minCollateralWithBuffer ? collateralBalance - minCollateralWithBuffer : 0n;
-
+	const minimumCollateralValue = BigInt(position.minimumCollateral || 0);
+	const requiredCollateral = minCollateralWithBuffer > minimumCollateralValue ? minCollateralWithBuffer : minimumCollateralValue;
+	const maxRemovableWithoutAdjustment = collateralBalance > requiredCollateral ? collateralBalance - requiredCollateral : 0n;
 	const hasAnyStrategy = strategies[StrategyKey.HIGHER_PRICE] || strategies[StrategyKey.REPAY_LOAN];
 
 	const delta = BigInt(deltaAmount || 0);
@@ -120,16 +120,42 @@ export const AdjustCollateral = ({
 			setDeltaAmountError(null);
 			return;
 		}
-		const d = BigInt(deltaAmount || 0);
-		if (!isIncrease && d > collateralBalance) {
-			setDeltaAmountError(t("mint.error.amount_greater_than_position_balance"));
-		} else if (isIncrease && d > walletBalance) {
-			setDeltaAmountError(t("common.error.insufficient_balance", { symbol: collateralSymbol }));
-		} else if (!isIncrease && strategies[StrategyKey.REPAY_LOAN] && calculatedRepayAmount > jusdBalance) {
-			setDeltaAmountError(t("mint.insufficient_balance", { symbol: position.stablecoinSymbol }));
-		} else {
-			setDeltaAmountError(null);
-		}
+
+		const delta = BigInt(deltaAmount || 0);
+		const newCollateral = isIncrease ? collateralBalance + delta : collateralBalance - delta;
+		const validationDebt = strategies[StrategyKey.REPAY_LOAN] ? currentDebt - calculatedRepayAmount : currentDebt;
+		const formattedCurrentCollateral = formatCurrency(
+			formatUnits(collateralBalance, collateralDecimals),
+			0,
+			getDisplayDecimals(collateralSymbol)
+		);
+
+		const validations = [
+			{
+				condition: !isIncrease && delta > collateralBalance,
+				error: t("mint.error.amount_greater_than_position_balance"),
+			},
+			{
+				condition: isIncrease && delta > walletBalance,
+				error: t("common.error.insufficient_balance", { symbol: collateralSymbol }),
+			},
+			{
+				condition: !isIncrease && strategies[StrategyKey.REPAY_LOAN] && calculatedRepayAmount > jusdBalance,
+				error: t("mint.insufficient_balance", { symbol: position.stablecoinSymbol }),
+			},
+			{
+				condition:
+					!isIncrease &&
+					!strategies[StrategyKey.REPAY_LOAN] &&
+					newCollateral > 0n &&
+					newCollateral < BigInt(position.minimumCollateral || 0) &&
+					validationDebt > 0n,
+				error: `${t("mint.error.collateral_below_min")} (${formattedCurrentCollateral} ${collateralSymbol})`,
+			},
+		];
+
+		const error = validations.find((v) => v.condition)?.error ?? null;
+		setDeltaAmountError(error);
 	}, [
 		deltaAmount,
 		isIncrease,
@@ -140,10 +166,12 @@ export const AdjustCollateral = ({
 		calculatedRepayAmount,
 		jusdBalance,
 		position.stablecoinSymbol,
+		position.minimumCollateral,
 		t,
+		currentDebt,
 	]);
 
-	const isBelowMinCollateral = (col: bigint) => col > 0n && col < minimumCollateral && newDebt > 0n;
+	const isBelowMinCollateral = (col: bigint) => col > 0n && col < BigInt(position.minimumCollateral || 0) && newDebt > 0n;
 
 	const formatValue = (value: bigint) => formatPositionValue(value, collateralDecimals, collateralSymbol);
 
@@ -309,7 +337,13 @@ export const AdjustCollateral = ({
 	};
 
 	const isDisabled =
-		!deltaAmount || delta === 0n || Boolean(deltaAmountError) || isTxOnGoing || needsStrategy || (!isIncrease && isInCooldown);
+		!deltaAmount ||
+		delta === 0n ||
+		Boolean(deltaAmountError) ||
+		isTxOnGoing ||
+		needsStrategy ||
+		(!isIncrease && isInCooldown) ||
+		(!isIncrease && collateralBalance <= requiredCollateral);
 
 	const getButtonLabel = () => {
 		if (needsApproval) return t("common.approve");
@@ -377,7 +411,7 @@ export const AdjustCollateral = ({
 						</div>
 					}
 				/>
-				<ErrorDisplay error={deltaAmountError} />
+				{deltaAmountError && <div className="ml-1 text-text-muted2 text-sm">{deltaAmountError}</div>}
 			</div>
 
 			{showStrategyOptions && !hasAnyStrategy && (

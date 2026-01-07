@@ -275,6 +275,7 @@
 			"amount_greater_than_position_balance": "La cantidad es mayor que el saldo de la posición.",
 			"amount_greater_than_max_to_remove": "La cantidad es mayor que el máximo permitido dado el actual deuda",
 			"amount_greater_than_debt": "La cantidad es mayor que la deuda",
+			"collateral_below_min": "El colateral está por debajo del mínimo requerido",
 			"price_too_high": "El precio no puede exceder el máximo permitido",
 			"price_too_low": "El precio no puede ser inferior al mínimo requerido para el colateral",
 			"insufficient_collateral_for_requirements": "Colateral insuficiente para ajuste de precio"
