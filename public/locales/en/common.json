@@ -253,6 +253,9 @@
 		"lend": "Lend",
 		"increase": "Increase",
 		"reduce": "Reduce",
+		"decrease": "Decrease",
+		"set_price_to": "Set price to",
+		"set_new_price": "Set new price",
 		"lending": "Lending",
 		"error": {
 			"could_not_obtain_token_data": "Could not obtain token data",

@@ -253,6 +253,9 @@
 		"lend": "Prestar",
 		"increase": "Aumentar",
 		"reduce": "Reducir",
+		"decrease": "Disminuir",
+		"set_price_to": "Establecer precio a",
+		"set_new_price": "Establecer nuevo precio",
 		"lending": "Prestando",
 		"error": {
 			"could_not_obtain_token_data": "No se pudieron obtener los datos del token",

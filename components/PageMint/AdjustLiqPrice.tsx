@@ -66,6 +66,8 @@ export const AdjustLiqPrice = ({
 	const isBlockedByCooldown = isInCooldown && isIncrease && delta > 0n;
 	const isDecreaseInvalid = !isIncrease && delta > maxDeltaDecrease;
 
+	const pairNotation = `${normalizeTokenSymbol(position.collateralSymbol)}/${position.stablecoinSymbol}`;
+
 	useEffect(() => {
 		setDeltaAmount("");
 	}, [isIncrease]);
@@ -110,7 +112,7 @@ export const AdjustLiqPrice = ({
 							{t("mint.increase")}
 						</SvgIconButton>
 						<SvgIconButton isSelected={!isIncrease} onClick={() => setIsIncrease(false)} SvgComponent={RemoveCircleOutlineIcon}>
-							{t("mint.reduce")}
+							{t("mint.decrease")}
 						</SvgIconButton>
 					</div>
 				</div>
@@ -144,20 +146,20 @@ export const AdjustLiqPrice = ({
 				<div className="flex justify-between text-sm">
 					<span className="text-text-muted2">{t("mint.current_liquidation_price")}</span>
 					<span className="font-medium text-text-title">
-						{formatCurrency(formatUnits(positionPrice, priceDecimals), 0, 0)} {position.stablecoinSymbol}
+						{formatCurrency(formatUnits(positionPrice, priceDecimals), 0, 0)} {pairNotation}
 					</span>
 				</div>
 				<div className="flex justify-between text-sm">
 					<span className="text-text-muted2">{t("mint.change")}</span>
 					<span className="font-medium text-text-title">
 						{isIncrease ? "+" : "-"}
-						{formatCurrency(formatUnits(delta, priceDecimals), 0, 0)} {position.stablecoinSymbol}
+						{formatCurrency(formatUnits(delta, priceDecimals), 0, 0)} {pairNotation}
 					</span>
 				</div>
 				<div className="flex justify-between text-base pt-2 border-t border-gray-300 dark:border-gray-600">
 					<span className="font-bold text-text-title">{t("mint.new_liq_price")}</span>
 					<span className="font-bold text-text-title">
-						{formatCurrency(formatUnits(newPrice, priceDecimals), 0, 0)} {position.stablecoinSymbol}
+						{formatCurrency(formatUnits(newPrice, priceDecimals), 0, 0)} {pairNotation}
 					</span>
 				</div>
 			</div>
@@ -192,10 +194,8 @@ export const AdjustLiqPrice = ({
 				disabled={isDisabled}
 			>
 				{delta === 0n
-					? t("common.continue")
-					: isIncrease
-					? `${t("mint.increase")} ${formatCurrency(formatUnits(delta, priceDecimals), 0, 0)} ${position.stablecoinSymbol}`
-					: `${t("mint.reduce")} ${formatCurrency(formatUnits(delta, priceDecimals), 0, 0)} ${position.stablecoinSymbol}`}
+					? t("mint.set_new_price")
+					: `${t("mint.set_price_to")} ${formatCurrency(formatUnits(newPrice, priceDecimals), 0, 0)} ${pairNotation}`}
 			</Button>
 		</div>
 	);

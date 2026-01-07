@@ -253,6 +253,9 @@
 		"lend": "Leihen",
 		"increase": "Erhöhen",
 		"reduce": "Reduzieren",
+		"decrease": "Verringern",
+		"set_price_to": "Preis festlegen auf",
+		"set_new_price": "Neuen Preis festlegen",
 		"lending": "Ausleihen",
 		"error": {
 			"could_not_obtain_token_data": "Tokendaten konnten nicht abgerufen werden.",
