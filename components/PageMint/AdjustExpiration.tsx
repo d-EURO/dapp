@@ -14,7 +14,7 @@ import { getCarryOnQueryParams, toQueryString, toTimestamp, normalizeTokenSymbol
 import { toast } from "react-toastify";
 import { TxToast } from "@components/TxToast";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
-import { useExtensionTarget } from "../../hooks/useExtensionTarget";
+import { useDefaultReferencePosition } from "../../hooks/useDefaultReferencePosition";
 import Button from "@components/Button";
 import { erc20Abi, maxUint256 } from "viem";
 import { PositionQuery } from "@juicedollar/api";
@@ -58,51 +58,47 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 	const { data: contractData } = useReadContracts({
 		contracts: position
 			? [
-					{
-						chainId,
-						address: position.position,
-						abi: PositionV2ABI,
-						functionName: "principal",
-					},
-					{
-						chainId,
-						address: position.position,
-						abi: PositionV2ABI,
-						functionName: "getDebt",
-					},
+					{ chainId, address: position.position as Address, abi: PositionV2ABI, functionName: "principal" },
+					{ chainId, address: position.position as Address, abi: PositionV2ABI, functionName: "getDebt" },
+					{ chainId, address: position.position as Address, abi: PositionV2ABI, functionName: "getInterest" },
 			  ]
 			: [],
 	});
 
 	const principal = contractData?.[0]?.result || 0n;
 	const currentDebt = contractData?.[1]?.result || 0n;
+	const positionInterest = contractData?.[2]?.result || 0n;
 
-	const { targetPositionForExtend, canExtend } = useExtensionTarget(position, currentDebt);
+	const { data: defaultPosition, isLoading: loadingDefault } = useDefaultReferencePosition(position?.collateral);
 
 	useEffect(() => {
-		if (position) {
-			if (targetPositionForExtend?.expiration) {
-				setExpirationDate((date) => date ?? new Date(targetPositionForExtend.expiration * 1000));
-			} else {
-				setExpirationDate((date) => date ?? new Date(position.expiration * 1000));
-			}
+		if (position && defaultPosition) {
+			setExpirationDate((date) => date ?? new Date(defaultPosition.expiration * 1000));
 		}
-	}, [position, targetPositionForExtend]);
+	}, [position, defaultPosition]);
 
 	const currentExpirationDate = new Date(position.expiration * 1000);
 	const isExtending = !!(expirationDate && expirationDate.getTime() > currentExpirationDate.getTime());
+	const currentCollateralBalance = BigInt(position.collateralBalance);
+	const targetMinCollateral = defaultPosition ? BigInt(defaultPosition.minimumCollateral) : 0n;
 
 	const handleAdjustExpiration = async () => {
 		try {
 			setIsTxOnGoing(true);
 
-			const newExpirationTimestamp = toTimestamp(expirationDate as Date);
-			const target = targetPositionForExtend?.position;
-
-			if (!target) {
+			if (!defaultPosition) {
 				toast.error(t("mint.no_extension_target_available"));
 				return;
 			}
+
+			const newExpirationTimestamp = toTimestamp(expirationDate as Date);
+			const target = defaultPosition.position;
+			const interestBuffer = positionInterest / 10n + BigInt(1e16);
+			const repay = principal + positionInterest + interestBuffer;
+			const collWithdraw = currentCollateralBalance;
+			const depositAmount = collWithdraw < targetMinCollateral ? targetMinCollateral : collWithdraw;
+			const mintForDeposit = principal;
+			const extraNeeded = depositAmount > collWithdraw ? depositAmount - collWithdraw : 0n;
 
 			let txHash: `0x${string}`;
 
@@ -110,38 +106,43 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 				txHash = await writeContract(WAGMI_CONFIG, {
 					address: ADDRESS[chainId].roller,
 					abi: PositionRollerABI,
-					functionName: "rollFullyNativeWithExpiration",
-					args: [position.position as Address, target as Address, newExpirationTimestamp],
-					value: 0n,
+					functionName: "rollNative",
+					args: [
+						position.position as Address,
+						repay,
+						collWithdraw,
+						target as Address,
+						mintForDeposit,
+						depositAmount,
+						newExpirationTimestamp,
+					],
+					value: extraNeeded,
 				});
 			} else {
 				txHash = await writeContract(WAGMI_CONFIG, {
 					address: ADDRESS[chainId].roller,
 					abi: PositionRollerABI,
-					functionName: "rollFullyWithExpiration",
-					args: [position.position as Address, target as Address, newExpirationTimestamp],
+					functionName: "roll",
+					args: [
+						position.position as Address,
+						repay,
+						collWithdraw,
+						target as Address,
+						mintForDeposit,
+						depositAmount,
+						newExpirationTimestamp,
+					],
 				});
 			}
 
-			const toastContent = [
-				{
-					title: t("common.txs.transaction"),
-					hash: txHash,
-				},
-			];
+			const toastContent = [{ title: t("common.txs.transaction"), hash: txHash }];
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: txHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title={t("mint.txs.extending")} rows={toastContent} />,
-				},
-				success: {
-					render: <TxToast title={t("mint.txs.extending_success")} rows={toastContent} />,
-				},
+				pending: { render: <TxToast title={t("mint.txs.extending")} rows={toastContent} /> },
+				success: { render: <TxToast title={t("mint.txs.extending_success")} rows={toastContent} /> },
 			});
 
-			const carryOnQueryParams = getCarryOnQueryParams(router);
-			const _href = `/dashboard${toQueryString(carryOnQueryParams)}`;
-			router.push(_href);
+			router.push(`/dashboard${toQueryString(getCarryOnQueryParams(router))}`);
 		} catch (error) {
 			toast.error(renderErrorTxToast(error));
 		} finally {
@@ -160,12 +161,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 				args: [ADDRESS[chainId].roller, maxUint256],
 			});
 
-			const toastContent = [
-				{
-					title: t("common.txs.transaction"),
-					hash: approvingHash,
-				},
-			];
+			const toastContent = [{ title: t("common.txs.transaction"), hash: approvingHash }];
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approvingHash, confirmations: 1 }), {
 				pending: {
@@ -205,20 +201,11 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 				args: [ADDRESS[chainId].roller, maxUint256],
 			});
 
-			const toastContent = [
-				{
-					title: t("common.txs.transaction"),
-					hash: approvingHash,
-				},
-			];
+			const toastContent = [{ title: t("common.txs.transaction"), hash: approvingHash }];
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approvingHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title={t("common.txs.title", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
-				},
-				success: {
-					render: <TxToast title={t("common.txs.success", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
-				},
+				pending: { render: <TxToast title={t("common.txs.title", { symbol: position.stablecoinSymbol })} rows={toastContent} /> },
+				success: { render: <TxToast title={t("common.txs.success", { symbol: position.stablecoinSymbol })} rows={toastContent} /> },
 			});
 
 			await refetchBalances();
@@ -231,13 +218,12 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 
 	const daysUntilExpiration = Math.ceil((currentExpirationDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 	const interest = currentDebt > principal ? currentDebt - principal : 0n;
-	const hasInsufficientBalance = interest > 0n && BigInt(jusdBalance || 0) < interest;
+	const interestWithBuffer = interest + interest / 10n + BigInt(1e16);
+	const hasInsufficientBalance = interestWithBuffer > 0n && BigInt(jusdBalance || 0) < interestWithBuffer;
+
 	const formatNumber = (value: bigint, decimals: number = 18): string => {
 		const num = Number(value) / Math.pow(10, decimals);
-		return new Intl.NumberFormat(router?.locale || "en", {
-			minimumFractionDigits: 2,
-			maximumFractionDigits: 2,
-		}).format(num);
+		return new Intl.NumberFormat(router?.locale || "en", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
 	};
 
 	return (
@@ -259,11 +245,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 				<div className="text-lg font-extrabold leading-[1.4375rem]">{t("mint.newly_selected_expiration_date")}</div>
 				<DateInputOutlined
 					minDate={currentExpirationDate}
-					maxDate={
-						canExtend && targetPositionForExtend?.expiration
-							? new Date(targetPositionForExtend.expiration * 1000)
-							: currentExpirationDate
-					}
+					maxDate={defaultPosition ? new Date(defaultPosition.expiration * 1000) : currentExpirationDate}
 					value={expirationDate}
 					placeholderText={new Date(position.expiration * 1000).toISOString().split("T")[0]}
 					className="placeholder:text-[#5D647B]"
@@ -271,24 +253,22 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 					rightAdornment={
 						<MaxButton
 							className="h-full py-3.5 px-3"
-							onClick={() =>
-								setExpirationDate(
-									targetPositionForExtend?.expiration ? new Date(targetPositionForExtend.expiration * 1000) : undefined
-								)
-							}
-							disabled={!targetPositionForExtend}
+							onClick={() => setExpirationDate(defaultPosition ? new Date(defaultPosition.expiration * 1000) : undefined)}
+							disabled={!defaultPosition}
 							label={t("common.max")}
 						/>
 					}
 				/>
 			</div>
-			{!canExtend && <div className="text-xs text-text-muted2 px-4">{t("mint.no_extension_target_available")}</div>}
+			{!defaultPosition && !loadingDefault && (
+				<div className="text-xs text-text-muted2 px-4">{t("mint.no_extension_target_available")}</div>
+			)}
 			{!isNativeWrappedPosition && !collateralAllowance ? (
 				<Button
 					className="text-lg leading-snug !font-extrabold"
 					onClick={handleApproveCollateral}
 					isLoading={isTxOnGoing}
-					disabled={isTxOnGoing || !canExtend}
+					disabled={isTxOnGoing || !defaultPosition}
 				>
 					{t("common.approve")} {normalizeTokenSymbol(position.collateralSymbol)}
 				</Button>
@@ -297,7 +277,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 					className="text-lg leading-snug !font-extrabold"
 					onClick={handleApproveJusd}
 					isLoading={isTxOnGoing}
-					disabled={isTxOnGoing || !canExtend}
+					disabled={isTxOnGoing || !defaultPosition}
 				>
 					{t("common.approve")} {position.stablecoinSymbol}
 				</Button>
@@ -320,7 +300,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 									{formatNumber(interest)} {position.stablecoinSymbol}
 								</span>
 							</div>
-							<div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+							<div className="text-xs text-gray-500 mt-1">
 								{t("mint.current_debt", { amount: formatNumber(currentDebt), symbol: position.stablecoinSymbol })}{" "}
 								{t("mint.original_amount", { amount: formatNumber(principal), symbol: position.stablecoinSymbol })}
 							</div>
@@ -329,13 +309,16 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 									<div className="text-xs font-medium text-red-600 dark:text-red-400">
 										{t("mint.insufficient_balance", { symbol: position.stablecoinSymbol })}
 									</div>
-									<div className="text-xs text-red-500 dark:text-red-500 mt-1">
+									<div className="text-xs text-red-500 mt-1">
 										{t("mint.you_have", {
 											amount: formatNumber(BigInt(jusdBalance || 0)),
 											symbol: position.stablecoinSymbol,
 										})}
 										<br />
-										{t("mint.you_need", { amount: formatNumber(interest), symbol: position.stablecoinSymbol })}
+										{t("mint.you_need", {
+											amount: formatNumber(interestWithBuffer),
+											symbol: position.stablecoinSymbol,
+										})}
 									</div>
 								</div>
 							)}
@@ -345,7 +328,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 						className="text-lg leading-snug !font-extrabold"
 						onClick={handleAdjustExpiration}
 						isLoading={isTxOnGoing}
-						disabled={isTxOnGoing || !expirationDate || !isExtending || !canExtend || hasInsufficientBalance}
+						disabled={isTxOnGoing || !expirationDate || !isExtending || !defaultPosition || hasInsufficientBalance}
 					>
 						{t("mint.extend_roll_borrowing")}{" "}
 						{expirationDate &&
