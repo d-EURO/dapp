@@ -55,30 +55,7 @@ export const executeLoanAdjust = async ({
 		const depositAmount = outcome.deltaCollateral > 0n ? outcome.deltaCollateral : 0n;
 		const isWithdrawing = outcome.deltaCollateral < 0n;
 		const newPrincipal = outcome.next.debt === 0n ? 0n : principal + outcome.deltaDebt;
-		const finalLiqPrice = outcome.deltaLiqPrice === 0n ? BigInt(position.price) : outcome.next.liqPrice;
-		const needsPriceAdjustFirst = outcome.deltaLiqPrice > 0n && outcome.deltaDebt > 0n;
-
-		if (needsPriceAdjustFirst) {
-			await executeTx({
-				contractParams: {
-					address: posAddr,
-					abi: PositionV2ABI,
-					functionName: "adjustPrice",
-					args: [finalLiqPrice],
-				},
-				pendingTitle: t("mint.txs.adjusting_price"),
-				successTitle: t("mint.txs.adjusting_price_success"),
-				rows: [
-					{
-						title: t("mint.adjust_price"),
-						value: formatPositionDelta(outcome.deltaLiqPrice, 36 - position.collateralDecimals, "JUSD"),
-					},
-				],
-			});
-			store.dispatch(fetchPositionsList());
-			onSuccess();
-			return;
-		}
+		const LiqPrice = BigInt(position.price);
 
 		const rows = [
 			outcome.deltaCollateral !== 0n && {
@@ -92,10 +69,6 @@ export const executeLoanAdjust = async ({
 			outcome.deltaDebt !== 0n && {
 				title: outcome.deltaDebt > 0n ? t("mint.borrow_more") : t("mint.repay"),
 				value: formatPositionValue(outcome.deltaDebt > 0n ? outcome.deltaDebt : -outcome.deltaDebt, 18, position.stablecoinSymbol),
-			},
-			outcome.deltaLiqPrice !== 0n && {
-				title: t("mint.adjust_price"),
-				value: formatPositionDelta(outcome.deltaLiqPrice, 36 - position.collateralDecimals, "JUSD"),
 			},
 		].filter(Boolean) as { title: string; value: string }[];
 
@@ -111,7 +84,7 @@ export const executeLoanAdjust = async ({
 				address: posAddr,
 				abi: PositionV2ABI,
 				functionName: "adjust",
-				args: [newPrincipal, outcome.next.collateral, finalLiqPrice, isWithdrawing && isNativeWrappedPosition],
+				args: [newPrincipal, outcome.next.collateral, LiqPrice, isWithdrawing && isNativeWrappedPosition],
 				value: isNativeWrappedPosition && depositAmount > 0n ? depositAmount : undefined,
 			},
 			pendingTitle: txTitle,

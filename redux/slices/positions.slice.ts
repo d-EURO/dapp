@@ -10,6 +10,7 @@ import {
 	DispatchApiPositionsListing,
 	DispatchApiPositionsOwners,
 	DispatchApiPositionsMapping,
+	DispatchPositionQuery,
 } from "./positions.types";
 import { logApiError } from "../../utils/errorLogger";
 
@@ -19,6 +20,7 @@ export const initialState: PositionsState = {
 	error: null,
 	loaded: false,
 
+	defaultPosition: undefined,
 	list: undefined,
 	mapping: undefined,
 	requests: undefined,
@@ -101,6 +103,10 @@ export const slice = createSlice({
 		setOpenPositionsByCollateral: (state, action: { payload: PositionQuery[][] }) => {
 			state.openPositionsByCollateral = action.payload;
 		},
+
+		setDefaultPosition: (state, action: { payload: PositionQuery | undefined | null }) => {
+			state.defaultPosition = action.payload;
+		},
 	},
 });
 
@@ -118,6 +124,7 @@ export const fetchPositionsList =
 			| DispatchApiPositionsOwners
 			| DispatchPositionQueryArray
 			| DispatchPositionQueryArray2
+			| DispatchPositionQuery
 		>
 	) => {
 		// ---------------------------------------------------------------

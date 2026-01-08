@@ -81,7 +81,8 @@ export const usePositionManageData = (addressQuery: string | string[] | undefine
 
 	const collateralDecimals = position?.collateralDecimals || 18;
 	const priceDecimals = 36 - collateralDecimals;
-	const liqPrice = collateralBalance > 0n ? (currentDebt * BigInt(10 ** priceDecimals)) / collateralBalance : positionPrice;
+	const debtRatio = collateralBalance > 0n ? (currentDebt * BigInt(10 ** priceDecimals)) / collateralBalance : 0n;
+	const liqPrice = debtRatio > positionPrice ? debtRatio : positionPrice;
 
 	const now = BigInt(Math.floor(Date.now() / 1000));
 	const cooldownBigInt = BigInt(cooldown);

@@ -19,10 +19,12 @@ import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { store } from "../../redux/redux.store";
 import { fetchPositionsList } from "../../redux/slices/positions.slice";
 import { Address } from "viem";
+import { useReferencePosition } from "../../hooks/useReferencePosition";
 
 interface AdjustLiqPriceProps {
 	position: PositionQuery;
 	positionPrice: bigint;
+	liqPrice: bigint;
 	priceDecimals: number;
 	currentPosition: SolverPosition;
 	isInCooldown: boolean;
@@ -36,11 +38,9 @@ interface AdjustLiqPriceProps {
 export const AdjustLiqPrice = ({
 	position,
 	positionPrice,
+	liqPrice,
 	priceDecimals,
 	currentPosition,
-	isInCooldown,
-	cooldownRemainingFormatted,
-	cooldownEndsAt,
 	refetch,
 	onSuccess,
 }: AdjustLiqPriceProps) => {
@@ -53,17 +53,20 @@ export const AdjustLiqPrice = ({
 	const [isTxOnGoing, setIsTxOnGoing] = useState(false);
 
 	const delta = deltaAmount ? BigInt(deltaAmount) : 0n;
-	const newPrice = isIncrease ? positionPrice + delta : positionPrice - delta;
-	const minimumCollateral = BigInt(position.minimumCollateral);
-	const minCollateralNeeded = newPrice > 0n ? (currentPosition.debt * BigInt(1e18)) / newPrice : 0n;
-
-	const minRequired = minCollateralNeeded > minimumCollateral ? minCollateralNeeded : minimumCollateral;
-	const collateralToRemove = isIncrease ? currentPosition.collateral - minRequired : 0n;
+	const newPrice = isIncrease ? liqPrice + delta : liqPrice - delta;
 
 	const minPriceForDecrease = (currentPosition.debt * BigInt(1e18)) / currentPosition.collateral;
-	const maxDeltaDecrease = positionPrice > minPriceForDecrease ? positionPrice - minPriceForDecrease : 0n;
+	const deltaDecrease = liqPrice > minPriceForDecrease ? ((liqPrice - minPriceForDecrease) * 99n) / 100n : 0n;
+	const maxDeltaDecrease = deltaDecrease * 10n >= liqPrice ? deltaDecrease : 0n;
 
-	const isBlockedByCooldown = isInCooldown && isIncrease && delta > 0n;
+	const reference = useReferencePosition(position, positionPrice);
+
+	const maxPriceIncrease = liqPrice * 2n;
+	const maxAllowedPrice = reference.price <= maxPriceIncrease ? reference.price : maxPriceIncrease;
+	const deltaIncrease = maxAllowedPrice > liqPrice ? maxAllowedPrice - liqPrice : 0n;
+	const maxDeltaIncrease = deltaIncrease * 10n >= liqPrice ? deltaIncrease : 0n;
+	const hasValidReference = reference.address !== null && maxDeltaIncrease > 0n;
+
 	const isDecreaseInvalid = !isIncrease && delta > maxDeltaDecrease;
 
 	const pairNotation = `${normalizeTokenSymbol(position.collateralSymbol)}/${position.stablecoinSymbol}`;
@@ -72,17 +75,31 @@ export const AdjustLiqPrice = ({
 		setDeltaAmount("");
 	}, [isIncrease]);
 
+	useEffect(() => {
+		if (!hasValidReference) {
+			setIsIncrease(false);
+		}
+	}, [hasValidReference]);
+
 	const handleExecute = async () => {
 		if (!userAddress || delta === 0n) return;
 		try {
 			setIsTxOnGoing(true);
 
-			const adjustHash = await writeContract(WAGMI_CONFIG, {
-				address: position.position as Address,
-				abi: PositionV2ABI,
-				functionName: "adjustPrice",
-				args: [newPrice],
-			});
+			const adjustHash = isIncrease
+				? await writeContract(WAGMI_CONFIG, {
+						address: position.position as Address,
+						abi: PositionV2ABI,
+						functionName: "adjustPriceWithReference",
+						args: [newPrice, reference.address!],
+				  })
+				: await writeContract(WAGMI_CONFIG, {
+						address: position.position as Address,
+						abi: PositionV2ABI,
+						functionName: "adjustPrice",
+						args: [newPrice],
+				  });
+
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: adjustHash, confirmations: 1 }), {
 				pending: { render: <TxToast title={t("mint.txs.adjusting_price")} rows={[]} /> },
 				success: { render: <TxToast title={t("mint.txs.adjusting_price_success")} rows={[]} /> },
@@ -98,7 +115,7 @@ export const AdjustLiqPrice = ({
 		}
 	};
 
-	const isDisabled = delta === 0n || isBlockedByCooldown || isDecreaseInvalid;
+	const isDisabled = delta === 0n || isDecreaseInvalid;
 
 	return (
 		<div className="flex flex-col gap-y-4">
@@ -108,37 +125,52 @@ export const AdjustLiqPrice = ({
 						{t("mint.adjust")} {t("mint.liquidation_price")}
 					</div>
 					<div className="flex flex-row items-center">
-						<SvgIconButton isSelected={isIncrease} onClick={() => setIsIncrease(true)} SvgComponent={AddCircleOutlineIcon}>
-							{t("mint.increase")}
-						</SvgIconButton>
-						<SvgIconButton isSelected={!isIncrease} onClick={() => setIsIncrease(false)} SvgComponent={RemoveCircleOutlineIcon}>
-							{t("mint.decrease")}
-						</SvgIconButton>
+						{maxDeltaIncrease > 0n && (
+							<SvgIconButton isSelected={isIncrease} onClick={() => setIsIncrease(true)} SvgComponent={AddCircleOutlineIcon}>
+								{t("mint.increase")}
+							</SvgIconButton>
+						)}
+						{maxDeltaDecrease > 0n && (
+							<SvgIconButton
+								isSelected={!isIncrease}
+								onClick={() => setIsIncrease(false)}
+								SvgComponent={RemoveCircleOutlineIcon}
+							>
+								{t("mint.decrease")}
+							</SvgIconButton>
+						)}
 					</div>
 				</div>
 
-				<SliderInputOutlined
-					value={deltaAmount}
-					onChange={(val) => setDeltaAmount(roundToWholeUnits(val, priceDecimals))}
-					min={0n}
-					max={isIncrease ? positionPrice : maxDeltaDecrease}
-					decimals={priceDecimals}
-					hideTrailingZeros
-				/>
+				{(maxDeltaIncrease > 0n || maxDeltaDecrease > 0n) && (
+					<SliderInputOutlined
+						value={deltaAmount}
+						onChange={(val) => setDeltaAmount(roundToWholeUnits(val, priceDecimals))}
+						min={0n}
+						max={isIncrease ? maxDeltaIncrease : maxDeltaDecrease}
+						decimals={priceDecimals}
+						hideTrailingZeros
+					/>
+				)}
 			</div>
 
-			{isDecreaseInvalid && delta > 0n && (
-				<div className="text-xs text-text-muted2 px-4">
-					{t("mint.price_below_collateral_limit", {
-						min: formatCurrency(formatUnits(minPriceForDecrease, priceDecimals), 0, 0),
-						symbol: position.stablecoinSymbol,
-					})}{" "}
+			{!hasValidReference && maxDeltaDecrease === 0n && (
+				<div className="text-sm text-text-muted2 px-4">
+					{t("mint.position_at_limit")}{" "}
 					<button
 						onClick={() => router.push(`/mint/${position.position}/manage/collateral`)}
 						className="text-primary underline hover:opacity-80"
 					>
 						{t("common.add")} {t("mint.collateral")}
-					</button>
+					</button>{" "}
+					{t("common.or")}{" "}
+					<button
+						onClick={() => router.push(`/mint/${position.position}/manage/loan`)}
+						className="text-primary underline hover:opacity-80"
+					>
+						{t("mint.repay_debt")}
+					</button>{" "}
+					{t("mint.to_adjust_price")}
 				</div>
 			)}
 
@@ -163,29 +195,6 @@ export const AdjustLiqPrice = ({
 					</span>
 				</div>
 			</div>
-
-			{isIncrease &&
-				delta > 0n &&
-				(isInCooldown ? (
-					<div className="text-xs text-text-muted2 px-4">
-						{t("mint.cooldown_please_wait", { remaining: cooldownRemainingFormatted })}
-						<br />
-						{t("mint.cooldown_ends_at", { date: cooldownEndsAt?.toLocaleString() })}
-					</div>
-				) : (
-					<div className="text-xs text-text-muted2 px-4">
-						{t("mint.price_increase_cooldown_warning")}
-						{collateralToRemove > 0n && (
-							<span>
-								{" "}
-								{t("mint.after_cooldown_can_withdraw", {
-									amount: formatCurrency(formatUnits(collateralToRemove, position.collateralDecimals), 0, 6),
-									symbol: normalizeTokenSymbol(position.collateralSymbol || ""),
-								})}
-							</span>
-						)}
-					</div>
-				))}
 
 			<Button
 				className="w-full text-lg leading-snug !font-extrabold"

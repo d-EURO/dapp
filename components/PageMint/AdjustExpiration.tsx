@@ -14,7 +14,7 @@ import { getCarryOnQueryParams, toQueryString, toTimestamp, normalizeTokenSymbol
 import { toast } from "react-toastify";
 import { TxToast } from "@components/TxToast";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
-import { useDefaultReferencePosition } from "../../hooks/useDefaultReferencePosition";
+import { useReferencePosition } from "../../hooks/useReferencePosition";
 import Button from "@components/Button";
 import { erc20Abi, maxUint256 } from "viem";
 import { PositionQuery } from "@juicedollar/api";
@@ -69,7 +69,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 	const currentDebt = contractData?.[1]?.result || 0n;
 	const positionInterest = contractData?.[2]?.result || 0n;
 
-	const { data: defaultPosition, isLoading: loadingDefault } = useDefaultReferencePosition(position?.collateral);
+	const { defaultPosition, isLoading: loadingDefault } = useReferencePosition();
 
 	useEffect(() => {
 		if (position && defaultPosition) {

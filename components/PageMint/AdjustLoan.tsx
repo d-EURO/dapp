@@ -21,7 +21,6 @@ import { getAmountLended, getRetainedReserve } from "../../utils/loanCalculation
 
 enum StrategyKey {
 	ADD_COLLATERAL = "addCollateral",
-	HIGHER_PRICE = "higherPrice",
 }
 
 type Strategies = Record<StrategyKey, boolean>;
@@ -70,7 +69,6 @@ export const AdjustLoan = ({
 	const [isIncrease, setIsIncrease] = useState(true);
 	const [strategies, setStrategies] = useState<Strategies>({
 		[StrategyKey.ADD_COLLATERAL]: false,
-		[StrategyKey.HIGHER_PRICE]: false,
 	});
 	const [outcome, setOutcome] = useState<SolverOutcome | null>(null);
 	const [deltaAmountError, setDeltaAmountError] = useState<string | null>(null);
@@ -83,12 +81,12 @@ export const AdjustLoan = ({
 
 	useEffect(() => {
 		setDeltaAmount("");
-		setStrategies({ [StrategyKey.ADD_COLLATERAL]: false, [StrategyKey.HIGHER_PRICE]: false });
+		setStrategies({ [StrategyKey.ADD_COLLATERAL]: false });
 		setOutcome(null);
 		setDeltaAmountError(null);
 	}, [isIncrease]);
 
-	const hasAnyStrategy = strategies[StrategyKey.ADD_COLLATERAL] || strategies[StrategyKey.HIGHER_PRICE];
+	const hasAnyStrategy = strategies[StrategyKey.ADD_COLLATERAL];
 
 	const rawMaxDebt = (BigInt(position.price) * collateralBalance) / BigInt(1e18);
 	const maxDebtAtCurrentParams = rawMaxDebt - rawMaxDebt / 10000n; // 0.01% buffer for precision
@@ -97,26 +95,12 @@ export const AdjustLoan = ({
 	const maxDelta = useMemo(() => {
 		if (!isIncrease) return currentDebt;
 		if (!hasAnyStrategy) return availableWithoutAdjustment;
-		if (strategies[StrategyKey.HIGHER_PRICE] && !strategies[StrategyKey.ADD_COLLATERAL]) {
-			return availableWithoutAdjustment;
-		}
 		const maxCollateral = strategies[StrategyKey.ADD_COLLATERAL] ? collateralBalance + walletBalance : collateralBalance;
-		const maxPrice = strategies[StrategyKey.HIGHER_PRICE] ? BigInt(position.price) : liqPrice;
-		const rawMaxDebtStrategy = (maxPrice * maxCollateral) / BigInt(1e18);
+		const rawMaxDebtStrategy = (liqPrice * maxCollateral) / BigInt(1e18);
 		const maxDebt = rawMaxDebtStrategy - rawMaxDebtStrategy / 10000n;
 		const deltaFromStrategies = maxDebt > currentDebt ? maxDebt - currentDebt : 0n;
 		return deltaFromStrategies > availableWithoutAdjustment ? deltaFromStrategies : availableWithoutAdjustment;
-	}, [
-		isIncrease,
-		hasAnyStrategy,
-		strategies,
-		liqPrice,
-		collateralBalance,
-		currentDebt,
-		walletBalance,
-		position.price,
-		availableWithoutAdjustment,
-	]);
+	}, [isIncrease, hasAnyStrategy, strategies, liqPrice, collateralBalance, currentDebt, walletBalance, availableWithoutAdjustment]);
 
 	const delta = BigInt(deltaAmount || 0);
 	const showStrategyOptions = isIncrease && delta > availableWithoutAdjustment;
@@ -150,8 +134,7 @@ export const AdjustLoan = ({
 			const newDebt = currentDebt + delta;
 			const maxDebtNoAdjust = (BigInt(position.price) * collateralBalance) / BigInt(1e18);
 			const canBorrowWithoutAdjustment = newDebt <= maxDebtNoAdjust;
-			if (!strategies[StrategyKey.ADD_COLLATERAL] && !strategies[StrategyKey.HIGHER_PRICE] && !canBorrowWithoutAdjustment)
-				return setOutcome(null);
+			if (!strategies[StrategyKey.ADD_COLLATERAL] && !canBorrowWithoutAdjustment) return setOutcome(null);
 			if (canBorrowWithoutAdjustment) {
 				return setOutcome({
 					next: {
@@ -166,19 +149,6 @@ export const AdjustLoan = ({
 					txPlan: [TxAction.BORROW],
 					isValid: true,
 				});
-			}
-			if (strategies[StrategyKey.ADD_COLLATERAL] && strategies[StrategyKey.HIGHER_PRICE]) {
-				const [collatOutcome, priceOutcome] = [
-					solveManage(currentPosition, Target.LOAN, Strategy.KEEP_LIQ_PRICE, newDebt),
-					solveManage(currentPosition, Target.LOAN, Strategy.KEEP_COLLATERAL, newDebt),
-				];
-				if (collatOutcome && priceOutcome) {
-					return setOutcome({
-						...collatOutcome,
-						deltaLiqPrice: priceOutcome.deltaLiqPrice,
-						next: { ...collatOutcome.next, liqPrice: priceOutcome.next.liqPrice },
-					});
-				}
 			}
 			const strategy = strategies[StrategyKey.ADD_COLLATERAL] ? Strategy.KEEP_LIQ_PRICE : Strategy.KEEP_COLLATERAL;
 			setOutcome(solveManage(currentPosition, Target.LOAN, strategy, newDebt));
@@ -235,7 +205,7 @@ export const AdjustLoan = ({
 				? onFullRepaySuccess
 				: () => {
 						setDeltaAmount("");
-						setStrategies({ [StrategyKey.ADD_COLLATERAL]: false, [StrategyKey.HIGHER_PRICE]: false });
+						setStrategies({ [StrategyKey.ADD_COLLATERAL]: false });
 						onSuccess();
 				  },
 			setIsTxOnGoing,
@@ -317,24 +287,6 @@ export const AdjustLoan = ({
 							</div>
 						</div>
 					)}
-					{!strategies[StrategyKey.HIGHER_PRICE] && (
-						<div
-							role="button"
-							tabIndex={0}
-							onClick={() => toggleStrategy(StrategyKey.HIGHER_PRICE)}
-							onKeyDown={(e) => e.key === "Enter" && toggleStrategy(StrategyKey.HIGHER_PRICE)}
-							className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
-						>
-							<div className="flex items-center gap-1">
-								<span className="text-sm text-text-title">{t("mint.higher_liq_price")}</span>
-								<Tooltip content={t("mint.tooltip_add_liq_price")} arrow style="light">
-									<span className="w-4 h-4 text-primary flex items-center">
-										<AddCircleOutlineIcon color="currentColor" />
-									</span>
-								</Tooltip>
-							</div>
-						</div>
-					)}
 				</div>
 			)}
 
@@ -358,24 +310,6 @@ export const AdjustLoan = ({
 							</span>
 						</div>
 					)}
-					{strategies[StrategyKey.HIGHER_PRICE] && outcome && (
-						<div className="flex justify-between text-sm">
-							<div className="flex items-center gap-1">
-								<span className="text-text-muted2">{t("mint.higher_liq_price")}</span>
-								<Tooltip content={t("mint.tooltip_remove_liq_price")} arrow style="light">
-									<span
-										className="w-4 h-4 text-primary cursor-pointer hover:opacity-80 flex items-center"
-										onClick={() => toggleStrategy(StrategyKey.HIGHER_PRICE)}
-									>
-										<RemoveCircleOutlineIcon color="currentColor" />
-									</span>
-								</Tooltip>
-							</div>
-							<span className="font-medium text-text-title">
-								{formatCurrency(formatUnits(outcome.next.liqPrice, priceDecimals), 0, 0)} JUSD
-							</span>
-						</div>
-					)}
 					<div className="flex justify-between text-sm">
 						<span className="text-text-muted2">{t("mint.amount_lended")}</span>
 						<span className="font-medium text-text-title">
@@ -395,12 +329,6 @@ export const AdjustLoan = ({
 							{formatCurrency(formatUnits(currentDebt + delta, 18), 0, 2)} JUSD
 						</span>
 					</div>
-				</div>
-			)}
-
-			{strategies[StrategyKey.HIGHER_PRICE] && outcome && outcome.next.liqPrice > liqPrice && (
-				<div className="text-xs text-text-muted2 px-4">
-					{t("mint.cooldown_warning", { days: cooldownDays, dayLabel: cooldownDays === 1 ? t("common.day") : t("common.days") })}
 				</div>
 			)}
 
@@ -478,8 +406,6 @@ export const AdjustLoan = ({
 					? t("common.approve")
 					: isFullRepay
 					? t("mint.confirm_close_position")
-					: strategies[StrategyKey.HIGHER_PRICE] && outcome && outcome.deltaLiqPrice > 0n && outcome.deltaDebt > 0n
-					? t("mint.adjust_liq_price_btn")
 					: delta === 0n
 					? isIncrease
 						? t("mint.lend")
