@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 import { Address, formatUnits } from "viem";
 import { formatCurrency, normalizeTokenSymbol, NATIVE_WRAPPED_SYMBOLS } from "@utils";
 import { solveManage, SolverPosition, SolverOutcome, Strategy, TxAction } from "../../utils/positionSolver";
@@ -61,6 +62,7 @@ export const AdjustLoan = ({
 	cooldownEndsAt,
 }: AdjustLoanProps) => {
 	const { t } = useTranslation();
+	const router = useRouter();
 	const chainId = useChainId();
 	const { address: userAddress } = useAccount();
 	const isNativeWrappedPosition = NATIVE_WRAPPED_SYMBOLS.includes(position.collateralSymbol?.toLowerCase() || "");
@@ -206,30 +208,13 @@ export const AdjustLoan = ({
 				: () => {
 						setDeltaAmount("");
 						setStrategies({ [StrategyKey.ADD_COLLATERAL]: false });
-						onSuccess();
+						router.push(`/mint/${position.position}/manage`);
 				  },
 			setIsTxOnGoing,
 		});
 	};
 
 	const toggleStrategy = (strategy: StrategyKey) => setStrategies((prev) => ({ ...prev, [strategy]: !prev[strategy] }));
-
-	const DefaultSummaryTable = () => (
-		<div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
-			<div className="flex justify-between text-sm">
-				<span className="text-text-muted2">{t("mint.amount_lended")}</span>
-				<span className="font-medium text-text-title">{formatCurrency(formatUnits(amountLended, 18), 0, 2)} JUSD</span>
-			</div>
-			<div className="flex justify-between text-sm">
-				<span className="text-text-muted2">{t("mint.retained_reserve")}</span>
-				<span className="font-medium text-text-title">{formatCurrency(formatUnits(retainedReserve, 18), 0, 2)} JUSD</span>
-			</div>
-			<div className="flex justify-between text-sm pt-2 border-t border-gray-300 dark:border-gray-600">
-				<span className="text-text-muted2 font-medium">{t("mint.total")}</span>
-				<span className="font-medium text-text-title">{formatCurrency(formatUnits(currentDebt, 18), 0, 2)} JUSD</span>
-			</div>
-		</div>
-	);
 
 	return (
 		<div className="flex flex-col gap-y-4">
