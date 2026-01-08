@@ -11,6 +11,12 @@
 # testing
 /coverage
 
+# playwright
+/playwright-report/
+/test-results/
+/.cache-synpress/
+/playwright/.cache/
+
 # next.js
 /.next/
 /out/
