@@ -327,7 +327,7 @@ export const AdjustCollateral = ({
 			if (isClosingPosition) {
 				router.push("/dashboard");
 			} else {
-				onSuccess();
+				router.push(`/mint/${position.position}/manage`);
 			}
 		} catch (error) {
 			toast.error(renderErrorTxToast(error));
