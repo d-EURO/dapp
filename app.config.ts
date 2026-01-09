@@ -31,12 +31,12 @@ export type ConfigEnv = {
 
 // Config
 export const CONFIG: ConfigEnv = {
-	landing: process.env.NEXT_PUBLIC_LANDINGPAGE_URL ?? "",
+	landing: "https://juicedollar.com",
 	app: process.env.NEXT_PUBLIC_APP_URL ?? "",
 	api: process.env.NEXT_PUBLIC_API_URL!,
 	ponder: process.env.NEXT_PUBLIC_PONDER_URL!,
 	ponderFallback: process.env.NEXT_PUBLIC_PONDER_FALLBACK_URL ?? process.env.NEXT_PUBLIC_PONDER_URL!,
-	wagmiId: process.env.NEXT_PUBLIC_WAGMI_ID ?? "",
+	wagmiId: "b49c3a590c4407316a6fd6eae6531e90",
 	chain: process.env.NEXT_PUBLIC_CHAIN_NAME ?? testnet.id.toString(),
 	network: {
 		mainnet: process.env.NEXT_PUBLIC_RPC_URL_MAINNET ?? "https://rpc.testnet.juiceswap.com/",
