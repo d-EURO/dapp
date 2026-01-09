@@ -56,9 +56,6 @@ export default function Footer() {
 					<FooterButton link={SOCIAL.Github_organization} text="Github" icon={faGithub} />
 				</li>
 				<li>
-					<FooterButton link={SOCIAL.Forum} text="Forum" icon={faComments} />
-				</li>
-				<li>
 					<FooterButton link={SOCIAL.Telegram} text="Telegram" icon={faTelegram} />
 				</li>
 				<li>
