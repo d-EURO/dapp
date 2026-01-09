@@ -155,24 +155,21 @@ export default function PositionDetail() {
 								<b>{position.closed ? t("common.closed") : formatDate(position.expiration)}</b>
 							</AppBox>
 						</div>
-						<div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-							<SecondaryLinkButton
-								className="h-10 order-1 md:order-2"
-								href={`/monitoring/${position.position}/${maturity <= 0 ? "forceSell" : "challenge"}`}
-							>
-								{maturity <= 0 ? t("monitoring.force_sell") : t("monitoring.challenge")}
-							</SecondaryLinkButton>
-							<SecondaryLinkButton className="h-10 order-2 md:order-3" href={`/mint/${position.position}/`}>
-								{t("mint.clone")}
-							</SecondaryLinkButton>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
 							<Button
-								className="h-10 col-span-2 md:col-span-1 md:col-start-1 order-3 md:order-1"
+								className="h-10"
 								onClick={() =>
 									navigate.push(`/mint/${position.position}/manage${toQueryString(getCarryOnQueryParams(router))}`)
 								}
 							>
 								{t("dashboard.manage")}
 							</Button>
+							<SecondaryLinkButton
+								className="h-10"
+								href={`/monitoring/${position.position}/${maturity <= 0 ? "forceSell" : "challenge"}`}
+							>
+								{maturity <= 0 ? t("monitoring.force_sell") : t("monitoring.challenge")}
+							</SecondaryLinkButton>
 						</div>
 					</div>
 					<div>
