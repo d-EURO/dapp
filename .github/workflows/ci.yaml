@@ -6,6 +6,9 @@ on:
     push:
         branches: [develop]
 
+permissions:
+    contents: read
+
 env:
     NEXT_PUBLIC_LANDINGPAGE_URL: https://juicedollar.com
     NEXT_PUBLIC_APP_URL: https://dev.app.testnet.juicedollar.com
