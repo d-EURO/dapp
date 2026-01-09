@@ -11,6 +11,12 @@
 # testing
 /coverage
 
+# playwright
+/playwright-report/
+/test-results/
+/.cache-synpress/
+/playwright/.cache/
+
 # next.js
 /.next/
 /out/
@@ -44,6 +50,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Jira config  
+# Jira config
 .jira/
 .claude/settings.local.json
+CLAUDE.md
