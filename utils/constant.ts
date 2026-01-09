@@ -7,7 +7,6 @@ export const SOCIAL = {
 	TelegramApiBot: "https://t.me/JuiceSwap",
 	Twitter: "https://x.com/JuiceSwap_com",
 	Docs: "https://docs.juicedollar.com",
-	Partner_DfxSwiss: "https://exchange.dfx.swiss/",
 };
 
 // Symbols for the tokens of the protocol
