@@ -110,7 +110,7 @@ function sortBids(params: SortBids): BidsQueryItem[] {
 		// Bid Amount
 		bids.sort((a, b) => {
 			const calc = function (b: BidsQueryItem) {
-				return parseFloat(formatUnits(b.bid, 18));
+				return parseFloat(formatUnits(b.bid, 36));
 			};
 			return calc(b) - calc(a);
 		});

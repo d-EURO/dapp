@@ -84,7 +84,7 @@ export default function MyPositionsBidsRow({ headers, bid, tab }: Props) {
 
 			{/* Bid */}
 			<div className="flex flex-col">
-				<div className="text-md ">{`${formatCurrency(formatUnits(bid.bid, 18), 2, 2)} ${TOKEN_SYMBOL}`}</div>
+				<div className="text-md ">{`${formatCurrency(formatUnits(bid.bid, 36), 2, 2)} ${TOKEN_SYMBOL}`}</div>
 			</div>
 
 			{/* State */}
