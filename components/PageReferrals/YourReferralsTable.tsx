@@ -7,7 +7,8 @@ import TableRowEmpty from "../Table/TableRowEmpty";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useState } from "react";
 import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import { SectionTitle } from "@components/SectionTitle";
 import { useTranslation } from "next-i18next";
@@ -19,6 +20,7 @@ import { useChainId } from "wagmi";
 import { ADDRESS, SavingsGatewayABI } from "@juicedollar/jusd";
 import { readContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
+import { useExpandableTable } from "@hooks";
 
 interface ReferralData {
 	volume: string;
@@ -59,7 +61,6 @@ export default function YourReferralsTable() {
 		[t]
 	);
 
-	const [isShowMore, setIsShowMore] = useState(false);
 	const [tab, setTab] = useState<string>(headers[0]);
 	const [reverse, setReverse] = useState<boolean>(false);
 	const [accruedInterests, setAccruedInterests] = useState<Map<string, bigint>>(new Map());
@@ -213,6 +214,8 @@ export default function YourReferralsTable() {
 
 	const sortedData = useMemo(() => sortReferralVolume({ referralVolume: data, headers, tab, reverse }), [data, headers, tab, reverse]);
 
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(sortedData);
+
 	return (
 		<div className="flex flex-col gap-2 sm:gap-0">
 			<SectionTitle>{t("referrals.your_referrals")}</SectionTitle>
@@ -230,19 +233,19 @@ export default function YourReferralsTable() {
 						{sortedData.length === 0 ? (
 							<TableRowEmpty>{t("referrals.no_referrals_yet")}</TableRowEmpty>
 						) : (
-							sortedData.slice(0, isShowMore ? sortedData.length : 3).map((row, i) => (
+							visibleData.map((row, i) => (
 								<TableRow key={i} headers={headers} tab={tab} colSpan={5}>
 									<div className="text-base sm:font-medium leading-tight text-left">
-										{formatCurrency(formatUnits(BigInt(row.volume), 18), 0, 5)}
+										{formatCurrency(formatUnits(BigInt(row.volume), 18), 2, 2)}
 									</div>
 									<div className="text-base sm:font-medium leading-tight">
-										{formatCurrency(formatUnits(BigInt(row.interest), 18), 0, 5)}
+										{formatCurrency(formatUnits(BigInt(row.interest), 18), 2, 2)}
 									</div>
 									<div className="text-base sm:font-medium leading-tight">
-										{formatCurrency(formatUnits(BigInt(row.interestPaid), 18), 0, 5)}
+										{formatCurrency(formatUnits(BigInt(row.interestPaid), 18), 2, 2)}
 									</div>
 									<div className="text-base sm:font-medium leading-tight">
-										{formatCurrency(formatUnits(BigInt(row.bonus), 18), 0, 5)}
+										{formatCurrency(formatUnits(BigInt(row.bonus), 18), 2, 2)}
 									</div>
 									<div>
 										<Link
@@ -256,13 +259,13 @@ export default function YourReferralsTable() {
 								</TableRow>
 							))
 						)}
-						{sortedData.length > 3 && (
-							<TableShowMoreRow onShowMoreClick={() => setIsShowMore(!isShowMore)}>
+						{showExpandButton && (
+							<TableShowMoreRow onShowMoreClick={toggleExpanded}>
 								<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
-									{isShowMore ? t("referrals.show_less") : t("referrals.show_more")}
+									{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
 								</div>
 								<div className="justify-start items-center gap-2.5 flex">
-									<FontAwesomeIcon icon={isShowMore ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+									<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
 								</div>
 							</TableShowMoreRow>
 						)}

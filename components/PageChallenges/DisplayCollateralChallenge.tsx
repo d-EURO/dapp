@@ -39,7 +39,7 @@ export default function DisplayCollateralChallenge({ position, challenge, challe
 
 			<div className="flex flex-col text-text-primary">
 				<span className={`font-bold`}>
-					{challengeRemainingSize > 0 ? formatCurrency(challengeRemainingSize, 2, 2) : "-.--"} {displaySymbol}
+					{challengeRemainingSize > 0 ? formatCurrency(challengeRemainingSize, 3, 3) : "-.--"} {displaySymbol}
 				</span>
 				<span className={`text-sm ${challengeAuctionPriceColor}`}>
 					{formatCurrency(challengeRemainingPriceDEURO, 2, 2) || "0.00"} {position.stablecoinSymbol}

@@ -22,7 +22,7 @@ export default function SavingsCollectInterest() {
 					<TokenLogo currency={TOKEN_SYMBOL} />
 					<div className="flex flex-col">
 						<span className="text-base font-extrabold leading-tight">
-							<span className="">{formatCurrency(formatUnits(interestToBeCollected, 18))}</span> {TOKEN_SYMBOL}
+							<span className="">{formatCurrency(formatUnits(interestToBeCollected, 18), 2, 2)}</span> {TOKEN_SYMBOL}
 						</span>
 						<span className="text-xs font-medium text-text-muted2 leading-[1rem]"></span>
 					</div>

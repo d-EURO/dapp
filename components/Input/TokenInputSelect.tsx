@@ -8,6 +8,12 @@ import { MaxButton } from "./MaxButton";
 import { useTranslation } from "next-i18next";
 const TokenLogo = dynamic(() => import("../TokenLogo"), { ssr: false });
 
+const getDisplayPrecision = (symbol?: string): [number, number] => {
+	const protocolTokens = ["JUSD", "USD", "JUICE", "SVJUSD", "SUSD"];
+	if (symbol && protocolTokens.includes(symbol.toUpperCase())) return [2, 2];
+	return [3, 3]; // Collateral default
+};
+
 interface Props {
 	label?: string;
 	symbol: string;
@@ -73,7 +79,7 @@ export default function TokenInputSelect({
 					>
 						{balanceLabel || t("common.balance_label")}
 						<span>
-							{formatCurrency(formatUnits(max, Number(digit)))} {symbol}
+							{formatCurrency(formatUnits(max, Number(digit)), ...getDisplayPrecision(symbol))} {symbol}
 						</span>
 						{showMaxButton && <MaxButton onClick={() => onChange?.(max.toString())} className="text-xs !py-0 font-extrabold" />}
 					</div>

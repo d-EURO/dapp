@@ -4,6 +4,7 @@ import Table from "@components/Table";
 import TableHeader from "@components/Table/TableHead";
 import TableBody from "@components/Table/TableBody";
 import TableRowEmpty from "@components/Table/TableRowEmpty";
+import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import MyPositionsChallengesRow from "./MyPositionsChallengesRow";
 import { useAccount } from "wagmi";
 import { Address, formatUnits, zeroAddress } from "viem";
@@ -18,6 +19,9 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
+import { useExpandableTable } from "@hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function MyPositionsChallengesTable() {
 	const { t } = useTranslation();
@@ -53,6 +57,8 @@ export default function MyPositionsChallengesTable() {
 		reverse,
 	});
 
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(sorted);
+
 	const handleTabOnChange = function (e: string) {
 		if (tab === e) {
 			setReverse(!reverse);
@@ -73,11 +79,23 @@ export default function MyPositionsChallengesTable() {
 				headerClassNames={["text-center"]}
 			/>
 			<TableBody>
-				{sorted.length == 0 ? (
-					<TableRowEmpty>{t("my_positions.no_challenges")}</TableRowEmpty>
-				) : (
-					sorted.map((c) => <MyPositionsChallengesRow headers={headers} key={c.id} challenge={c} tab={tab} />)
-				)}
+				<>
+					{sorted.length == 0 ? (
+						<TableRowEmpty>{t("my_positions.no_challenges")}</TableRowEmpty>
+					) : (
+						visibleData.map((c) => <MyPositionsChallengesRow headers={headers} key={c.id} challenge={c} tab={tab} />)
+					)}
+					{showExpandButton && (
+						<TableShowMoreRow onShowMoreClick={toggleExpanded}>
+							<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
+								{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
+							</div>
+							<div className="justify-start items-center gap-2.5 flex">
+								<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+							</div>
+						</TableShowMoreRow>
+					)}
+				</>
 			</TableBody>
 		</Table>
 	);
@@ -103,7 +121,7 @@ function sortChallenges(params: SortChallenges): ChallengesQueryItem[] {
 				const pos: PositionQuery = positions[c.position.toLowerCase() as Address];
 				const size: number = parseFloat(formatUnits(c.size, pos.collateralDecimals));
 				const filled: number = parseFloat(formatUnits(c.filledSize, pos.collateralDecimals));
-				const price: number = prices[pos.collateral.toLowerCase() as Address]?.price?.eur || 1;
+				const price: number = prices[pos.collateral.toLowerCase() as Address]?.price?.usd || 1;
 				return (size - filled) * price;
 			};
 			return calc(b) - calc(a);

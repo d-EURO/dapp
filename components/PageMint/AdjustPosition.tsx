@@ -108,7 +108,12 @@ export const AdjustPosition = ({
 									<div className="mt-2 text-base font-bold">
 										{target.value !== null ? (
 											<>
-												{formatCurrency(formatUnits(target.value, target.decimals))} {target.currency}
+												{formatCurrency(
+													formatUnits(target.value, target.decimals),
+													target.id === Target.COLLATERAL ? 3 : 2,
+													target.id === Target.COLLATERAL ? 3 : 2
+												)}{" "}
+												{target.currency}
 											</>
 										) : (
 											formatDate(position.expiration)

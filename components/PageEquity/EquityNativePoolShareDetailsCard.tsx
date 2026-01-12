@@ -67,7 +67,7 @@ export default function EquityNativePoolShareDetailsCard() {
 						<TokenLogo currency={POOL_SHARE_TOKEN_SYMBOL} size={7} />
 						<div>
 							<span className="text-base font-extrabold leading-tight">
-								{formatCurrency(formatUnits(poolStats.equityPrice, 18), 4, 4)}
+								{formatCurrency(formatUnits(poolStats.equityPrice, 18), 2, 2)}
 							</span>{" "}
 							<span className="text-base font-[350] leading-tight">{TOKEN_SYMBOL}</span>
 						</div>

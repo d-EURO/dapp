@@ -57,7 +57,7 @@ export const ReferralsStats = () => {
 			const toastContent = [
 				{
 					title: `${t("referrals.txs.referral_bonus")}`,
-					value: `${formatCurrency(formatUnits(availableToClaim, 18))} ${TOKEN_SYMBOL}`,
+					value: `${formatCurrency(formatUnits(availableToClaim, 18), 2, 2)} ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: `${t("common.txs.transaction")}`,
@@ -97,7 +97,7 @@ export const ReferralsStats = () => {
 							hasTotalRewards ? "" : "text-menu-wallet-bg"
 						} text-xl sm:text-2xl font-extrabold leading-normal`}
 					>
-						€ {formatCurrency(formatUnits(totalVolume, 18), 0, 5)}
+						$ {formatCurrency(formatUnits(totalVolume, 18), 2, 2)}
 					</div>
 				</div>
 			</div>
@@ -111,7 +111,7 @@ export const ReferralsStats = () => {
 							hasAvailableToClaim ? "" : "text-menu-wallet-bg"
 						} text-xl sm:text-2xl font-extrabold leading-normal`}
 					>
-						€ {formatCurrency(formatUnits(availableToClaim, 18), 0, 5)}
+						$ {formatCurrency(formatUnits(availableToClaim, 18), 2, 2)}
 					</div>
 					<div>
 						<SecondaryButton

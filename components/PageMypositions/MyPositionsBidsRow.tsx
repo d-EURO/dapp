@@ -60,7 +60,9 @@ export default function MyPositionsBidsRow({ headers, bid, tab }: Props) {
 						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</span>
 					<span className={`col-span-2 text-md font-extrabold`}>{`${formatCurrency(
-						formatUnits(bid.filledSize, position.collateralDecimals)
+						formatUnits(bid.filledSize, position.collateralDecimals),
+						3,
+						3
 					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</span>
 				</div>
 
@@ -70,7 +72,9 @@ export default function MyPositionsBidsRow({ headers, bid, tab }: Props) {
 						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</div>
 					<div className={`col-span-2 text-md  font-semibold`}>{`${formatCurrency(
-						formatUnits(bid.filledSize, position.collateralDecimals)
+						formatUnits(bid.filledSize, position.collateralDecimals),
+						3,
+						3
 					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</div>
 				</div>
 			</div>

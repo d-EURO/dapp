@@ -18,8 +18,6 @@ import { InputTitle } from "@components/Input/InputTitle";
 import { MaxButton } from "@components/Input/MaxButton";
 import { TokenBalance } from "../../hooks/useWalletBalances";
 import { TokenInteractionSide } from "./EquityInteractionCard";
-import { RootState } from "../../redux/redux.store";
-import { useSelector } from "react-redux";
 interface Props {
 	openSelector: (tokenInteractionSide: TokenInteractionSide) => void;
 	selectedFromToken: TokenBalance | undefined;
@@ -44,7 +42,6 @@ export default function InteractionStablecoinAndSavingVault({
 	const { address } = useAccount();
 	const chainId = useChainId();
 	const poolStats = usePoolStats();
-	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
 	const account = address || zeroAddress;
 	const direction: boolean = selectedFromToken?.symbol === TOKEN_SYMBOL;
 
@@ -166,11 +163,6 @@ export default function InteractionStablecoinAndSavingVault({
 	const result = (direction ? amountInShares : amountInAssets) || 0n;
 	const fromSymbol = direction ? TOKEN_SYMBOL : SAVINGS_VAULT_SYMBOL;
 
-	const collateralValue = direction ? amount : amountInAssets;
-	const collateralEurValue = formatBigInt(collateralValue);
-	const collateralUsdValue =
-		eurPrice && collateralValue ? formatBigInt((BigInt(Math.floor(eurPrice * 10000)) * collateralValue) / 10000n) : formatBigInt(0n);
-
 	const onChangeAmount = (value: string) => {
 		const valueBigInt = BigInt(value);
 		setAmount(valueBigInt);
@@ -239,23 +231,16 @@ export default function InteractionStablecoinAndSavingVault({
 					isError={Boolean(error)}
 					errorMessage={error}
 					adornamentRow={
-						<div className="self-stretch justify-start items-center inline-flex">
-							<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
-								<div className="text-text-muted3 text-xs font-medium leading-none">€{collateralEurValue}</div>
-								{eurPrice && (
-									<>
-										<div className="h-4 w-0.5 border-l border-input-placeholder"></div>
-										<div className="text-text-muted3 text-xs font-medium leading-none">${collateralUsdValue}</div>
-									</>
-								)}
-							</div>
+						<div className="self-stretch justify-end items-center inline-flex">
 							<div className="h-7 justify-end items-center gap-2.5 flex">
 								{selectedFromToken && (
 									<>
 										<div className="text-text-muted3 text-xs font-medium leading-none">
 											{t("common.balance_label")}{" "}
 											{formatCurrency(
-												formatUnits(selectedFromToken?.balanceOf || 0n, selectedFromToken?.decimals || 18)
+												formatUnits(selectedFromToken?.balanceOf || 0n, selectedFromToken?.decimals || 18),
+												2,
+												2
 											)}{" "}
 											{selectedFromToken?.symbol}
 										</div>
@@ -286,16 +271,7 @@ export default function InteractionStablecoinAndSavingVault({
 					value={result.toString()}
 					onChange={() => {}}
 					adornamentRow={
-						<div className="self-stretch justify-start items-center inline-flex">
-							<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
-								<div className="text-text-muted2 text-xs font-medium leading-none">€{collateralEurValue}</div>
-								{eurPrice && (
-									<>
-										<div className="h-4 w-0.5 border-l border-input-placeholder"></div>
-										<div className="text-text-muted2 text-xs font-medium leading-none">${collateralUsdValue}</div>
-									</>
-								)}
-							</div>
+						<div className="self-stretch justify-end items-center inline-flex">
 							<div className="h-7 justify-end items-center gap-2.5 flex">
 								{selectedToToken && (
 									<>

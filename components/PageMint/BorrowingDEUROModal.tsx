@@ -13,8 +13,7 @@ type BorrowingDEUROModalProps = {
 	youGet: string | null | undefined;
 	isSuccess: boolean;
 	isLoading: boolean;
-	collateralPriceDeuro: string;
-	usdLiquidationPrice: string | undefined;
+	collateralPriceUsd: string;
 };
 
 export function BorrowingDEUROModal({
@@ -26,8 +25,7 @@ export function BorrowingDEUROModal({
 	liquidationPrice,
 	isSuccess,
 	isLoading,
-	collateralPriceDeuro,
-	usdLiquidationPrice,
+	collateralPriceUsd,
 }: BorrowingDEUROModalProps) {
 	const { t } = useTranslation();
 
@@ -64,7 +62,7 @@ export function BorrowingDEUROModal({
 								<div className="h-5 text-right text-sm font-extrabold leading-none tracking-tight">
 									{formmatedCollateral}
 								</div>
-								<div className="text-right text-text-icon text-xs font-medium leading-none">€ {collateralPriceDeuro}</div>
+								<div className="text-right text-text-icon text-xs font-medium leading-none">$ {collateralPriceUsd}</div>
 							</div>
 						</div>
 						<div className="self-stretch justify-start items-start inline-flex">
@@ -73,9 +71,8 @@ export function BorrowingDEUROModal({
 							</div>
 							<div className="flex-col justify-center items-end inline-flex">
 								<div className="h-5 text-right text-sm font-extrabold leading-none tracking-tight">
-									€ {liquidationPrice}
+									$ {liquidationPrice}
 								</div>
-								<div className="text-right text-text-icon text-xs font-medium leading-none">${usdLiquidationPrice}</div>
 							</div>
 						</div>
 						<div className="self-stretch justify-start items-center gap-2.5 inline-flex">

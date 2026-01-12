@@ -15,6 +15,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { gql, useQuery } from "@apollo/client";
 import { formatUnits } from "viem";
+import { useExpandableTable } from "@hooks";
 
 interface BonusData {
 	payout: string;
@@ -28,7 +29,6 @@ const subHeaders = ["JUSD", "", "", ""];
 export default function BonusHistoryTable() {
 	const { t } = useTranslation();
 	const headers = [t("referrals.payout"), t("referrals.source"), t("referrals.date"), t("referrals.tx_id")];
-	const [isShowMore, setIsShowMore] = useState(false);
 	const [tab, setTab] = useState<string>(headers[0]);
 	const [reverse, setReverse] = useState<boolean>(false);
 
@@ -81,6 +81,8 @@ export default function BonusHistoryTable() {
 
 	const sortedData = sortBonusHistory({ bonusHistory: [...data], headers, tab, reverse });
 
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(sortedData);
+
 	return (
 		<div className="flex flex-col gap-2 sm:gap-0">
 			<SectionTitle>{t("referrals.bonus_history")}</SectionTitle>
@@ -91,10 +93,10 @@ export default function BonusHistoryTable() {
 						{sortedData.length === 0 ? (
 							<TableRowEmpty>{t("referrals.no_bonus_history_yet")}</TableRowEmpty>
 						) : (
-							sortedData.slice(0, isShowMore ? data.length : 3).map((row, i) => (
+							visibleData.map((row, i) => (
 								<TableRow key={i} headers={headers} tab={tab}>
 									<div className="text-base sm:font-medium leading-tight text-left">
-										{formatCurrency(formatUnits(BigInt(row.payout), 18))}
+										{formatCurrency(formatUnits(BigInt(row.payout), 18), 2, 2)}
 									</div>
 									<div className="text-base sm:font-medium leading-tight">{row.source}</div>
 									<div className="text-base sm:font-medium leading-tight">{row.date}</div>
@@ -107,13 +109,13 @@ export default function BonusHistoryTable() {
 								</TableRow>
 							))
 						)}
-						{sortedData.length > 3 && (
-							<TableShowMoreRow onShowMoreClick={() => setIsShowMore(!isShowMore)}>
+						{showExpandButton && (
+							<TableShowMoreRow onShowMoreClick={toggleExpanded}>
 								<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
-									{isShowMore ? t("referrals.show_less") : t("referrals.show_more")}
+									{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
 								</div>
 								<div className="justify-start items-center gap-2.5 flex">
-									<FontAwesomeIcon icon={isShowMore ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+									<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
 								</div>
 							</TableShowMoreRow>
 						)}

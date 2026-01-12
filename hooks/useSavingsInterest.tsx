@@ -116,11 +116,11 @@ export const useSavingsInterest = () => {
 			const toastContent = [
 				{
 					title: `Saved amount: `,
-					value: `${formatCurrency(formatUnits(amount, 18))} ${TOKEN_SYMBOL}`,
+					value: `${formatCurrency(formatUnits(amount, 18), 2, 2)} ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: `Claim Interest: `,
-					value: `${formatCurrency(formatUnits(interestToBeCollected, 18))} ${TOKEN_SYMBOL}`,
+					value: `${formatCurrency(formatUnits(interestToBeCollected, 18), 2, 2)} ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: "Transaction: ",
@@ -164,7 +164,7 @@ export const useSavingsInterest = () => {
 			const toastContent = [
 				{
 					title: `Reinvested amount: `,
-					value: `${formatCurrency(formatUnits(interestToBeCollected, 18))} ${TOKEN_SYMBOL}`,
+					value: `${formatCurrency(formatUnits(interestToBeCollected, 18), 2, 2)} ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: "Transaction: ",

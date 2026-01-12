@@ -6,3 +6,6 @@ coverage
 # Test artifacts
 playwright-report
 test-results
+
+# Synpress cache
+.cache-synpress

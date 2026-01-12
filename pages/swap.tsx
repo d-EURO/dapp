@@ -18,8 +18,6 @@ import { useTranslation } from "next-i18next";
 import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutlined";
 import { InputTitle } from "@components/Input/InputTitle";
 import { MaxButton } from "@components/Input/MaxButton";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/redux.store";
 import { TokenModalRowButton, TokenSelectModal } from "@components/TokenSelectModal";
 
 enum TokenInteractionSide {
@@ -61,7 +59,6 @@ export default function Swap() {
 	const [isTxOnGoing, setTxOnGoing] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [interactionSide, setInteractionSide] = useState<TokenInteractionSide>();
-	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
 	const swapStats = useSwapStats();
 	const { t } = useTranslation();
 
@@ -382,21 +379,7 @@ export default function Swap() {
 									fromTokenMeta.symbol
 								}
 								adornamentRow={
-									<div className="self-stretch justify-start items-center inline-flex">
-										<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
-											<div className="text-text-muted3 text-xs font-medium leading-none">
-												€{formatCurrency(formatUnits(amount, Number(fromTokenMeta.decimals)), 2, 2)}
-											</div>
-											<div className="h-4 w-0.5 border-l border-input-placeholder"></div>
-											<div className="text-text-muted3 text-xs font-medium leading-none">
-												$
-												{formatCurrency(
-													Number(formatUnits(amount, Number(fromTokenMeta.decimals))) * (eurPrice as number),
-													2,
-													2
-												)}
-											</div>
-										</div>
+									<div className="self-stretch justify-end items-center inline-flex">
 										<div className="h-7 justify-end items-center gap-2.5 flex">
 											<div className="text-text-muted3 text-xs font-medium leading-none">
 												{t("common.balance_label")}{" "}
@@ -435,26 +418,7 @@ export default function Swap() {
 								value={rebasedOutputAmount.toString()}
 								onChange={() => {}}
 								adornamentRow={
-									<div className="self-stretch justify-start items-center inline-flex">
-										<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden">
-											<div className="text-text-muted3 text-xs font-medium leading-none">
-												€
-												{formatCurrency(
-													formatUnits(BigInt(rebasedOutputAmount), Number(toTokenMeta.decimals)),
-													2,
-													2
-												)}
-											</div>
-
-											<div className="h-4 w-0.5 border-l border-input-placeholder"></div>
-											<div className="text-text-muted3 text-xs font-medium leading-none">
-												$
-												{formatCurrency(
-													Number(formatUnits(BigInt(rebasedOutputAmount), Number(toTokenMeta.decimals))) *
-														(eurPrice as number)
-												)}
-											</div>
-										</div>
+									<div className="self-stretch justify-end items-center inline-flex">
 										<div className="h-7 justify-end items-center gap-2.5 flex">
 											<div className="text-text-muted3 text-xs font-medium leading-none">
 												{t("common.balance_label")}{" "}
@@ -501,10 +465,12 @@ export default function Swap() {
 			<TokenSelectModal title={t("swap.select_stablecoin")} isOpen={isModalOpen} setIsOpen={setIsModalOpen}>
 				<div className="h-full">
 					<TokenModalRowButton
-						currency="€"
+						currency="$"
 						symbol={swapStats.startUSD.symbol}
 						price={formatCurrency(formatUnits(swapStats.startUSD.userBal, Number(swapStats.startUSD.decimals)), 2, 2) as string}
-						balance={formatCurrency(formatUnits(swapStats.startUSD.userBal, Number(swapStats.startUSD.decimals))) as string}
+						balance={
+							formatCurrency(formatUnits(swapStats.startUSD.userBal, Number(swapStats.startUSD.decimals)), 2, 2) as string
+						}
 						name={swapStats.startUSD.symbol}
 						onClick={() => handleSelectToken(swapStats.startUSD.symbol)}
 					/>

@@ -9,11 +9,10 @@ const TokenLogo = dynamic(() => import("../TokenLogo"), { ssr: false });
 interface Props {
 	position: PositionQuery;
 	collateralPrice: number;
-	deuroPrice: number;
 	className?: string;
 }
 
-export default function MyPositionsDisplayCollateral({ position, collateralPrice, deuroPrice, className }: Props) {
+export default function MyPositionsDisplayCollateral({ position, collateralPrice, className }: Props) {
 	const url = useContractUrl(position.position || zeroAddress);
 
 	const openExplorer = (e: any) => {
@@ -22,7 +21,8 @@ export default function MyPositionsDisplayCollateral({ position, collateralPrice
 	};
 
 	const collateralSize: number = parseFloat(formatUnits(BigInt(position.collateralBalance), position.collateralDecimals));
-	const collateralValue: number = (collateralSize * collateralPrice) / deuroPrice;
+	// 1 JUSD = 1 USD, so collateral value is directly in USD
+	const collateralValue: number = collateralSize * collateralPrice;
 
 	return (
 		<div className={`flex items-center ${className}`}>
@@ -34,7 +34,7 @@ export default function MyPositionsDisplayCollateral({ position, collateralPrice
 
 			<div className="flex flex-col">
 				<span className={`text-left text-text-primary font-bold leading-tight`}>
-					{formatCurrency(collateralSize, 2, 2) + " " + normalizeTokenSymbol(position.collateralSymbol)}
+					{formatCurrency(collateralSize, 3, 3) + " " + normalizeTokenSymbol(position.collateralSymbol)}
 				</span>
 				<span className="text-left text-text-subheader text-sm leading-tight">
 					{formatCurrency(collateralValue, 2, 2)} {TOKEN_SYMBOL}

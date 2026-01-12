@@ -1,11 +1,10 @@
-import { ERC20Info, ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping, PriceQueryCurrencies } from "@juicedollar/api";
+import { ERC20Info, ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping } from "@juicedollar/api";
 
 // --------------------------------------------------------------------------------
 export type PricesState = {
 	error: string | null;
 	loaded: boolean;
 	coingecko?: ApiPriceMapping;
-	eur?: PriceQueryCurrencies;
 	mint?: ERC20Info | ApiPriceERC20;
 	nativePS?: ERC20Info | ApiPriceERC20;
 	collateral?: ApiPriceERC20Mapping;
@@ -30,9 +29,4 @@ export type DispatchApiPriceERC20 = {
 export type DispatchApiPriceERC20Mapping = {
 	type: string;
 	payload: ApiPriceERC20Mapping | undefined;
-};
-
-export type DispatchPriceQueryCurrencies = {
-	type: string;
-	payload: PriceQueryCurrencies | undefined;
 };

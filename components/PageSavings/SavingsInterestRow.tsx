@@ -26,13 +26,13 @@ export default function SavingsInterestRow({ headers, item, tab }: Props) {
 				</div>
 
 				<div className="flex flex-col">
-					{formatCurrency(formatUnits(BigInt(item.amount), 18))} {TOKEN_SYMBOL}
+					{formatCurrency(formatUnits(BigInt(item.amount), 18), 2, 2)} {TOKEN_SYMBOL}
 				</div>
 
-				<div className={`flex flex-col`}>{formatCurrency(item.rate / 10_000)} %</div>
+				<div className={`flex flex-col`}>{formatCurrency(item.rate / 10_000, 0, 2)} %</div>
 
 				<div className="flex flex-col">
-					{formatCurrency(formatUnits(BigInt(item.balance), 18))} {TOKEN_SYMBOL}
+					{formatCurrency(formatUnits(BigInt(item.balance), 18), 2, 2)} {TOKEN_SYMBOL}
 				</div>
 
 				{/* <div className="flex flex-col">{formatCurrency(formatUnits(BigInt(item.total), 18))} {TOKEN_SYMBOL}</div> */}

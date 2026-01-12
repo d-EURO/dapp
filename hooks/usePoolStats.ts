@@ -44,17 +44,6 @@ export const usePoolStats = () => {
 				args: [account],
 			},
 			{
-				...equityContract,
-				// @ts-ignore TODO: see what's going on
-				functionName: "canRedeem",
-				args: [account],
-			},
-			{
-				...equityContract,
-				functionName: "holdingDuration",
-				args: [account],
-			},
-			{
 				...deuroContract,
 				functionName: "minterReserve",
 			},
@@ -80,14 +69,12 @@ export const usePoolStats = () => {
 	const equityBalance: bigint = data ? decodeBigIntCall(data[2]) : 0n;
 	const equityTotalVotes: bigint = data ? decodeBigIntCall(data[3]) : 0n;
 	const equityUserVotes: bigint = data ? decodeBigIntCall(data[4]) : 0n;
-	const equityCanRedeem: boolean = data ? Boolean(data[5].result) : false;
-	const equityHoldingDuration: bigint = data ? decodeBigIntCall(data[6]) : 0n;
 
-	const deuroMinterReserve: bigint = data ? decodeBigIntCall(data[7]) : 0n;
-	const deuroEquity: bigint = data ? decodeBigIntCall(data[8]) : 0n;
+	const deuroMinterReserve: bigint = data ? decodeBigIntCall(data[5]) : 0n;
+	const deuroEquity: bigint = data ? decodeBigIntCall(data[6]) : 0n;
 	const deuroTotalReserve = deuroMinterReserve + deuroEquity;
-	const deuroBalance: bigint = data ? decodeBigIntCall(data[9]) : 0n;
-	const deuroAllowance: bigint = data ? decodeBigIntCall(data[10]) : 0n;
+	const deuroBalance: bigint = data ? decodeBigIntCall(data[7]) : 0n;
+	const deuroAllowance: bigint = data ? decodeBigIntCall(data[8]) : 0n;
 
 	return {
 		equitySupply,
@@ -95,8 +82,6 @@ export const usePoolStats = () => {
 		equityBalance,
 		equityTotalVotes,
 		equityUserVotes,
-		equityCanRedeem,
-		equityHoldingDuration,
 
 		deuroTotalReserve,
 		deuroMinterReserve,

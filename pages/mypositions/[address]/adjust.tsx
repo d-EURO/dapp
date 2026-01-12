@@ -357,7 +357,7 @@ export default function PositionAdjust() {
 									</div>
 									<div className="text-right">
 										{/* <span className="text-xs mr-3">{formatCurrency(0)}%</span> */}
-										{formatCurrency(formatUnits(BigInt(position.principal), 18))} {TOKEN_SYMBOL}
+										{formatCurrency(formatUnits(BigInt(position.principal), 18), 2, 2)} {TOKEN_SYMBOL}
 									</div>
 								</div>
 
@@ -369,7 +369,7 @@ export default function PositionAdjust() {
 									</div>
 									<div className="text-right">
 										{/* <span className="text-xs mr-3">{formatCurrency(0)}%</span> */}
-										{formatCurrency(formatUnits(paidOutAmount(), 18))} {TOKEN_SYMBOL}
+										{formatCurrency(formatUnits(paidOutAmount(), 18), 2, 2)} {TOKEN_SYMBOL}
 									</div>
 								</div>
 
@@ -381,7 +381,7 @@ export default function PositionAdjust() {
 									</div>
 									<div className="text-right">
 										{/* <span className="text-xs mr-3">{formatCurrency(0)}%</span> */}
-										{formatCurrency(formatUnits(returnFromReserve(), 18))} {TOKEN_SYMBOL}
+										{formatCurrency(formatUnits(returnFromReserve(), 18), 2, 2)} {TOKEN_SYMBOL}
 									</div>
 								</div>
 
@@ -391,7 +391,7 @@ export default function PositionAdjust() {
 										<div className="text-xs">({position.annualInterestPPM / 10000}% per year)</div>
 									</div>
 									<div className="text-right">
-										{formatCurrency(formatUnits(fees, 18))} {TOKEN_SYMBOL}
+										{formatCurrency(formatUnits(fees, 18), 2, 2)} {TOKEN_SYMBOL}
 									</div>
 								</div>
 
@@ -404,7 +404,7 @@ export default function PositionAdjust() {
 									<div className="text-right">
 										{/* <span className="text-xs mr-3">100%</span> */}
 										<span>
-											{formatCurrency(formatUnits(amount, 18))} {TOKEN_SYMBOL}
+											{formatCurrency(formatUnits(amount, 18), 2, 2)} {TOKEN_SYMBOL}
 										</span>
 									</div>
 								</div>

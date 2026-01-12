@@ -124,11 +124,7 @@ export const AdjustCollateral = ({
 		const delta = BigInt(deltaAmount || 0);
 		const newCollateral = isIncrease ? collateralBalance + delta : collateralBalance - delta;
 		const validationDebt = strategies[StrategyKey.REPAY_LOAN] ? currentDebt - calculatedRepayAmount : currentDebt;
-		const formattedCurrentCollateral = formatCurrency(
-			formatUnits(collateralBalance, collateralDecimals),
-			0,
-			getDisplayDecimals(collateralSymbol)
-		);
+		const formattedCurrentCollateral = formatCurrency(formatUnits(collateralBalance, collateralDecimals), 3, 3);
 
 		const validations = [
 			{
@@ -348,9 +344,9 @@ export const AdjustCollateral = ({
 	const getButtonLabel = () => {
 		if (needsApproval) return t("common.approve");
 		if (delta === 0n) return isIncrease ? t("common.add") : t("common.remove");
-		const formattedDelta = formatCurrency(formatUnits(delta, collateralDecimals), 0, getDisplayDecimals(collateralSymbol));
+		const formattedDelta = formatCurrency(formatUnits(delta, collateralDecimals), 3, 3);
 		if (strategies[StrategyKey.REPAY_LOAN] && calculatedRepayAmount > 0n) {
-			const formattedRepay = formatCurrency(formatUnits(calculatedRepayAmount, 18), 0, 2);
+			const formattedRepay = formatCurrency(formatUnits(calculatedRepayAmount, 18), 2, 2);
 			if (isClosingPosition) {
 				return `${t("mint.repay")} ${formattedRepay} ${position.stablecoinSymbol}, ${t("common.remove")} & ${t(
 					"mint.close_position"
@@ -396,11 +392,7 @@ export const AdjustCollateral = ({
 							<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden"></div>
 							<div className="h-7 justify-end items-center gap-2.5 flex">
 								<div className="text-input-label text-xs font-medium leading-none">
-									{formatCurrency(
-										formatUnits(isIncrease ? walletBalance : maxRemovable, collateralDecimals),
-										0,
-										getDisplayDecimals(collateralSymbol)
-									)}{" "}
+									{formatCurrency(formatUnits(isIncrease ? walletBalance : maxRemovable, collateralDecimals), 3, 3)}{" "}
 									{collateralSymbol}
 								</div>
 								<MaxButton
@@ -451,7 +443,7 @@ export const AdjustCollateral = ({
 							</Tooltip>
 						</div>
 						<span className="font-medium text-text-title">
-							{formatCurrency(formatUnits(newPrice, priceDecimals), 0, 0)} {position.stablecoinSymbol}
+							{formatCurrency(formatUnits(newPrice, priceDecimals), 2, 2)} {position.stablecoinSymbol}
 						</span>
 					</div>
 				)}
@@ -469,29 +461,27 @@ export const AdjustCollateral = ({
 							</Tooltip>
 						</div>
 						<span className="font-medium text-text-title">
-							{formatCurrency(formatUnits(calculatedRepayAmount, 18), 0, 2)} {position.stablecoinSymbol}
+							{formatCurrency(formatUnits(calculatedRepayAmount, 18), 2, 2)} {position.stablecoinSymbol}
 						</span>
 					</div>
 				)}
 				<div className="flex justify-between text-sm">
 					<span className="text-text-muted2">{t("mint.current_collateral")}</span>
 					<span className="font-medium text-text-title">
-						{formatCurrency(formatUnits(collateralBalance, collateralDecimals), 0, getDisplayDecimals(collateralSymbol))}{" "}
-						{collateralSymbol}
+						{formatCurrency(formatUnits(collateralBalance, collateralDecimals), 3, 3)} {collateralSymbol}
 					</span>
 				</div>
 				<div className="flex justify-between text-sm">
 					<span className="text-text-muted2">{t("mint.change")}</span>
 					<span className="font-medium text-text-title">
 						{isIncrease ? "+" : "-"}
-						{formatCurrency(formatUnits(delta, collateralDecimals), 0, getDisplayDecimals(collateralSymbol))} {collateralSymbol}
+						{formatCurrency(formatUnits(delta, collateralDecimals), 3, 3)} {collateralSymbol}
 					</span>
 				</div>
 				<div className="flex justify-between text-base pt-2 border-t border-gray-300 dark:border-gray-600">
 					<span className="font-bold text-text-title">{t("mint.new_collateral")}</span>
 					<span className="font-bold text-text-title">
-						{formatCurrency(formatUnits(newCollateral, collateralDecimals), 0, getDisplayDecimals(collateralSymbol))}{" "}
-						{collateralSymbol}
+						{formatCurrency(formatUnits(newCollateral, collateralDecimals), 3, 3)} {collateralSymbol}
 					</span>
 				</div>
 			</div>

@@ -93,10 +93,10 @@ export default function PositionBorrow({}) {
 	if (!position) return null;
 
 	const price: number = parseFloat(formatUnits(BigInt(position.price), 36 - position.collateralDecimals));
-	const collateralPriceDeuro: number = prices[position.collateral.toLowerCase() as Address]?.price?.eur || 1;
+	const collateralPriceUsd: number = prices[position.collateral.toLowerCase() as Address]?.price?.usd || 1;
 	const interest: number = position.annualInterestPPM / 10 ** 6 + position.fixedAnnualRatePPM / 10 ** 6;
 	const reserve: number = position.reserveContribution / 10 ** 6;
-	const effectiveLTV: number = (price * (1 - reserve)) / collateralPriceDeuro;
+	const effectiveLTV: number = (price * (1 - reserve)) / collateralPriceUsd;
 	const effectiveInterest: number = interest / (1 - reserve);
 
 	const requiredColl =
@@ -333,9 +333,9 @@ export default function PositionBorrow({}) {
 										<span>{t("mint.sent_to_your_wallet")}</span>
 									</div>
 									<div className="text-right">
-										<span className="text-xs mr-3">{formatCurrency(paidOutToWalletPct)}%</span>
+										<span className="text-xs mr-3">{formatCurrency(paidOutToWalletPct, 0, 2)}%</span>
 										<span>
-											{formatCurrency(formatUnits(paidOutToWallet, 18))} {TOKEN_SYMBOL}
+											{formatCurrency(formatUnits(paidOutToWallet, 18), 2, 2)} {TOKEN_SYMBOL}
 										</span>
 									</div>
 								</div>
@@ -345,9 +345,9 @@ export default function PositionBorrow({}) {
 										<span>{t("mint.retained_reserve")}</span>
 									</div>
 									<div className="text-right">
-										<span className="text-xs mr-3">{formatCurrency(position.reserveContribution / 10000, 2, 2)}%</span>
+										<span className="text-xs mr-3">{formatCurrency(position.reserveContribution / 10000, 0, 2)}%</span>
 										<span>
-											{formatCurrency(formatUnits(borrowersReserveContribution, 18))} {TOKEN_SYMBOL}
+											{formatCurrency(formatUnits(borrowersReserveContribution, 18), 2, 2)} {TOKEN_SYMBOL}
 										</span>
 									</div>
 								</div>
@@ -361,7 +361,7 @@ export default function PositionBorrow({}) {
 									<div className="text-right">
 										<span className="text-xs mr-3">100%</span>
 										<span>
-											{formatCurrency(formatUnits(amount, 18))} {TOKEN_SYMBOL}
+											{formatCurrency(formatUnits(amount, 18), 2, 2)} {TOKEN_SYMBOL}
 										</span>
 									</div>
 								</div>
@@ -372,27 +372,25 @@ export default function PositionBorrow({}) {
 							<div className="flex-1 mt-4">
 								<div className="mt-2 flex">
 									<div className="flex-1">{t("mint.effective_annual_interest")}</div>
-									<div className="">{formatCurrency(effectiveInterest * 100)}%</div>
+									<div className="">{formatCurrency(effectiveInterest * 100, 0, 2)}%</div>
 								</div>
 
 								<div className="mt-2 flex">
 									<div className="flex-1">{t("mint.liquidation_price")}</div>
 									<div className="">
-										{formatCurrency(formatUnits(BigInt(position.price), 36 - position.collateralDecimals))}{" "}
+										{formatCurrency(formatUnits(BigInt(position.price), 36 - position.collateralDecimals), 2, 2)}{" "}
 										{TOKEN_SYMBOL}
 									</div>
 								</div>
 
 								<div className="mt-2 flex">
 									<div className="flex-1">{t("mint.market_price")}</div>
-									<div className="">
-										{formatCurrency(collateralPriceDeuro)} {TOKEN_SYMBOL}
-									</div>
+									<div className="">{formatCurrency(collateralPriceUsd, 2, 2)} USD</div>
 								</div>
 
 								<div className="mt-2 flex">
 									<div className="flex-1">{t("mint.loan_to_value")}</div>
-									<div className="">{formatCurrency(effectiveLTV * 100)}%</div>
+									<div className="">{formatCurrency(effectiveLTV * 100, 0, 2)}%</div>
 								</div>
 
 								<div className="mt-2 flex">

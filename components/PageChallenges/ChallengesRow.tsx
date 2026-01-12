@@ -90,7 +90,9 @@ export default function ChallengesRow({ headers, challenge, tab }: Props) {
 						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</span>
 					<span className={`col-span-2 text-md font-extrabold text-text-primary`}>{`${formatCurrency(
-						challengeRemainingSize
+						challengeRemainingSize,
+						3,
+						3
 					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</span>
 				</div>
 
@@ -100,7 +102,9 @@ export default function ChallengesRow({ headers, challenge, tab }: Props) {
 						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</div>
 					<div className={`col-span-2 text-md text-text-primary font-semibold`}>{`${formatCurrency(
-						challengeRemainingSize
+						challengeRemainingSize,
+						3,
+						3
 					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</div>
 				</div>
 			</div>

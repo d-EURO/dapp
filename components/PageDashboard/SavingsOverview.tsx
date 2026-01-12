@@ -39,12 +39,15 @@ const SavingsOverview = () => {
 			<div className="w-full flex md:flex-row flex-col">
 				<div className="w-full flex-row justify-start items-start flex overflow-hidden">
 					<StatsBox title={t("dashboard.interest_rate_apr")} value={rate !== undefined ? `${rate / 10_000}%` : "-"} />
-					<StatsBox title={t("dashboard.total_savings")} value={formatCurrency(formatUnits(totalSavings, 18)) || undefined} />
+					<StatsBox
+						title={t("dashboard.total_savings")}
+						value={formatCurrency(formatUnits(totalSavings, 18), 2, 2) || undefined}
+					/>
 				</div>
 				<div className="w-full flex-row justify-start items-start flex overflow-hidden">
 					<StatsBox
 						title={t("dashboard.total_interest_paid")}
-						value={totalInterest !== undefined ? formatCurrency(totalInterest) : "-"}
+						value={totalInterest !== undefined ? formatCurrency(totalInterest, 2, 2) : "-"}
 					/>
 					<StatsBox
 						title={t("dashboard.contract_address")}

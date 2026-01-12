@@ -40,9 +40,9 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 	const positionChallengesActive = positionChallenges.filter((ch: ChallengesQueryItem) => ch.status == "Active") ?? [];
 	const positionChallengesActiveCollateral =
 		positionChallengesActive.reduce<number>((acc, c) => {
-			return acc + parseInt(formatUnits(c.size, digits - 2)) - parseInt(formatUnits(c.filledSize, digits - 2));
+			return acc + parseFloat(formatUnits(c.size, digits - 2)) - parseFloat(formatUnits(c.filledSize, digits - 2));
 		}, 0) / 100;
-	const collateralBalanceNumber: number = parseInt(formatUnits(BigInt(position.collateralBalance), digits - 2)) / 100;
+	const collateralBalanceNumber: number = parseFloat(formatUnits(BigInt(position.collateralBalance), digits));
 	const challengesRatioPct: number = Math.round((positionChallengesActiveCollateral / collateralBalanceNumber) * 100);
 
 	const liquidationPrice = formatCurrency(
@@ -78,7 +78,9 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</span>
 					<span className={`col-span-2 text-md font-extrabold text-text-primary`}>{`${formatCurrency(
-						collateralizationPercentage
+						collateralBalanceNumber,
+						3,
+						3
 					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</span>
 				</div>
 
@@ -88,7 +90,9 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</div>
 					<div className={`col-span-2 text-md text-text-primary font-semibold`}>{`${formatCurrency(
-						collateralizationPercentage
+						collateralBalanceNumber,
+						3,
+						3
 					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</div>
 				</div>
 			</div>
@@ -103,7 +107,7 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 			{/* Coll. */}
 			<div className="flex flex-col gap-2">
 				<div className={`col-span-2 text-md ${collateralizationPercentage < 110 ? "text-text-warning font-bold" : ""}`}>
-					{!isNaN(collateralizationPercentage) ? formatCurrency(collateralizationPercentage) : "-.--"}%
+					{!isNaN(collateralizationPercentage) ? formatCurrency(collateralizationPercentage, 0, 2) : "-.--"}%
 				</div>
 			</div>
 

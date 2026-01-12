@@ -62,9 +62,7 @@ export function SliderInputOutlined({
 							</div>
 						</div>
 						<div className="px-2 justify-start items-center gap-2.5 inline-flex">
-							<div className="grow shrink basis-0 h-4 justify-start items-center gap-2 flex">
-								<div className="text-input-label text-xs font-medium leading-none">${usdPrice ? `${usdPrice}` : "0"}</div>
-							</div>
+							<div className="grow shrink basis-0 h-4 justify-start items-center gap-2 flex"></div>
 						</div>
 					</div>
 					<div className="px-3 py-4 mt-2 sm:mt-0 bg-input-bg rounded-lg flex-col justify-center items-start gap-1 inline-flex">

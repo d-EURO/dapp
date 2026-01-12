@@ -94,7 +94,7 @@ export default function SavingsInteractionSection() {
 		const toastContent = [
 			{
 				title: `${t("savings.txs.withdraw")}`,
-				value: `${formatCurrency(formatUnits(BigInt(amount), 18))} ${TOKEN_SYMBOL}`,
+				value: `${formatCurrency(formatUnits(BigInt(amount), 18), 2, 2)} ${TOKEN_SYMBOL}`,
 			},
 			{
 				title: `${t("common.txs.transaction")}`,
@@ -116,7 +116,7 @@ export default function SavingsInteractionSection() {
 		const toastContent = [
 			{
 				title: `${t("savings.txs.saving_amount")}`,
-				value: `${formatCurrency(formatUnits(BigInt(amount), 18))} ${TOKEN_SYMBOL}`,
+				value: `${formatCurrency(formatUnits(BigInt(amount), 18), 2, 2)} ${TOKEN_SYMBOL}`,
 			},
 			{
 				title: `${t("common.txs.transaction")}`,
@@ -243,7 +243,7 @@ export default function SavingsInteractionSection() {
 						<TokenLogo currency={TOKEN_SYMBOL} />
 						<div className="flex flex-col">
 							<span className="text-base font-extrabold leading-tight">
-								<span className="">{formatCurrency(formatUnits(userSavingsBalance, 18))}</span> {TOKEN_SYMBOL}
+								<span className="">{formatCurrency(formatUnits(userSavingsBalance, 18), 2, 2)}</span> {TOKEN_SYMBOL}
 							</span>
 							<span className="text-xs font-medium text-text-muted2 leading-[1rem]"></span>
 						</div>
@@ -274,7 +274,7 @@ export default function SavingsInteractionSection() {
 									className="text-text-labelButton font-extrabold"
 									onClick={() => setAmount(isDeposit ? userBalance.toString() : userSavingsBalance.toString())}
 								>
-									{formatCurrency(formatUnits(isDeposit ? userBalance : userSavingsBalance, 18))} {TOKEN_SYMBOL}
+									{formatCurrency(formatUnits(isDeposit ? userBalance : userSavingsBalance, 18), 2, 2)} {TOKEN_SYMBOL}
 								</button>
 							</div>
 						}

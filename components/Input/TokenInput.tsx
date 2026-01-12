@@ -5,6 +5,12 @@ import dynamic from "next/dynamic";
 import { formatUnits } from "viem";
 const TokenLogo = dynamic(() => import("../TokenLogo"), { ssr: false });
 
+const getDisplayPrecision = (symbol?: string): [number, number] => {
+	const protocolTokens = ["JUSD", "USD", "JUICE", "SVJUSD", "SUSD"];
+	if (symbol && protocolTokens.includes(symbol.toUpperCase())) return [2, 2];
+	return [3, 3]; // Collateral default
+};
+
 interface Props {
 	label?: string;
 	symbol: string;
@@ -51,7 +57,7 @@ export default function TokenInput({
 					>
 						{balanceLabel}
 						<span className="font-bold text-link">
-							{formatCurrency(formatUnits(max, Number(digit)))} {symbol}
+							{formatCurrency(formatUnits(max, Number(digit)), ...getDisplayPrecision(symbol))} {symbol}
 						</span>
 					</div>
 				)}

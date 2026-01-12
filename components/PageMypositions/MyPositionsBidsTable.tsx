@@ -4,6 +4,7 @@ import Table from "@components/Table";
 import TableHeader from "@components/Table/TableHead";
 import TableBody from "@components/Table/TableBody";
 import TableRowEmpty from "@components/Table/TableRowEmpty";
+import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import { useAccount } from "wagmi";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { BidsQueryItem, ChallengesQueryItemMapping, PositionQuery, PositionsQueryObjectArray } from "@juicedollar/api";
@@ -11,6 +12,9 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import MyPositionsBidsRow from "./MyPositionsBidsRow";
 import { useTranslation } from "next-i18next";
+import { useExpandableTable } from "@hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function MyPositionsBidsTable() {
 	const { t } = useTranslation();
@@ -44,6 +48,8 @@ export default function MyPositionsBidsTable() {
 		reverse,
 	});
 
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(sorted);
+
 	const handleTabOnChange = function (e: string) {
 		if (tab === e) {
 			setReverse(!reverse);
@@ -64,11 +70,23 @@ export default function MyPositionsBidsTable() {
 				headerClassNames={["text-center"]}
 			/>
 			<TableBody>
-				{sorted.length == 0 ? (
-					<TableRowEmpty>{t("my_positions.no_bids")}</TableRowEmpty>
-				) : (
-					sorted.map((b) => <MyPositionsBidsRow key={b.id} headers={headers} bid={b} tab={tab} />)
-				)}
+				<>
+					{sorted.length == 0 ? (
+						<TableRowEmpty>{t("my_positions.no_bids")}</TableRowEmpty>
+					) : (
+						visibleData.map((b) => <MyPositionsBidsRow key={b.id} headers={headers} bid={b} tab={tab} />)
+					)}
+					{showExpandButton && (
+						<TableShowMoreRow onShowMoreClick={toggleExpanded}>
+							<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
+								{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
+							</div>
+							<div className="justify-start items-center gap-2.5 flex">
+								<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+							</div>
+						</TableShowMoreRow>
+					)}
+				</>
 			</TableBody>
 		</Table>
 	);

@@ -105,7 +105,7 @@ export const CollateralManageSection = () => {
 	const balanceOf = data?.[2]?.result || 0n; // collateral reserve
 	const debt = data?.[3]?.result || 0n;
 	const collateralRequirement = data?.[4]?.result || 0n;
-	const collateralPrice = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
+	const collateralPrice = prices[position?.collateral?.toLowerCase() as Address]?.price?.usd || 0;
 	const collateralValuation = collateralPrice * Number(formatUnits(balanceOf, position?.collateralDecimals || 18));
 
 	// Use native balance for native wrapped positions, otherwise use ERC20 balance
@@ -190,7 +190,7 @@ export const CollateralManageSection = () => {
 				{
 					title: t("common.txs.amount"),
 					value:
-						formatCurrency(formatUnits(BigInt(amount), position.collateralDecimals)) +
+						formatCurrency(formatUnits(BigInt(amount), position.collateralDecimals), 3, 3) +
 						" " +
 						normalizeTokenSymbol(position.collateralSymbol),
 				},
@@ -250,7 +250,7 @@ export const CollateralManageSection = () => {
 				{
 					title: t("common.txs.amount"),
 					value:
-						formatCurrency(formatUnits(BigInt(amount), position.collateralDecimals)) +
+						formatCurrency(formatUnits(BigInt(amount), position.collateralDecimals), 3, 3) +
 						` ${normalizeTokenSymbol(position.collateralSymbol)}`,
 				},
 				{
@@ -293,7 +293,7 @@ export const CollateralManageSection = () => {
 				{
 					title: t("common.txs.amount"),
 					value:
-						formatCurrency(formatUnits(BigInt(amount), position.collateralDecimals)) +
+						formatCurrency(formatUnits(BigInt(amount), position.collateralDecimals), 3, 3) +
 						` ${normalizeTokenSymbol(position.collateralSymbol)}`,
 				},
 				{
@@ -331,11 +331,11 @@ export const CollateralManageSection = () => {
 						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 						<div className="flex flex-col">
 							<span className="text-base font-extrabold leading-tight">
-								<span className="">{formatCurrency(formatUnits(balanceOf, position.collateralDecimals), 0, 5)}</span>{" "}
+								<span className="">{formatCurrency(formatUnits(balanceOf, position.collateralDecimals), 3, 3)}</span>{" "}
 								{normalizeTokenSymbol(position.collateralSymbol)}
 							</span>
 							<span className="text-xs font-medium text-text-muted2 leading-[1rem]">
-								{formatCurrency(collateralValuation)} {TOKEN_SYMBOL}
+								{formatCurrency(collateralValuation, 2, 2)} {TOKEN_SYMBOL}
 							</span>
 						</div>
 					</div>
@@ -400,7 +400,7 @@ export const CollateralManageSection = () => {
 			)}
 			<DetailsExpandablePanel
 				loanDetails={loanDetails}
-				collateralPriceDeuro={collateralPrice}
+				collateralPriceUsd={collateralPrice}
 				collateralDecimals={position.collateralDecimals}
 				startingLiquidationPrice={BigInt(position.price)}
 				extraRows={

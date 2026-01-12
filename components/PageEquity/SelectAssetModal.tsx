@@ -3,6 +3,12 @@ import { formatCurrency, POOL_SHARE_TOKEN_SYMBOL, SAVINGS_VAULT_SYMBOL, TOKEN_SY
 import { TokenModalRowButton, TokenSelectModal } from "@components/TokenSelectModal";
 import { TokenBalance } from "../../hooks/useWalletBalances";
 
+const getDisplayPrecision = (symbol?: string): [number, number] => {
+	const protocolTokens = ["JUSD", "USD", "JUICE", "SVJUSD", "SUSD"];
+	if (symbol && protocolTokens.includes(symbol.toUpperCase())) return [2, 2];
+	return [3, 3]; // Token default (JPS, etc.)
+};
+
 type SelectAssetModalProps = {
 	title: string;
 	isOpen: boolean;
@@ -20,7 +26,7 @@ export function SelectAssetModal({ title, isOpen, setIsOpen, balances, onTokenSe
 	const getPriceBySymbol = (symbol: string) => {
 		const w = balances.find((balance) => balance.symbol === symbol);
 		if (!w) return "--";
-		return formatCurrency(formatUnits(w.balanceOf ?? 0n, w.decimals)) as string;
+		return formatCurrency(formatUnits(w.balanceOf ?? 0n, w.decimals), ...getDisplayPrecision(symbol)) as string;
 	};
 
 	const options = [
@@ -50,7 +56,9 @@ export function SelectAssetModal({ title, isOpen, setIsOpen, balances, onTokenSe
 							key={`${option.symbol}-${i}`}
 							symbol={option.symbol}
 							price={getPriceBySymbol(option.symbol)}
-							balance={formatCurrency(formatUnits(option.balanceOf ?? 0n, 18)) as string}
+							balance={
+								formatCurrency(formatUnits(option.balanceOf ?? 0n, 18), ...getDisplayPrecision(option.symbol)) as string
+							}
 							name={option.name}
 							onClick={() => handleTokenSelect(option.symbol)}
 						/>

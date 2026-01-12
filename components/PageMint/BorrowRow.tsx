@@ -22,10 +22,8 @@ export default function BorrowRow({ headers, position, tab }: Props) {
 	const { t } = useTranslation();
 
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
-	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
 	const collTokenPrice = prices[position.collateral.toLowerCase() as Address]?.price?.usd;
-	const deuroPrice = eurPrice || prices[position.stablecoinAddress.toLowerCase() as Address]?.price?.usd;
-	if (!collTokenPrice || !deuroPrice) return null;
+	if (!collTokenPrice) return null;
 
 	const interest: number = Math.round((position.annualInterestPPM / 10 ** 4) * 100) / 100;
 	const reserve: number = Math.round((position.reserveContribution / 10 ** 4) * 100) / 100;
@@ -36,7 +34,8 @@ export default function BorrowRow({ headers, position, tab }: Props) {
 	const expirationString: string = `${expirationStr[2]} ${expirationStr[1]} ${expirationStr[3]}`;
 
 	// effectiveLTV = liquidation price * (1 - reserve) / market price
-	const effectiveLTV: number = Math.round(((price * (1 - reserve / 100)) / collTokenPrice) * deuroPrice * 10000) / 100;
+	// 1 JUSD = 1 USD, so no deuroPrice multiplication needed
+	const effectiveLTV: number = Math.round(((price * (1 - reserve / 100)) / collTokenPrice) * 10000) / 100;
 	const effectiveInterest: number = Math.round((interest / (1 - reserve / 100)) * 100) / 100;
 
 	return (
@@ -62,11 +61,11 @@ export default function BorrowRow({ headers, position, tab }: Props) {
 			</div>
 
 			<div className="flex flex-col gap-2 text-base sm:font-medium leading-tight">
-				<div className="col-span-2 text-md">{formatCurrency(effectiveLTV, 2, 2)}%</div>
+				<div className="col-span-2 text-md">{formatCurrency(effectiveLTV, 0, 2)}%</div>
 			</div>
 
 			<div className="flex flex-col gap-2 text-base sm:font-medium leading-tight">
-				<div className="col-span-2 text-md">{formatCurrency(effectiveInterest, 2, 2)}%</div>
+				<div className="col-span-2 text-md">{formatCurrency(effectiveInterest, 0, 2)}%</div>
 			</div>
 
 			<div className="flex flex-col gap-2 text-base sm:font-medium leading-tight">

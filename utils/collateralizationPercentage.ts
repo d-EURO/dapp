@@ -8,18 +8,23 @@ export function calculateCollateralizationPercentage(position: PositionQuery, pr
 		return 0;
 	}
 
-	const collTokenPriceMarket = prices?.[position.collateral.toLowerCase() as Address]?.price?.eur;
+	const collTokenPriceMarket = prices?.[position.collateral.toLowerCase() as Address]?.price?.usd;
 
 	if (!collTokenPriceMarket) {
 		return 0;
 	}
 
 	const collTokenPricePosition = Number(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals);
-	const jusdPriceEur = prices?.[position.stablecoinAddress.toLowerCase() as Address]?.price?.eur || 1;
-	const liquidationPriceEur = collTokenPricePosition / jusdPriceEur;
+	// 1 JUSD = 1 USD, so no conversion needed
+	const liquidationPrice = collTokenPricePosition;
+
+	// Prevent division by zero
+	if (liquidationPrice === 0) {
+		return 0;
+	}
 
 	const marketValueCollateral = collBalancePosition * collTokenPriceMarket;
-	const positionValueCollateral = collBalancePosition * liquidationPriceEur;
+	const positionValueCollateral = collBalancePosition * liquidationPrice;
 
 	return Math.round((marketValueCollateral / positionValueCollateral) * 10000) / 100;
 }

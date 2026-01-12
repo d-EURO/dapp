@@ -241,7 +241,7 @@ export const AdjustLoan = ({
 							<div className="grow shrink basis-0 h-4 px-2 justify-start items-center gap-2 flex max-w-full overflow-hidden"></div>
 							<div className="h-7 justify-end items-center gap-2.5 flex">
 								<div className="text-input-label text-xs font-medium leading-none">
-									{formatUnits(maxDelta, 18)} {position.stablecoinSymbol}
+									{formatCurrency(formatUnits(maxDelta, 18), 2, 2)} {position.stablecoinSymbol}
 								</div>
 								<MaxButton disabled={maxDelta === 0n} onClick={handleMaxClick} />
 							</div>
@@ -291,27 +291,27 @@ export const AdjustLoan = ({
 								</Tooltip>
 							</div>
 							<span className="font-medium text-text-title">
-								{formatCurrency(formatUnits(outcome.deltaCollateral, collateralDecimals), 0, 6)} {collateralSymbol}
+								{formatCurrency(formatUnits(outcome.deltaCollateral, collateralDecimals), 3, 3)} {collateralSymbol}
 							</span>
 						</div>
 					)}
 					<div className="flex justify-between text-sm">
 						<span className="text-text-muted2">{t("mint.amount_lended")}</span>
 						<span className="font-medium text-text-title">
-							{formatCurrency(formatUnits(getAmountLended(principal + delta, position.reserveContribution), 18), 0, 2)} JUSD
+							{formatCurrency(formatUnits(getAmountLended(principal + delta, position.reserveContribution), 18), 2, 2)} JUSD
 						</span>
 					</div>
 					<div className="flex justify-between text-sm">
 						<span className="text-text-muted2">{t("mint.retained_reserve")}</span>
 						<span className="font-medium text-text-title">
-							{formatCurrency(formatUnits(getRetainedReserve(principal + delta, position.reserveContribution), 18), 0, 2)}{" "}
+							{formatCurrency(formatUnits(getRetainedReserve(principal + delta, position.reserveContribution), 18), 2, 2)}{" "}
 							JUSD
 						</span>
 					</div>
 					<div className="flex justify-between text-sm pt-2 border-t border-gray-300 dark:border-gray-600">
 						<span className="text-text-muted2 font-medium">{t("mint.total")}</span>
 						<span className="font-medium text-text-title">
-							{formatCurrency(formatUnits(currentDebt + delta, 18), 0, 2)} JUSD
+							{formatCurrency(formatUnits(currentDebt + delta, 18), 2, 2)} JUSD
 						</span>
 					</div>
 				</div>
@@ -324,7 +324,7 @@ export const AdjustLoan = ({
 							<div className="flex justify-between text-sm">
 								<span className="text-text-muted2">{t("mint.collateral_returned")}</span>
 								<span className="font-medium text-green-600 dark:text-green-400">
-									+{formatCurrency(formatUnits(collateralBalance, collateralDecimals), 0, 6)} {collateralSymbol}
+									+{formatCurrency(formatUnits(collateralBalance, collateralDecimals), 3, 3)} {collateralSymbol}
 								</span>
 							</div>
 						)}
@@ -336,7 +336,7 @@ export const AdjustLoan = ({
 										delta >= principal ? 0n : getAmountLended(principal - delta, position.reserveContribution),
 										18
 									),
-									0,
+									2,
 									2
 								)}{" "}
 								JUSD
@@ -350,7 +350,7 @@ export const AdjustLoan = ({
 										delta >= principal ? 0n : getRetainedReserve(principal - delta, position.reserveContribution),
 										18
 									),
-									0,
+									2,
 									2
 								)}{" "}
 								JUSD
@@ -359,7 +359,7 @@ export const AdjustLoan = ({
 						<div className="flex justify-between text-sm pt-2 border-t border-gray-300 dark:border-gray-600">
 							<span className="text-text-muted2 font-medium">{t("mint.total")}</span>
 							<span className="font-medium text-text-title">
-								{formatCurrency(formatUnits(delta >= currentDebt ? 0n : currentDebt - delta, 18), 0, 2)} JUSD
+								{formatCurrency(formatUnits(delta >= currentDebt ? 0n : currentDebt - delta, 18), 2, 2)} JUSD
 							</span>
 						</div>
 					</div>
@@ -396,8 +396,8 @@ export const AdjustLoan = ({
 						? t("mint.lend")
 						: t("mint.repay")
 					: !isIncrease
-					? `${t("mint.repay")} ${formatCurrency(formatUnits(delta, 18), 0, 2)} ${position.stablecoinSymbol}`
-					: `${t("mint.lend")} ${formatCurrency(formatUnits(delta, 18), 0, 2)} ${position.stablecoinSymbol}`}
+					? `${t("mint.repay")} ${formatCurrency(formatUnits(delta, 18), 2, 2)} ${position.stablecoinSymbol}`
+					: `${t("mint.lend")} ${formatCurrency(formatUnits(delta, 18), 2, 2)} ${position.stablecoinSymbol}`}
 			</Button>
 		</div>
 	);

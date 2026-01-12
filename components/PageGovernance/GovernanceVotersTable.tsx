@@ -2,10 +2,10 @@ import TableHeader from "../Table/TableHead";
 import TableBody from "../Table/TableBody";
 import Table from "../Table";
 import TableRowEmpty from "../Table/TableRowEmpty";
+import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { useEffect, useState } from "react";
-import { useNativePSHolders } from "@hooks";
-import { useVotingPowers } from "@hooks";
+import { useNativePSHolders, useVotingPowers, useExpandableTable } from "@hooks";
 import GovernanceVotersRow from "./GovernanceVotersRow";
 
 import { useAccount } from "wagmi";
@@ -13,6 +13,8 @@ import { readContract } from "wagmi/actions";
 import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../app.config";
 import { ADDRESS, EquityABI } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export type VoteData = {
 	holder: Address;
@@ -78,6 +80,8 @@ export default function GovernanceVotersTable() {
 		tab,
 	});
 
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(votesDataSorted);
+
 	const handleTabOnChange = function (e: string) {
 		if (tab === e) {
 			setReverse(!reverse);
@@ -112,9 +116,19 @@ export default function GovernanceVotersTable() {
 					{votesDataSorted.length == 0 ? (
 						<TableRowEmpty>{t("governance.voters_table_empty")}</TableRowEmpty>
 					) : (
-						votesDataSorted.map((vote) => (
+						visibleData.map((vote) => (
 							<GovernanceVotersRow key={vote.holder} headers={headers} voter={vote} votesTotal={votesTotal} tab={tab} />
 						))
+					)}
+					{showExpandButton && (
+						<TableShowMoreRow onShowMoreClick={toggleExpanded}>
+							<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
+								{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
+							</div>
+							<div className="justify-start items-center gap-2.5 flex">
+								<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+							</div>
+						</TableShowMoreRow>
 					)}
 				</>
 			</TableBody>

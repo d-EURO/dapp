@@ -30,20 +30,19 @@ export default function MypositionsRow({ headers, subHeaders, position, tab }: P
 	const navigate = useNavigate();
 
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
-	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
 	const challenges = useSelector((state: RootState) => state.challenges.positions);
 	const collTokenPrice = prices[position.collateral.toLowerCase() as Address]?.price?.usd || 0;
-	const deuroPrice = eurPrice || prices[position.stablecoinAddress.toLowerCase() as Address]?.price?.usd || 1;
 
 	const maturity: number = (position.expiration * 1000 - Date.now()) / 1000 / 60 / 60 / 24;
 
 	const balance: number = parseInt(position.collateralBalance) / 10 ** position.collateralDecimals;
-	const balanceDEURO: number = (balance * collTokenPrice) / deuroPrice;
+	// 1 JUSD = 1 USD, so collateral value is directly in USD
+	const balanceUSD: number = balance * collTokenPrice;
 
 	const loanDEURO: number = parseInt(position.principal) / 10 ** position.stablecoinDecimals;
 
 	const liquidationDEURO: number = parseInt(position.price) / 10 ** (36 - position.collateralDecimals);
-	const liquidationPct: number = (balanceDEURO / (liquidationDEURO * balance)) * 100;
+	const liquidationPct: number = (balanceUSD / (liquidationDEURO * balance)) * 100;
 
 	const positionChallenges = challenges?.map?.[position.position.toLowerCase() as Address] ?? [];
 	const positionChallengesActive = positionChallenges.filter((ch: ChallengesQueryItem) => ch.status == "Active") ?? [];
@@ -145,7 +144,7 @@ export default function MypositionsRow({ headers, subHeaders, position, tab }: P
 			<div className="flex flex-col">
 				{/* desktop view */}
 				<div className="max-md:hidden">
-					<MyPositionsDisplayCollateral position={position} collateralPrice={collTokenPrice} deuroPrice={deuroPrice} />
+					<MyPositionsDisplayCollateral position={position} collateralPrice={collTokenPrice} />
 				</div>
 				{/* mobile view */}
 				<div className="md:hidden max-md:mb-5">
@@ -153,7 +152,6 @@ export default function MypositionsRow({ headers, subHeaders, position, tab }: P
 						className={"justify-items-center items-center"}
 						position={position}
 						collateralPrice={collTokenPrice}
-						deuroPrice={deuroPrice}
 					/>
 				</div>
 			</div>
@@ -163,9 +161,7 @@ export default function MypositionsRow({ headers, subHeaders, position, tab }: P
 				<span className={liquidationPct < 110 ? `text-md font-bold text-text-warning` : "text-md "}>
 					{formatCurrency(liquidationDEURO, 2, 2)} {TOKEN_SYMBOL}
 				</span>
-				<span className="text-sm text-text-subheader">
-					{formatCurrency(collTokenPrice / deuroPrice, 2, 2)} {TOKEN_SYMBOL}
-				</span>
+				<span className="text-sm text-text-subheader">{formatCurrency(collTokenPrice, 2, 2)} USD</span>
 			</div>
 
 			{/* Loan Value */}
