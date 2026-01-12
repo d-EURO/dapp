@@ -12,9 +12,7 @@ import { SolverOutcome } from "../utils/positionSolver";
 interface ExecuteLoanAdjustParams {
 	outcome: SolverOutcome;
 	position: PositionQuery;
-	userAddress: Address;
 	principal: bigint;
-	collateralBalance: bigint;
 	isNativeWrappedPosition: boolean;
 	t: (key: string, params?: Record<string, string>) => string;
 	onSuccess: () => void;
@@ -23,75 +21,57 @@ interface ExecuteLoanAdjustParams {
 export const executeLoanAdjust = async ({
 	outcome,
 	position,
-	userAddress,
 	principal,
-	collateralBalance,
 	isNativeWrappedPosition,
 	t,
 	onSuccess,
 }: ExecuteLoanAdjustParams): Promise<void> => {
 	const posAddr = position.position as Address;
+	const depositAmount = outcome.deltaCollateral > 0n ? outcome.deltaCollateral : 0n;
+	const isWithdrawing = outcome.deltaCollateral < 0n;
+	const newPrincipal = outcome.next.debt === 0n ? 0n : principal + outcome.deltaDebt;
+	const LiqPrice = BigInt(position.price);
 
-	if (outcome.next.debt === 0n && principal > 0n) {
-		await executeTx({
-			contractParams: { address: posAddr, abi: PositionV2ABI, functionName: "repayFull", args: [] },
-			pendingTitle: t("mint.txs.pay_back", { symbol: position.stablecoinSymbol }),
-			successTitle: t("mint.txs.pay_back_success", { symbol: position.stablecoinSymbol }),
-		});
+	// Check if this is a full close (repay all debt and withdraw all collateral)
+	const isFullClose = outcome.next.debt === 0n && outcome.next.collateral === 0n && principal > 0n;
 
-		if (outcome.next.collateral === 0n && collateralBalance > 0n) {
-			await executeTx({
-				contractParams: {
-					address: posAddr,
-					abi: PositionV2ABI,
-					functionName: isNativeWrappedPosition ? "withdrawCollateralAsNative" : "withdrawCollateral",
-					args: [userAddress, collateralBalance],
-				},
-				pendingTitle: t("mint.txs.removing_collateral"),
-				successTitle: t("mint.txs.removing_collateral_success"),
-			});
-		}
-	} else {
-		const depositAmount = outcome.deltaCollateral > 0n ? outcome.deltaCollateral : 0n;
-		const isWithdrawing = outcome.deltaCollateral < 0n;
-		const newPrincipal = outcome.next.debt === 0n ? 0n : principal + outcome.deltaDebt;
-		const LiqPrice = BigInt(position.price);
+	const rows = [
+		outcome.deltaCollateral !== 0n && {
+			title: outcome.deltaCollateral > 0n ? t("mint.deposit_collateral") : t("mint.withdraw_collateral"),
+			value: formatPositionValue(
+				outcome.deltaCollateral > 0n ? outcome.deltaCollateral : -outcome.deltaCollateral,
+				position.collateralDecimals,
+				normalizeTokenSymbol(position.collateralSymbol)
+			),
+		},
+		outcome.deltaDebt !== 0n && {
+			title: outcome.deltaDebt > 0n ? t("mint.borrow_more") : t("mint.repay"),
+			value: formatPositionValue(outcome.deltaDebt > 0n ? outcome.deltaDebt : -outcome.deltaDebt, 18, position.stablecoinSymbol),
+		},
+	].filter(Boolean) as { title: string; value: string }[];
 
-		const rows = [
-			outcome.deltaCollateral !== 0n && {
-				title: outcome.deltaCollateral > 0n ? t("mint.deposit_collateral") : t("mint.withdraw_collateral"),
-				value: formatPositionValue(
-					outcome.deltaCollateral > 0n ? outcome.deltaCollateral : -outcome.deltaCollateral,
-					position.collateralDecimals,
-					normalizeTokenSymbol(position.collateralSymbol)
-				),
-			},
-			outcome.deltaDebt !== 0n && {
-				title: outcome.deltaDebt > 0n ? t("mint.borrow_more") : t("mint.repay"),
-				value: formatPositionValue(outcome.deltaDebt > 0n ? outcome.deltaDebt : -outcome.deltaDebt, 18, position.stablecoinSymbol),
-			},
-		].filter(Boolean) as { title: string; value: string }[];
+	const txTitle = isFullClose
+		? t("mint.close_position")
+		: outcome.deltaDebt < 0n
+		? `${t("mint.repay")} ${formatPositionValue(-outcome.deltaDebt, 18, position.stablecoinSymbol)}`
+		: outcome.deltaDebt > 0n
+		? `${t("mint.lending")} ${formatPositionValue(outcome.deltaDebt, 18, position.stablecoinSymbol)}`
+		: t("mint.adjust_position");
 
-		const txTitle =
-			outcome.deltaDebt < 0n
-				? `${t("mint.repay")} ${formatPositionValue(-outcome.deltaDebt, 18, position.stablecoinSymbol)}`
-				: outcome.deltaDebt > 0n
-				? `${t("mint.lending")} ${formatPositionValue(outcome.deltaDebt, 18, position.stablecoinSymbol)}`
-				: t("mint.adjust_position");
-
-		await executeTx({
-			contractParams: {
-				address: posAddr,
-				abi: PositionV2ABI,
-				functionName: "adjust",
-				args: [newPrincipal, outcome.next.collateral, LiqPrice, isWithdrawing && isNativeWrappedPosition],
-				value: isNativeWrappedPosition && depositAmount > 0n ? depositAmount : undefined,
-			},
-			pendingTitle: txTitle,
-			successTitle: txTitle,
-			rows,
-		});
-	}
+	// Use single adjust() call for all operations including full close
+	// The adjust() function handles: repay debt, withdraw collateral, and price changes in one transaction
+	await executeTx({
+		contractParams: {
+			address: posAddr,
+			abi: PositionV2ABI,
+			functionName: "adjust",
+			args: [newPrincipal, outcome.next.collateral, LiqPrice, isWithdrawing && isNativeWrappedPosition],
+			value: isNativeWrappedPosition && depositAmount > 0n ? depositAmount : undefined,
+		},
+		pendingTitle: txTitle,
+		successTitle: txTitle,
+		rows,
+	});
 
 	store.dispatch(fetchPositionsList());
 	onSuccess();

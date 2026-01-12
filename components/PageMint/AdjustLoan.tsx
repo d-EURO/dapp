@@ -198,9 +198,7 @@ export const AdjustLoan = ({
 		handleLoanExecute({
 			outcome,
 			position,
-			userAddress: userAddress as Address,
 			principal,
-			collateralBalance,
 			isNativeWrappedPosition,
 			t,
 			onSuccess: isFullRepay
