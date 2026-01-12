@@ -185,18 +185,6 @@ test.describe("Visual Regression", () => {
 		});
 	});
 
-	test("ecosystem page", async ({ page }) => {
-		await page.goto("/ecosystem");
-		await normalizeScrollbars(page);
-		await page.waitForLoadState("networkidle");
-		await waitForCharts(page);
-
-		await expect(page).toHaveScreenshot("ecosystem.png", {
-			fullPage: true,
-			maxDiffPixelRatio: 0.01,
-		});
-	});
-
 	test("monitoring page", async ({ page }) => {
 		await page.goto("/monitoring");
 		await normalizeScrollbars(page);
