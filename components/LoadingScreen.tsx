@@ -2,7 +2,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import { SOCIAL } from "../utils/constant";
-import { version } from "../package.json";
+import packageJson from "../package.json";
 import { faCodeCommit } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { useIsMainnet } from "@hooks";
@@ -37,7 +37,11 @@ export function SubmitIssue() {
 				<FooterButton link={SOCIAL.Github_dapp_new_issue} text="Submit an Issue" icon={faGithub} />
 			</li>
 			<li>
-				<FooterButton link={SOCIAL.Github_dapp} text={`${version} - ${isMainnet ? "Mainnet" : "Testnet"}`} icon={faCodeCommit} />
+				<FooterButton
+					link={SOCIAL.Github_dapp}
+					text={`${packageJson.version} - ${isMainnet ? "Mainnet" : "Testnet"}`}
+					icon={faCodeCommit}
+				/>
 			</li>
 		</ul>
 	);
