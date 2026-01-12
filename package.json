@@ -25,7 +25,8 @@
 		"lint:fix": "prettier --write .",
 		"prettier-watch": "onchange \"**/*\" -- prettier --write --ignore-unknown {{changed}}",
 		"deploy": "gh-pages -d build",
-		"docker": "next build && next start"
+		"docker": "next build && next start",
+		"prepare": "husky"
 	},
 	"dependencies": {
 		"@apollo/client": "^3.8.0",
@@ -74,11 +75,14 @@
 		"@types/react-datepicker": "^6.2.0",
 		"autoprefixer": "^10.4.14",
 		"babel-loader": "^8.3.0",
+		"dotenv": "^17.2.3",
 		"flowbite": "^2.3.0",
 		"flowbite-datepicker": "^1.2.6",
 		"flowbite-react": "^0.7.3",
 		"fs-extra": "^11.3.3",
 		"gh-pages": "^6.0.0",
+		"husky": "^9.1.7",
+		"lint-staged": "16",
 		"node-fetch": "^3.3.2",
 		"playwright-core": "1.48.2",
 		"postcss": "^8.4.19",
@@ -96,5 +100,8 @@
 		"playwright": "1.48.2",
 		"playwright-core": "1.48.2"
 	},
-	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx,json,md,css}": "prettier --write"
+	}
 }

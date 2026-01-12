@@ -115,11 +115,11 @@ NEXT_PUBLIC_API_URL=https://dev.api.testnet.juicedollar.com/
 NEXT_PUBLIC_PONDER_URL=https://dev.ponder.testnet.juicedollar.com
 NEXT_PUBLIC_WAGMI_ID=<dein-walletconnect-project-id>
 NEXT_PUBLIC_CHAIN_NAME=testnet
-NEXT_PUBLIC_RPC_URL_TESTNET=https://rpc.testnet.juiceswap.com/
+NEXT_PUBLIC_RPC_URL_TESTNET=https://rpc.testnet.citreascan.com/
 
-# E2E Testing Variablen
-WALLET_SEED_PHRASE=deine zwölf wörter seed phrase hier eintragen
-WALLET_PASSWORD=DeinSicheresTestPasswort123!
+# E2E Testing Variablen (PFLICHT - kein Fallback!)
+WALLET_SEED_PHRASE=<deine-12-wort-seed-phrase>
+WALLET_PASSWORD=<dein-metamask-passwort>
 PLAYWRIGHT_BASE_URL=http://localhost:3000
 ```
 
@@ -210,8 +210,8 @@ npx playwright test navigation.spec.ts
 # Nur UI-Tests
 npx playwright test ui.spec.ts
 
-# Nur Wallet-Verbindungs-Tests (erfordert Cache)
-npx playwright test tests/e2e/specs/wallet/connect-wallet.spec.ts
+# Nur Wallet-Verbindungs-Tests
+npx playwright test tests/e2e/specs/wallet/connect.spec.ts
 ```
 
 ### Einzelne Tests ausführen
@@ -243,21 +243,21 @@ Dies öffnet den Playwright Inspector, wo du:
 tests/
 └── e2e/
     ├── README.md                    # Diese Dokumentation
-    ├── wallet-setup/
-    │   └── basic.setup.ts           # MetaMask Wallet-Konfiguration
     ├── snapshots/                   # Baseline-Screenshots für Visual Tests
-    │   └── specs/
-    │       └── visual.spec.ts/      # Screenshots pro Test-Datei
-    │           ├── dashboard.png
-    │           ├── mint.png
+    │   ├── specs/
+    │   │   └── visual.spec.ts/      # Screenshots pro Test-Datei
+    │   │       ├── dashboard.png
+    │   │       └── ...
+    │   └── wallet/
+    │       └── connect.spec.ts/     # Wallet-Test Screenshots
+    │           ├── 01-homepage-before-connect.png
     │           └── ...
     └── specs/
         ├── navigation.spec.ts       # Navigations-Tests (ohne MetaMask)
         ├── ui.spec.ts               # UI-Element-Tests (ohne MetaMask)
         ├── visual.spec.ts           # Visual Regression Tests
         └── wallet/                  # Wallet-Tests (mit MetaMask)
-            ├── connect-wallet.spec.ts
-            └── dashboard.spec.ts
+            └── connect.spec.ts       # Wallet-Verbindung mit Visual Baselines
 ```
 
 ### Vorhandene Tests
@@ -288,16 +288,12 @@ tests/
 
 #### Wallet-Tests (mit MetaMask)
 
-**wallet/connect-wallet.spec.ts**
+**wallet/connect.spec.ts**
 
 -   Testet MetaMask-Verbindung zur dApp
--   Verifiziert Netzwerk-Wechsel zu Citrea Testnet
-
-**wallet/dashboard.spec.ts**
-
--   Dashboard nach Wallet-Verbindung
--   Portfolio-Informationen laden
--   Navigation zu Mint/Savings-Seite
+-   Verifiziert effektive Wallet-Verbindung (Adresse sichtbar, Connect-Button verschwunden)
+-   Prüft dass nur eine Adress-Instanz im DOM existiert
+-   5 Visual Baseline Screenshots für Regression Testing
 
 ---
 
@@ -305,23 +301,18 @@ tests/
 
 ### Test-Datei erstellen
 
-Erstelle eine neue Datei in `tests/e2e/specs/`:
+Erstelle eine neue Datei in `tests/e2e/specs/`. Für Tests ohne Wallet-Verbindung:
 
 ```typescript
-// tests/e2e/specs/mein-feature.spec.ts
+// tests/e2e/specs/my-feature.spec.ts
 
-import { testWithSynpress } from "@synthetixio/synpress";
-import { MetaMask, metaMaskFixtures } from "@synthetixio/synpress/playwright";
-import basicSetup from "../wallet-setup/basic.setup";
+import { test, expect } from "@playwright/test";
 
-const test = testWithSynpress(metaMaskFixtures(basicSetup));
-const { expect } = test;
+test.describe("My Feature", () => {
+	test("should do something", async ({ page }) => {
+		await page.goto("/my-page");
 
-test.describe("Mein Feature", () => {
-	test("sollte etwas tun", async ({ page }) => {
-		await page.goto("/meine-seite");
-
-		// Dein Test-Code hier
+		// Your test code here
 		await expect(page.locator("h1")).toBeVisible();
 	});
 });
@@ -329,43 +320,84 @@ test.describe("Mein Feature", () => {
 
 ### Test mit Wallet-Verbindung
 
+Für Tests mit MetaMask-Integration, siehe das Beispiel in `tests/e2e/specs/wallet/connect.spec.ts`:
+
 ```typescript
-test("sollte mit verbundener Wallet funktionieren", async ({ context, page, metamaskPage, extensionId }) => {
-	// MetaMask-Instanz erstellen
-	const metamask = new MetaMask(context, metamaskPage, basicSetup.walletPassword, extensionId);
+// tests/e2e/specs/wallet/my-wallet-test.spec.ts
 
-	await page.goto("/");
+import { test, expect, chromium, type BrowserContext } from "@playwright/test";
+import { MetaMask, getExtensionId } from "@synthetixio/synpress-metamask/playwright";
+import { prepareExtension } from "@synthetixio/synpress-cache";
 
-	// Wallet verbinden
-	await page.getByRole("button", { name: /connect/i }).click();
-	await page
-		.getByText(/metamask/i)
-		.first()
-		.click();
-	await metamask.connectToDapp();
+const SEED_PHRASE = process.env.WALLET_SEED_PHRASE || "";
+const WALLET_PASSWORD = process.env.WALLET_PASSWORD || "";
 
-	// Jetzt ist die Wallet verbunden - teste dein Feature
-	await page.goto("/mint");
-	// ...
+if (!SEED_PHRASE || !WALLET_PASSWORD) {
+	throw new Error("WALLET_SEED_PHRASE and WALLET_PASSWORD must be set");
+}
+
+test.describe("My Wallet Feature", () => {
+	let context: BrowserContext;
+	let metamask: MetaMask;
+
+	test.beforeAll(async () => {
+		const extensionPath = await prepareExtension();
+		context = await chromium.launchPersistentContext("", {
+			headless: false,
+			args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
+		});
+
+		const extensionId = await getExtensionId(context, "MetaMask");
+		await new Promise((r) => setTimeout(r, 2000));
+		const pages = context.pages();
+		const metamaskPage = pages.find((p) => p.url().includes("chrome-extension://"));
+		if (!metamaskPage) throw new Error("MetaMask not found");
+
+		metamask = new MetaMask(context, metamaskPage, WALLET_PASSWORD, extensionId);
+		await metamask.importWallet(SEED_PHRASE);
+	});
+
+	test.afterAll(async () => {
+		await context?.close();
+	});
+
+	test("should work with connected wallet", async () => {
+		const page = await context.newPage();
+		await page.goto("/");
+
+		// Connect wallet
+		await page.getByRole("button", { name: /connect/i }).click();
+		await page
+			.getByText(/metamask/i)
+			.first()
+			.click();
+		await metamask.connectToDapp();
+
+		// Wallet is now connected - test your feature
+		await page.goto("/mint");
+		// ...
+
+		await page.close();
+	});
 });
 ```
 
 ### Häufig verwendete MetaMask-Aktionen
 
 ```typescript
-// Wallet verbinden
+// Connect wallet
 await metamask.connectToDapp();
 
-// Transaktion bestätigen
+// Confirm transaction
 await metamask.confirmTransaction();
 
-// Signatur bestätigen
+// Confirm signature
 await metamask.confirmSignature();
 
-// Netzwerk wechseln
+// Switch network
 await metamask.switchNetwork("Citrea Testnet");
 
-// Token hinzufügen
+// Add token
 await metamask.addToken("0x...");
 ```
 
@@ -433,15 +465,16 @@ yarn test:e2e:debug
 ### Problem: "Network not found"
 
 **Lösung:**
-Stelle sicher, dass das Citrea Testnet korrekt konfiguriert ist in `wallet-setup/basic.setup.ts`:
+Falls dein Test das Netzwerk wechseln muss, füge es nach dem Wallet-Import hinzu:
 
 ```typescript
 await metamask.addNetwork({
 	name: "Citrea Testnet",
-	rpcUrl: "https://rpc.testnet.citrea.xyz",
+	rpcUrl: "https://rpc.testnet.citreascan.com",
 	chainId: 5115,
 	symbol: "cBTC",
 });
+await metamask.switchNetwork("Citrea Testnet");
 ```
 
 ### Problem: Tests laufen zu langsam

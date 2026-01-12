@@ -1,4 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+
+// Load environment variables from .env file
+dotenv.config();
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const isLocalhost = BASE_URL.includes("localhost") || BASE_URL.includes("127.0.0.1");

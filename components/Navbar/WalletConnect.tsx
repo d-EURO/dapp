@@ -38,25 +38,19 @@ export default function WalletConnect() {
 	const carryOnQueryParams = toQueryString(getCarryOnQueryParams(router));
 
 	return (
-		<>
-			<div className="md:hidden">
+		<div className="inline-flex md:h-9 md:pl-2 md:pr-0.5 md:bg-menu-wallet-bg md:rounded-full md:border md:border-menu-wallet-border justify-start items-center md:gap-4">
+			<Link
+				href={`/referrals${carryOnQueryParams}`}
+				className="justify-start items-center gap-2 hidden md:flex !hover:text-button-text-hover-text group"
+			>
+				<img src="/icons/chest.svg" alt="Logo" width={24} height={24} />
+				<div className="text-menu-active-text text-base font-extrabold leading-tight whitespace-nowrap group-hover:text-button-text-hover-text">
+					{t("common.navbar.my_referrals")}
+				</div>
+			</Link>
+			<div className="flex items-center gap-2">
 				<ConnectButton />
 			</div>
-			<div className="h-9 pl-2 pr-0.5 bg-menu-wallet-bg rounded-full border border-menu-wallet-border justify-start items-center gap-4 hidden md:inline-flex">
-				<Link
-					href={`/referrals${carryOnQueryParams}`}
-					className="justify-start items-center gap-2 flex !hover:text-button-text-hover-text group"
-				>
-					<img src="/icons/chest.svg" alt="Logo" width={24} height={24} />
-
-					<div className="text-menu-active-text text-base font-extrabold leading-tight whitespace-nowrap group-hover:text-button-text-hover-text">
-						{t("common.navbar.my_referrals")}
-					</div>
-				</Link>
-				<div className="flex items-center gap-2">
-					<ConnectButton />
-				</div>
-			</div>
-		</>
+		</div>
 	);
 }

@@ -29,10 +29,10 @@ export default defineWalletSetup(WALLET_PASSWORD, async (context, walletPage) =>
 	// Add Citrea Testnet network
 	await metamask.addNetwork({
 		name: "Citrea Testnet",
-		rpcUrl: process.env.NEXT_PUBLIC_RPC_URL_TESTNET || "https://rpc.testnet.citrea.xyz",
+		rpcUrl: process.env.NEXT_PUBLIC_RPC_URL_TESTNET || "https://rpc.testnet.citreascan.com",
 		chainId: 5115,
 		symbol: "cBTC",
-		blockExplorerUrl: "https://explorer.testnet.citrea.xyz",
+		blockExplorerUrl: "https://testnet.citreascan.com",
 	});
 
 	// Switch to Citrea Testnet
