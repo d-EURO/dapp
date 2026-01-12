@@ -111,6 +111,13 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 				</div>
 			</div>
 
+			{/* Loan Amount */}
+			<div className="flex flex-col gap-2">
+				<div className={`col-span-2 text-md`}>
+					{formatCurrency(formatUnits(BigInt(position.principal), 18), 2, 2)} {TOKEN_SYMBOL}
+				</div>
+			</div>
+
 			{/* Expiration */}
 			<div className="flex flex-col gap-2">
 				<div className={`col-span-2 text-md ${maturity < 7 ? "text-text-warning font-bold" : ""}`}>
