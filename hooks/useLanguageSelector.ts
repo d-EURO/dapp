@@ -2,10 +2,12 @@ import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+type LanguageOption = { value: string; disabled?: boolean };
+
 export const useLanguageSelector = () => {
 	const { i18n } = useTranslation();
 	const router = useRouter();
-	const options = [{ value: "en" }, { value: "de" }, { value: "es" }, { value: "fr" }, { value: "it", disabled: true }];
+	const options: LanguageOption[] = [{ value: "en" }, { value: "de" }, { value: "es" }, { value: "fr" }, { value: "it" }];
 
 	const handleLanguageChange = (locale: string) => {
 		const { pathname, asPath, query } = router;
@@ -20,8 +22,11 @@ export const useLanguageSelector = () => {
 	useEffect(() => {
 		if (router.isReady && i18n && typeof i18n.changeLanguage === "function") {
 			const locale = localStorage.getItem("APP_LOCALE");
-			if (locale && locale !== i18n.language) {
+			const isValidLocale = locale && options.find((opt) => opt.value === locale && !opt.disabled);
+			if (isValidLocale && locale !== i18n.language) {
 				handleLanguageChange(locale);
+			} else if (locale && !isValidLocale) {
+				localStorage.removeItem("APP_LOCALE");
 			}
 		}
 	}, [router.isReady, i18n]);

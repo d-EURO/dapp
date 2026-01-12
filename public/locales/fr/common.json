@@ -363,6 +363,7 @@
 		"no_active_positions": "Il n'y a aucune position active.",
 		"force_sell": "Vente forcée",
 		"challenge": "Contestation",
+		"view": "Voir",
 		"position_overview": "Vue d'ensemble des positions",
 		"position": "Position",
 		"minted_total": "Total minté",
@@ -440,7 +441,7 @@
 	"equity": {
 		"title": "Capitaux propres",
 		"equity": "Capitaux propres",
-		"pool_shares_title": "Native Decentralized Protocol Shares",
+		"pool_shares_title": "Actions de protocole décentralisé natif",
 		"also_available_as": "Également disponible sous forme de",
 		"symbol_price": "Prix {{symbol}}",
 		"supply": "Offre",

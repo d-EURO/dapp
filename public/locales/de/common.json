@@ -363,6 +363,7 @@
 		"no_active_positions": "Es gibt keine aktiven Positionen.",
 		"force_sell": "Zwangsverkauf",
 		"challenge": "Anfechten",
+		"view": "Ansehen",
 		"position_overview": "Positionsübersicht",
 		"position": "Position",
 		"minted_total": "Gesamtprägung",
@@ -434,13 +435,13 @@
 			"placing_bid": "Gebot abgeben",
 			"successfully_placed_bid": "Gebot erfolgreich abgegeben",
 			"bid_amount": "Gebotsbetrag:",
-			"expected": "Erwartete {{symbol}}::"
+			"expected": "Erwartete {{symbol}}:"
 		}
 	},
 	"equity": {
 		"title": "Eigenkapital",
 		"equity": "Eigenkapital",
-		"pool_shares_title": "Native Decentralized Protocol Shares",
+		"pool_shares_title": "Native dezentrale Protokoll-Anteile",
 		"also_available_as": "Auch verfügbar als",
 		"symbol_price": "{{symbol}}-Preis",
 		"supply": "Angebot",
