@@ -4,45 +4,13 @@ import { ApolloClient, InMemoryCache, createHttpLink, from } from "@apollo/clien
 import { onError } from "@apollo/client/link/error";
 import { cookieStorage, createConfig, createStorage, http } from "@wagmi/core";
 import { injected, coinbaseWallet, walletConnect } from "@wagmi/connectors";
-import { testnet, mainnet } from "./chains";
+import { testnet, mainnet, CONFIG } from "@config";
 import axios from "axios";
 import { Address, Chain } from "viem";
-import { TOKEN_SYMBOL } from "./utils/constant";
+import { TOKEN_SYMBOL } from "./utils";
 
-export type ConfigEnv = {
-	landing: string;
-	app: string;
-	api: string;
-	ponder: string;
-	ponderFallback: string;
-	wagmiId: string;
-	chain: string;
-	network: {
-		mainnet: string;
-		testnet: string;
-	};
-};
-
-// DEV: Loaded with defaults, not needed for now.
-// if (!process.env.NEXT_PUBLIC_WAGMI_ID) throw new Error("Project ID is not defined");
-// if (!process.env.NEXT_PUBLIC_RPC_URL_MAINNET) throw new Error("RPC URL for at least mainnet, not available");
-// if (process.env.NEXT_PUBLIC_CHAIN_NAME == "polygon" && !process.env.NEXT_PUBLIC_RPC_URL_POLYGON)
-// throw new Error("RPC URL for polygon (testnet), not available");
-
-// Config
-export const CONFIG: ConfigEnv = {
-	landing: "https://juicedollar.com",
-	app: process.env.NEXT_PUBLIC_APP_URL ?? "",
-	api: process.env.NEXT_PUBLIC_API_URL!,
-	ponder: process.env.NEXT_PUBLIC_PONDER_URL!,
-	ponderFallback: process.env.NEXT_PUBLIC_PONDER_FALLBACK_URL ?? process.env.NEXT_PUBLIC_PONDER_URL!,
-	wagmiId: "b49c3a590c4407316a6fd6eae6531e90",
-	chain: process.env.NEXT_PUBLIC_CHAIN_NAME ?? testnet.id.toString(),
-	network: {
-		mainnet: process.env.NEXT_PUBLIC_RPC_URL_MAINNET ?? "https://rpc.testnet.juiceswap.com/",
-		testnet: process.env.NEXT_PUBLIC_RPC_URL_TESTNET ?? "https://rpc.testnet.juiceswap.com/",
-	},
-};
+export type { ConfigEnv } from "@config";
+export { CONFIG } from "@config";
 
 // CONFIG CHAIN
 export const CONFIG_CHAIN = (): Chain => {

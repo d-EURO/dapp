@@ -1,12 +1,13 @@
 import { Html, Head, Main, NextScript } from "next/document";
 import { Analytics } from "@vercel/analytics/react";
+import { CONFIG } from "@config";
 
 export default function Document() {
 	return (
 		<Html lang="en">
 			<Head>
 				<meta property="og:type" content="website" />
-				<meta property="og:url" content="https://app.juicedollar.com/" />
+				<meta property="og:url" content={CONFIG.app} />
 				<meta content="JuiceDollar - The decentralized Bitcoin-backed USD on Citrea" property="og:title" />
 				<meta
 					content="JuiceDollar is a Bitcoin-collateralized, oracle-free stablecoin built on Citrea, the only true EVM layer on Bitcoin."

@@ -3,7 +3,7 @@ import Link from "next/link";
 import WalletConnect from "./WalletConnect";
 import NavButton from "./NavButton";
 import { useIsMainnet } from "@hooks";
-import { CONFIG } from "../../app.config";
+import { CONFIG } from "@config";
 import { GlobalPreferences } from "./GlobalPreferences";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";

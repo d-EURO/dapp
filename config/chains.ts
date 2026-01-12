@@ -12,7 +12,6 @@ export const testnet = defineChain({
 	},
 });
 
-// Juice Mainnet - To define later, same as testnet for now
 export const mainnet = defineChain({
 	id: 62831,
 	name: "Mainnet",

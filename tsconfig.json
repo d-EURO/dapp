@@ -20,6 +20,7 @@
 			"@components/*": ["./components/*"],
 			"@hooks": ["./hooks"],
 			"@utils": ["./utils"],
+			"@config": ["./config"],
 			"@contracts": ["./contracts"]
 		},
 		"plugins": [
