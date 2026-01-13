@@ -232,33 +232,26 @@ export const AdjustCollateral = ({
 					success: { render: <TxToast title={t("mint.txs.adding_collateral_success")} rows={toastContent} /> },
 				});
 			} else {
-				if (newCollateral === 0n && principal > 0n && !strategies[StrategyKey.REPAY_LOAN]) {
-					const repayHash = await writeContract(WAGMI_CONFIG, {
-						address: position.position as Address,
-						abi: PositionV2ABI,
-						functionName: "repayFull",
-					});
-					await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: repayHash, confirmations: 1 }), {
-						pending: {
-							render: (
-								<TxToast
-									title={t("mint.txs.pay_back", { symbol: position.stablecoinSymbol })}
-									rows={[{ title: t("common.txs.transaction"), hash: repayHash }]}
-								/>
-							),
-						},
-						success: {
-							render: (
-								<TxToast
-									title={t("mint.txs.pay_back_success", { symbol: position.stablecoinSymbol })}
-									rows={[{ title: t("common.txs.transaction"), hash: repayHash }]}
-								/>
-							),
-						},
-					});
-				}
+				// Calculate newPrincipal for adjust() call
+				// Contract: repay branch executes when newPrincipal < principal
+				const isFullClose = newCollateral === 0n && principal > 0n;
+				const targetDebt = currentDebt - calculatedRepayAmount;
 
-				if (strategies[StrategyKey.REPAY_LOAN] && calculatedRepayAmount > 0n) {
+				// Case 3: repay ≤ interest → need separate repay() call first
+				const needsSeparateRepay =
+					!isFullClose && strategies[StrategyKey.REPAY_LOAN] && calculatedRepayAmount > 0n && targetDebt >= principal;
+
+				const newPrincipal = isFullClose
+					? 0n // Case 1: close position
+					: strategies[StrategyKey.REPAY_LOAN] && calculatedRepayAmount > 0n && targetDebt < principal
+					? targetDebt // Case 2: repay > interest
+					: principal; // Case 3 & 4: no principal change in adjust()
+
+				const isWithinDelta = delta <= maxRemovableWithoutAdjustment;
+				const adjustPrice = isWithinDelta ? positionPrice : newPrice;
+
+				// Case 3: call repay() first
+				if (needsSeparateRepay) {
 					const repayHash = await writeContract(WAGMI_CONFIG, {
 						address: position.position as Address,
 						abi: PositionV2ABI,
@@ -285,10 +278,7 @@ export const AdjustCollateral = ({
 					});
 				}
 
-				const isWithinDelta = delta <= maxRemovableWithoutAdjustment;
-				const adjustDebt = isWithinDelta ? currentDebt : newDebt;
-				const adjustPrice = isWithinDelta ? positionPrice : newPrice;
-
+				// All cases: call adjust()
 				const publicClient = getPublicClient(WAGMI_CONFIG);
 				const estimatedGas =
 					(await publicClient
@@ -296,7 +286,7 @@ export const AdjustCollateral = ({
 							address: position.position as Address,
 							abi: PositionV2ABI,
 							functionName: "adjust",
-							args: [adjustDebt, newCollateral, adjustPrice, isNativeWrappedPosition],
+							args: [newPrincipal, newCollateral, adjustPrice, isNativeWrappedPosition],
 							account: userAddress,
 						})
 						.catch(() => 300_000n)) ?? 300_000n;
@@ -305,7 +295,7 @@ export const AdjustCollateral = ({
 					address: position.position as Address,
 					abi: PositionV2ABI,
 					functionName: "adjust",
-					args: [adjustDebt, newCollateral, adjustPrice, isNativeWrappedPosition],
+					args: [newPrincipal, newCollateral, adjustPrice, isNativeWrappedPosition],
 					gas: (estimatedGas * 150n) / 100n,
 				});
 
@@ -314,9 +304,12 @@ export const AdjustCollateral = ({
 					{ title: t("common.txs.transaction"), hash: withdrawHash },
 				];
 
+				const txTitle = isFullClose ? t("mint.close_position") : t("mint.txs.removing_collateral");
+				const txSuccessTitle = isFullClose ? t("mint.close_position") : t("mint.txs.removing_collateral_success");
+
 				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: withdrawHash, confirmations: 1 }), {
-					pending: { render: <TxToast title={t("mint.txs.removing_collateral")} rows={toastContent} /> },
-					success: { render: <TxToast title={t("mint.txs.removing_collateral_success")} rows={toastContent} /> },
+					pending: { render: <TxToast title={txTitle} rows={toastContent} /> },
+					success: { render: <TxToast title={txSuccessTitle} rows={toastContent} /> },
 				});
 			}
 

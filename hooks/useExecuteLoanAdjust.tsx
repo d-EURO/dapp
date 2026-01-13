@@ -2,7 +2,7 @@ import { Address } from "viem";
 import { toast } from "react-toastify";
 import { PositionV2ABI } from "@juicedollar/jusd";
 import { PositionQuery } from "@juicedollar/api";
-import { formatPositionValue, formatPositionDelta, normalizeTokenSymbol } from "@utils";
+import { formatPositionValue, normalizeTokenSymbol } from "@utils";
 import { renderErrorTxToast } from "../components/TxToast";
 import { fetchPositionsList } from "../redux/slices/positions.slice";
 import { store } from "../redux/redux.store";
@@ -29,11 +29,21 @@ export const executeLoanAdjust = async ({
 	const posAddr = position.position as Address;
 	const depositAmount = outcome.deltaCollateral > 0n ? outcome.deltaCollateral : 0n;
 	const isWithdrawing = outcome.deltaCollateral < 0n;
-	const newPrincipal = outcome.next.debt === 0n ? 0n : principal + outcome.deltaDebt;
 	const LiqPrice = BigInt(position.price);
 
-	// Check if this is a full close (repay all debt and withdraw all collateral)
-	const isFullClose = outcome.next.debt === 0n && outcome.next.collateral === 0n && principal > 0n;
+	// Contract: repay branch executes when newPrincipal < principal
+	const isFullClose = outcome.next.debt === 0n && principal > 0n;
+
+	// Case 3: repay ≤ interest → need separate repay() call first
+	const needsSeparateRepay = !isFullClose && outcome.deltaDebt < 0n && outcome.next.debt >= principal;
+
+	const newPrincipal = isFullClose
+		? 0n // Case 1: close position
+		: outcome.deltaDebt >= 0n
+		? principal + outcome.deltaDebt // Borrow
+		: outcome.next.debt < principal
+		? outcome.next.debt // Case 2: repay > interest
+		: principal; // Case 3 & 4: no principal change in adjust()
 
 	const rows = [
 		outcome.deltaCollateral !== 0n && {
@@ -58,8 +68,22 @@ export const executeLoanAdjust = async ({
 		? `${t("mint.lending")} ${formatPositionValue(outcome.deltaDebt, 18, position.stablecoinSymbol)}`
 		: t("mint.adjust_position");
 
-	// Use single adjust() call for all operations including full close
-	// The adjust() function handles: repay debt, withdraw collateral, and price changes in one transaction
+	// Case 3: call repay() first
+	if (needsSeparateRepay) {
+		await executeTx({
+			contractParams: {
+				address: posAddr,
+				abi: PositionV2ABI,
+				functionName: "repay",
+				args: [-outcome.deltaDebt],
+			},
+			pendingTitle: t("mint.txs.pay_back", { symbol: position.stablecoinSymbol }),
+			successTitle: t("mint.txs.pay_back_success", { symbol: position.stablecoinSymbol }),
+			rows: [{ title: t("common.txs.amount"), value: formatPositionValue(-outcome.deltaDebt, 18, position.stablecoinSymbol) }],
+		});
+	}
+
+	// All cases: call adjust()
 	await executeTx({
 		contractParams: {
 			address: posAddr,
