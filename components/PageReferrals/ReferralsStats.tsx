@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMyReferrals } from "@hooks";
 import { useChainId } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -19,7 +19,7 @@ export const ReferralsStats = () => {
 	const chainId = useChainId();
 	const { t } = useTranslation();
 
-	const fetchReferralsStats = async () => {
+	const fetchReferralsStats = useCallback(async () => {
 		if (!myFrontendCode) return;
 
 		try {
@@ -36,11 +36,11 @@ export const ReferralsStats = () => {
 		} catch (error) {
 			console.error(error);
 		}
-	};
+	}, [myFrontendCode, chainId]);
 
 	useEffect(() => {
 		fetchReferralsStats();
-	}, [myFrontendCode]);
+	}, [fetchReferralsStats]);
 
 	const handleClaim = async () => {
 		if (!myFrontendCode) return;

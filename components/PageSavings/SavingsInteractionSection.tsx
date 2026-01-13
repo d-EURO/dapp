@@ -204,7 +204,7 @@ export default function SavingsInteractionSection() {
 			setError(null);
 			setButtonLabel(t("savings.start_earning_interest", { rate: rate !== undefined ? `${rate / 10_000}` : "-" }));
 		}
-	}, [amount, rate, isDeposit, userBalance]);
+	}, [amount, rate, isDeposit, userBalance, t]);
 
 	// Withdraw validation
 	useEffect(() => {
@@ -223,7 +223,7 @@ export default function SavingsInteractionSection() {
 			setError(null);
 			setButtonLabel(t("savings.withdraw_to_my_wallet"));
 		}
-	}, [amount, isDeposit, userSavingsBalance]);
+	}, [amount, isDeposit, userSavingsBalance, t]);
 
 	return (
 		<>

@@ -93,7 +93,7 @@ export default function PositionCreate({}) {
 			setInitialCollAmountError("");
 			setCollTokenAddrError("");
 		}
-	}, [collateralAddress, collTokenData]);
+	}, [collateralAddress, collTokenData, t]);
 
 	const onChangeProposalFee = (value: string) => {
 		const valueBigInt = BigInt(value);

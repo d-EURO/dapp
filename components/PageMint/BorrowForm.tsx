@@ -120,6 +120,7 @@ export default function PositionCreate({}) {
 		};
 
 		loadDefaultPosition();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	useEffect(() => {
@@ -161,7 +162,8 @@ export default function PositionCreate({}) {
 			});
 			setCollateralError(limitExceeded);
 		}
-	}, [collateralAmount, balancesByAddress, address, selectedPosition, liquidationPrice]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [collateralAmount, address, selectedPosition, liquidationPrice, selectedCollateral]);
 
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const collateralPriceUsd = prices[selectedPosition?.collateral.toLowerCase() as Address]?.price?.usd || 0;
@@ -271,7 +273,7 @@ export default function PositionCreate({}) {
 		);
 		setLoanDetails(loanDetails);
 		setBorrowedAmount(loanDetails.amountToSendToWallet.toString());
-	}, [expirationDate]);
+	}, [expirationDate, collateralAmount, liquidationPrice, selectedPosition]);
 
 	const handleMaxExpirationDate = () => {
 		if (selectedPosition?.expiration) {

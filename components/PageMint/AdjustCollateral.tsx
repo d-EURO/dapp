@@ -165,6 +165,7 @@ export const AdjustCollateral = ({
 		position.minimumCollateral,
 		t,
 		currentDebt,
+		collateralDecimals,
 	]);
 
 	const isBelowMinCollateral = (col: bigint) => col > 0n && col < BigInt(position.minimumCollateral || 0) && newDebt > 0n;

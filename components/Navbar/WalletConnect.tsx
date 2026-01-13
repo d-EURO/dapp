@@ -1,6 +1,7 @@
 import { getCarryOnQueryParams, shortenAddress, toQueryString } from "@utils";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAccount } from "wagmi";
 import { useTranslation } from "next-i18next";
 import Button from "@components/Button";
@@ -23,7 +24,7 @@ const ConnectButton = () => {
 					className="py-0.5 pl-1 pr-2 bg-layout-primary rounded-full border border-menu-wallet-addressborder justify-center items-center gap-2 flex"
 				>
 					<div className="w-6 h-6 rounded-full flex justify-center items-center">
-						<img src="/icons/wallet-icon.svg" alt="Logo" width={24} height={24} />
+						<Image src="/icons/wallet-icon.svg" alt="Logo" width={24} height={24} />
 					</div>
 					<div className="text-menu-active-text text-base font-medium leading-tight">{address && shortenAddress(address)}</div>
 				</button>
@@ -43,7 +44,7 @@ export default function WalletConnect() {
 				href={`/referrals${carryOnQueryParams}`}
 				className="justify-start items-center gap-2 hidden md:flex !hover:text-button-text-hover-text group"
 			>
-				<img src="/icons/chest.svg" alt="Logo" width={24} height={24} />
+				<Image src="/icons/chest.svg" alt="Logo" width={24} height={24} />
 				<div className="text-menu-active-text text-base font-extrabold leading-tight whitespace-nowrap group-hover:text-button-text-hover-text">
 					{t("common.navbar.my_referrals")}
 				</div>
