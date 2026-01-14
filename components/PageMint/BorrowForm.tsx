@@ -22,6 +22,7 @@ import {
 	toTimestamp,
 	NATIVE_WRAPPED_SYMBOLS,
 	normalizeTokenSymbol,
+	formatPositionValue,
 } from "@utils";
 import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { RootState, store } from "../../redux/redux.store";
@@ -330,7 +331,11 @@ export default function PositionCreate({}) {
 				},
 				{
 					title: t("common.txs.collateral"),
-					value: formatBigInt(BigInt(collateralAmount), 18, 4) + " cBTC",
+					value: formatPositionValue(
+						BigInt(collateralAmount),
+						selectedPosition.collateralDecimals,
+						normalizeTokenSymbol(selectedPosition.collateralSymbol)
+					),
 				},
 				{
 					title: t("common.txs.transaction"),
