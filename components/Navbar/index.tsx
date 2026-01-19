@@ -41,40 +41,42 @@ export default function Navbar() {
 	const [isNavBarOpen, setIsNavBarOpen] = useState(false);
 
 	return (
-		<div className="fixed top-0 left-0 right-0 z-20 bg-white border-b border-menu-separator bg-menu-back backdrop-blur">
-			<div className="flex justify-center">
-				<header className="flex w-full max-w-[1440px] px-5 h-16 px-spacing-10 justify-between items-center shrink-0">
-					<div className="h-9 justify-start items-center gap-6 inline-flex">
-						<Link className="w-[120px] flex items-center justify-center" href={CONFIG.landing}>
-							<div className="relative">
-								<Image src="/assets/JD-LOGO.svg" alt="Logo" width={120} height={31} priority />
-							</div>
-						</Link>
+		<div className="fixed top-0 left-0 right-0 z-20 md:bg-white md:border-b md:border-menu-separator md:bg-menu-back md:backdrop-blur">
+			<div className="mx-auto max-w-6xl px-4 md:max-w-[1440px] md:px-0">
+				<div className="w-full bg-white border-b border-menu-separator bg-menu-back backdrop-blur md:bg-transparent md:border-0">
+					<header className="flex w-full h-16 px-4 md:px-5 justify-between items-center shrink-0">
+						<div className="h-9 justify-start items-center gap-6 inline-flex">
+							<Link className="w-[120px] flex items-center justify-center" href={CONFIG.landing}>
+								<div className="relative">
+									<Image src="/assets/JD-LOGO.svg" alt="Logo" width={120} height={31} priority />
+								</div>
+							</Link>
 
-						<ul className={`justify-left hidden flex-1 gap-2 2md:flex lg:gap-3`}>
-							<NavItems />
-						</ul>
-					</div>
-					<div className="flex flex-1 justify-end items-center max-2md:pr-4 sm:gap-4">
-						<WalletConnect />
-						<div className="hidden 2md:block flex items-center">
-							<GlobalPreferences />
+							<ul className={`justify-left hidden flex-1 gap-2 2md:flex lg:gap-3`}>
+								<NavItems />
+							</ul>
 						</div>
-					</div>
-					<div className="2md:hidden">
-						<button onClick={() => setIsNavBarOpen(!isNavBarOpen)} className="cursor-pointer flex items-center">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								className="w-8 h-8"
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-							</svg>
-						</button>
-					</div>
-				</header>
+						<div className="flex flex-1 justify-end items-center max-2md:pr-4 sm:gap-4">
+							<WalletConnect />
+							<div className="hidden 2md:block flex items-center">
+								<GlobalPreferences />
+							</div>
+						</div>
+						<div className="2md:hidden">
+							<button onClick={() => setIsNavBarOpen(!isNavBarOpen)} className="cursor-pointer flex items-center">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+									className="w-8 h-8"
+								>
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+								</svg>
+							</button>
+						</div>
+					</header>
+				</div>
 			</div>
 
 			<div className="flex justify-center">
