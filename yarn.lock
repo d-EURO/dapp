@@ -1247,10 +1247,10 @@
     ts-node "^10.9.1"
     typescript "^5.2.2"
 
-"@juicedollar/jusd@^1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@juicedollar/jusd/-/jusd-1.0.6.tgz#5e28a415a71b1abd77d1c278ae2816b95fc72bb3"
-  integrity sha512-5fp4n5rAyq/pw6rEbCWEdJ0U5v50NHh/cR63gG+Km8aNj8GO1wxG53/cNuXku/45TWGGFsboDci18C4X8tdEOg==
+"@juicedollar/jusd@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@juicedollar/jusd/-/jusd-1.1.0.tgz#0f85fd081873ebb90854bd76bb29aeca1272239e"
+  integrity sha512-+rMzg1bFgtUJRloEUFJDWBbb+0AUNOFwKS2Qc7JMP14Ngu1VhvAs00pBqC1O+OjQu7cc1twU7VS7W1XhVnYdMw==
   dependencies:
     "@openzeppelin/contracts" "^5.1.0"
     hardhat-abi-exporter "^2.10.0"
