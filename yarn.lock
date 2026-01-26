@@ -1204,13 +1204,13 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@juicedollar/api@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@juicedollar/api/-/api-0.0.1.tgz#031401d9a9a020cc66fb5a1a5f3a23c064ffef06"
-  integrity sha512-dcmp/9mBSPu/QyBZR5xUckq85oiVp/j5DSNKvCEU/0t/swd4fEcgfL1DsmRn92ER++uBeAtxfrFSJXutLUsWaQ==
+"@juicedollar/api@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@juicedollar/api/-/api-3.0.0.tgz#c248a2cf50c53d422089e23e7fcb07f90699f544"
+  integrity sha512-BaCgz5ij13LP2MmvcOWgOZzjHYUtorvUhOvbHDUbOTdGru6iXtvTM9lmCJ9UMiNV6IJfJuDCG5JwjCtoPi3XtQ==
   dependencies:
     "@apollo/client" "^3.10.5"
-    "@juicedollar/jusd" "^1.0.1"
+    "@juicedollar/jusd" "^3.0.0"
     "@nestjs/common" "^10.0.0"
     "@nestjs/config" "^3.2.3"
     "@nestjs/core" "^10.0.0"
@@ -1232,25 +1232,10 @@
     viem "^2.19.1"
     winston "^3.18.3"
 
-"@juicedollar/jusd@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@juicedollar/jusd/-/jusd-1.0.1.tgz#b9cd0787bd98a49c2238f0a2cb175ebb54f5cd5f"
-  integrity sha512-giqtQtwn+AC3gH5Ed7u/zlcT72OIanQ6/8NIFN6Hm0/nJfRUf/3ngNSqvvSXxX6zLEurU7684XTICw3wGlmGyA==
-  dependencies:
-    "@openzeppelin/contracts" "^5.1.0"
-    hardhat-abi-exporter "^2.10.0"
-    hardhat-contract-sizer "^2.5.1"
-    prettier "^3.3.3"
-    prettier-plugin-solidity "^1.4.1"
-    prompt "^1.3.0"
-    solhint "^5.0.5"
-    ts-node "^10.9.1"
-    typescript "^5.2.2"
-
-"@juicedollar/jusd@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@juicedollar/jusd/-/jusd-1.1.0.tgz#0f85fd081873ebb90854bd76bb29aeca1272239e"
-  integrity sha512-+rMzg1bFgtUJRloEUFJDWBbb+0AUNOFwKS2Qc7JMP14Ngu1VhvAs00pBqC1O+OjQu7cc1twU7VS7W1XhVnYdMw==
+"@juicedollar/jusd@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@juicedollar/jusd/-/jusd-3.0.0.tgz#ab5250d3621229316a8bd4dc5a31961443d006e0"
+  integrity sha512-Pg4rhsCZcEiwOYYzs8ZmHluvqPfmYrE/5pLKm5Bfw7BxBFkr4MqX3jolqTh2Ny/oQNUZE+Q++FzF+HpI64zxOw==
   dependencies:
     "@openzeppelin/contracts" "^5.1.0"
     hardhat-abi-exporter "^2.10.0"
