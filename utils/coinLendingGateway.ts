@@ -1,5 +1,5 @@
 import { Address } from "viem";
-import { testnet, mainnet } from "../chains";
+import { testnet, mainnet } from "@config";
 
 export const COIN_LENDING_GATEWAY_ADDRESS: Record<number, Address> = {
 	[testnet.id]: "0x44B0727688F1839c2BF7b74686F04Cba0CfE89D6",

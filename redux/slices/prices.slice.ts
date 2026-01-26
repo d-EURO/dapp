@@ -1,13 +1,6 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
-import {
-	PricesState,
-	DispatchBoolean,
-	DispatchApiPriceMapping,
-	DispatchApiPriceERC20Mapping,
-	DispatchApiPriceERC20,
-	DispatchPriceQueryCurrencies,
-} from "./prices.types";
-import { ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping, PriceQueryCurrencies } from "@juicedollar/api";
+import { PricesState, DispatchBoolean, DispatchApiPriceMapping, DispatchApiPriceERC20Mapping, DispatchApiPriceERC20 } from "./prices.types";
+import { ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping } from "@juicedollar/api";
 import { API_CLIENT } from "../../app.config";
 import { zeroAddress } from "viem";
 import { logApiError } from "../../utils/errorLogger";
@@ -19,7 +12,6 @@ export const initialState: PricesState = {
 	loaded: false,
 
 	coingecko: undefined,
-	eur: undefined,
 	mint: undefined,
 	nativePS: undefined,
 	collateral: undefined,
@@ -63,11 +55,6 @@ export const slice = createSlice({
 		setCollateralERC20Info: (state, action: { payload: ApiPriceERC20Mapping | undefined }) => {
 			state.collateral = action.payload;
 		},
-
-		// SET EUR PRICE
-		setEurPrice: (state, action: { payload: PriceQueryCurrencies | undefined }) => {
-			state.eur = action.payload;
-		},
 	},
 });
 
@@ -76,12 +63,7 @@ export const actions = slice.actions;
 
 // --------------------------------------------------------------------------------
 export const fetchPricesList =
-	() =>
-	async (
-		dispatch: Dispatch<
-			DispatchBoolean | DispatchApiPriceMapping | DispatchApiPriceERC20Mapping | DispatchApiPriceERC20 | DispatchPriceQueryCurrencies
-		>
-	) => {
+	() => async (dispatch: Dispatch<DispatchBoolean | DispatchApiPriceMapping | DispatchApiPriceERC20Mapping | DispatchApiPriceERC20>) => {
 		// ---------------------------------------------------------------
 		console.log("Loading [REDUX]: PricesList");
 
@@ -99,16 +81,12 @@ export const fetchPricesList =
 
 			const response4 = await API_CLIENT.get("/prices/erc20/deps");
 			dispatch(slice.actions.setNativePSERC20Info(response4.data as ApiPriceERC20));
-
-			const response5 = await API_CLIENT.get("/prices/eur");
-			dispatch(slice.actions.setEurPrice(response5.data as PriceQueryCurrencies));
 		} catch (error) {
 			logApiError(error, "prices data");
 			dispatch(slice.actions.setListMapping(undefined));
 			dispatch(slice.actions.setMintERC20Info(undefined));
 			dispatch(slice.actions.setCollateralERC20Info(undefined));
 			dispatch(slice.actions.setNativePSERC20Info(undefined));
-			dispatch(slice.actions.setEurPrice(undefined));
 		}
 
 		// ---------------------------------------------------------------

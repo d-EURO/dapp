@@ -2,12 +2,16 @@ import TableHeader from "../Table/TableHead";
 import TableBody from "../Table/TableBody";
 import Table from "../Table";
 import TableRowEmpty from "../Table/TableRowEmpty";
+import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { MinterQuery } from "@juicedollar/api";
 import { useState } from "react";
 import GovernanceMintersRow from "./GovernanceMintersRow";
 import { useTranslation } from "next-i18next";
+import { useExpandableTable } from "@hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function GovernanceMintersTable() {
 	const { t } = useTranslation();
@@ -17,8 +21,6 @@ export default function GovernanceMintersTable() {
 
 	const stablecoinMinters = useSelector((state: RootState) => state.ecosystem.stablecoinMinters);
 	const minters = stablecoinMinters?.list || [];
-	if (!minters.length) return null;
-
 	const sorted: MinterQuery[] = sortMinters({
 		// @dev: somehow it does not transfer a "true array" and causes issues in sorting function
 		minters: [...minters],
@@ -26,6 +28,9 @@ export default function GovernanceMintersTable() {
 		tab,
 		reverse,
 	});
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(sorted);
+
+	if (!minters.length) return null;
 
 	const handleTabOnChange = function (e: string) {
 		if (tab === e) {
@@ -47,11 +52,23 @@ export default function GovernanceMintersTable() {
 				headerClassNames={["text-center"]}
 			/>
 			<TableBody>
-				{sorted.length == 0 ? (
-					<TableRowEmpty>{t("governance.minters_table_empty")}</TableRowEmpty>
-				) : (
-					sorted.map((m) => <GovernanceMintersRow key={m.id} headers={headers} minter={m} tab={tab} />)
-				)}
+				<>
+					{sorted.length == 0 ? (
+						<TableRowEmpty>{t("governance.minters_table_empty")}</TableRowEmpty>
+					) : (
+						visibleData.map((m) => <GovernanceMintersRow key={m.id} headers={headers} minter={m} tab={tab} />)
+					)}
+					{showExpandButton && (
+						<TableShowMoreRow onShowMoreClick={toggleExpanded}>
+							<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
+								{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
+							</div>
+							<div className="justify-start items-center gap-2.5 flex">
+								<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+							</div>
+						</TableShowMoreRow>
+					)}
+				</>
 			</TableBody>
 		</Table>
 	);

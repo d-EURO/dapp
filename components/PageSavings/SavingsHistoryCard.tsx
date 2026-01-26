@@ -192,7 +192,7 @@ export default function SavingsHistoryCard() {
 				<div className="flex flex-row justify-between">
 					<div className="text-sm font-medium leading-relaxed">{t("savings.total_interest_paid")}</div>
 					<div className="text-sm font-medium leading-tight ">
-						{totalInterest !== undefined ? `${formatCurrency(totalInterest)} ${TOKEN_SYMBOL}` : "-"}
+						{totalInterest !== undefined ? `${formatCurrency(totalInterest, 2, 2)} ${TOKEN_SYMBOL}` : "-"}
 					</div>
 				</div>
 				<div className="flex flex-row justify-between">

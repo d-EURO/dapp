@@ -58,7 +58,7 @@ export function BigNumberInput({
 				setInputvalue(formatted);
 			}
 		}
-	}, [value, decimals, inputValue]);
+	}, [value, decimals, inputValue, hideTrailingZeros]);
 
 	React.useEffect(() => {
 		if (!renderInput && autofocus && inputRef) {

@@ -22,6 +22,13 @@ interface Props {
 	presentationPrecision?: number;
 }
 
+const getDefaultPrecision = (currency?: string): [number, number] => {
+	const protocolTokens = ["JUSD", "USD", "JUICE", "SVJUSD", "SUSD"];
+	if (currency && protocolTokens.includes(currency.toUpperCase())) return [2, 2];
+	if (currency === "%") return [0, 2];
+	return [3, 3]; // Collateral default
+};
+
 export default function DisplayAmount({
 	amount,
 	subAmount,
@@ -45,6 +52,9 @@ export default function DisplayAmount({
 		window.open(url, "_blank");
 	};
 
+	const [minDec, maxDec] =
+		presentationPrecision !== undefined ? [presentationPrecision, presentationPrecision] : getDefaultPrecision(currency);
+
 	return (
 		<div className={`flex items-center ${className}`}>
 			{!hideLogo && currency && (
@@ -56,10 +66,7 @@ export default function DisplayAmount({
 				<div>
 					<span className={`${bold && "font-bold"} ${big ? "text-3xl" : "text-base leading-5"}`}>
 						{amount
-							? formatCurrency(
-									typeof amount === "number" ? amount : formatUnits(amount, Number(digits)),
-									presentationPrecision
-							  )
+							? formatCurrency(typeof amount === "number" ? amount : formatUnits(amount, Number(digits)), minDec, maxDec)
 							: "0.00"}
 					</span>
 					<span className={`${bold && "font-bold"} ${big ? "text-3xl" : "text-base leading-5"}`}>

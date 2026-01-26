@@ -52,11 +52,11 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 			const toastContent = [
 				{
 					title: `From: `,
-					value: `${formatCurrency(info.rate / 10000)}%`,
+					value: `${formatCurrency(info.rate / 10000, 0, 2)}%`,
 				},
 				{
 					title: `Applying to: `,
-					value: `${formatCurrency(proposal.nextRate / 10000)}%`,
+					value: `${formatCurrency(proposal.nextRate / 10000, 0, 2)}%`,
 				},
 				{
 					title: "Transaction: ",
@@ -97,11 +97,11 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 			const toastContent = [
 				{
 					title: `Current: `,
-					value: `${formatCurrency(info.rate / 10000)}%`,
+					value: `${formatCurrency(info.rate / 10000, 0, 2)}%`,
 				},
 				{
 					title: `Denying: `,
-					value: `${formatCurrency(proposal.nextRate / 10000)}%`,
+					value: `${formatCurrency(proposal.nextRate / 10000, 0, 2)}%`,
 				},
 				{
 					title: "Transaction: ",

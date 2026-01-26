@@ -32,7 +32,6 @@ export default function Governance() {
 
 			<div className="">
 				<Trans i18nKey="governance.new_positions_description">
-					<StyledLink href={SOCIAL.Github_contract_discussion}>github forum</StyledLink>
 					<StyledLink href={SOCIAL.Telegram}>telegram group</StyledLink>
 				</Trans>
 			</div>

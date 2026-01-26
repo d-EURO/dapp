@@ -5,20 +5,19 @@ export const testnet = defineChain({
 	name: "Testnet",
 	nativeCurrency: { name: "cBTC", symbol: "cBTC", decimals: 18 },
 	rpcUrls: {
-		default: { http: ["https://rpc.testnet.citrea.xyz"] },
+		default: { http: ["https://rpc.testnet.citreascan.com"] },
 	},
 	blockExplorers: {
 		default: { name: "Citrea Scanner", url: "https://testnet.citreascan.com" },
 	},
 });
 
-// Juice Mainnet - To define later, same as testnet for now
 export const mainnet = defineChain({
 	id: 62831,
 	name: "Mainnet",
 	nativeCurrency: { name: "cBTC", symbol: "cBTC", decimals: 18 },
 	rpcUrls: {
-		default: { http: ["https://rpc.testnet.citrea.xyz"] },
+		default: { http: ["https://rpc.testnet.citreascan.com"] },
 	},
 	blockExplorers: {
 		default: { name: "Citrea Scanner", url: "https://testnet.citreascan.com" },

@@ -23,12 +23,14 @@ const SavingsRow = ({
 			<div className="pr-3 flex items-center">
 				<TokenLogo currency={TOKEN_SYMBOL} size={8} />
 			</div>
-			<span className="flex items-center text-text-primary text-base font-extrabold">{formatCurrency(formatUnits(balance, 18))}</span>
-			<span className="flex items-center text-text-primary text-base font-medium">
-				{formatCurrency(formatUnits(totalEarnedInterest, 18))}
+			<span className="flex items-center text-text-primary text-base font-extrabold">
+				{formatCurrency(formatUnits(balance, 18), 2, 2)}
 			</span>
 			<span className="flex items-center text-text-primary text-base font-medium">
-				{formatCurrency(formatUnits(interestToBeCollected, 18))}
+				{formatCurrency(formatUnits(totalEarnedInterest, 18), 2, 2)}
+			</span>
+			<span className="flex items-center text-text-primary text-base font-medium">
+				{formatCurrency(formatUnits(interestToBeCollected, 18), 2, 2)}
 			</span>
 		</>
 	);

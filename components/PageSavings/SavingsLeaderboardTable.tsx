@@ -17,6 +17,7 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { faMinus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
+import { useExpandableTable } from "@hooks";
 
 interface Props {
 	headers: string[];
@@ -60,8 +61,6 @@ function SavingsLeaderboardRow({ headers, item, tab, rank }: Props) {
 	);
 }
 
-const MAX_DEFAULT_LEADERBOARD_ITEMS = 5;
-
 export default function SavingsLeaderboardTable() {
 	const { t } = useTranslation();
 	const headers: string[] = [
@@ -73,7 +72,6 @@ export default function SavingsLeaderboardTable() {
 	];
 	const [tab, setTab] = useState<string>(headers[0]);
 	const [reverse, setReverse] = useState<boolean>(false);
-	const [isShowMore, setIsShowMore] = useState<boolean>(false);
 
 	const leaderboard = useSelector((state: RootState) => state.savings.savingsLeaderboard) || [];
 
@@ -83,6 +81,8 @@ export default function SavingsLeaderboardTable() {
 		tab,
 		reverse,
 	});
+
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(sorted);
 
 	const handleTabOnChange = function (e: string) {
 		if (tab === e) {
@@ -107,17 +107,15 @@ export default function SavingsLeaderboardTable() {
 					{sorted.length == 0 ? (
 						<TableRowEmpty>{t("savings.no_withdrawals_yet")}</TableRowEmpty>
 					) : (
-						sorted
-							.slice(0, isShowMore ? sorted.length : MAX_DEFAULT_LEADERBOARD_ITEMS)
-							.map((r) => <SavingsLeaderboardRow headers={headers} key={r.account} item={r} tab={tab} rank={r.rank} />)
+						visibleData.map((r) => <SavingsLeaderboardRow headers={headers} key={r.account} item={r} tab={tab} rank={r.rank} />)
 					)}
-					{sorted.length > MAX_DEFAULT_LEADERBOARD_ITEMS && (
-						<TableShowMoreRow onShowMoreClick={() => setIsShowMore(!isShowMore)}>
+					{showExpandButton && (
+						<TableShowMoreRow onShowMoreClick={toggleExpanded}>
 							<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
-								{isShowMore ? t("referrals.show_less") : t("referrals.show_more")}
+								{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
 							</div>
 							<div className="justify-start items-center gap-2.5 flex">
-								<FontAwesomeIcon icon={isShowMore ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+								<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
 							</div>
 						</TableShowMoreRow>
 					)}

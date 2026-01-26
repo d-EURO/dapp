@@ -80,8 +80,8 @@ export default function MyPositionsChallengesRow({ headers, challenge, tab }: Pr
 					</span>
 					<span className={`col-span-2 text-md font-extrabold`}>{`${formatCurrency(
 						challengeRemainingSize,
-						2,
-						2
+						3,
+						3
 					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</span>
 				</div>
 
@@ -90,9 +90,11 @@ export default function MyPositionsChallengesRow({ headers, challenge, tab }: Pr
 					<div className="mr-3 cursor-pointer" onClick={openExplorer}>
 						<TokenLogo currency={normalizeTokenSymbol(position.collateralSymbol)} />
 					</div>
-					<div className={`col-span-2 text-md  font-semibold`}>{`${formatCurrency(challengeRemainingSize)} ${normalizeTokenSymbol(
-						position.collateralSymbol
-					)}`}</div>
+					<div className={`col-span-2 text-md  font-semibold`}>{`${formatCurrency(
+						challengeRemainingSize,
+						3,
+						3
+					)} ${normalizeTokenSymbol(position.collateralSymbol)}`}</div>
 				</div>
 			</div>
 

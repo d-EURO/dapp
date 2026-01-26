@@ -112,6 +112,41 @@ yarn run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+### E2E Tests
+
+#### Visual & Navigation Tests
+
+```bash
+# Run all E2E tests (navigation, UI)
+yarn test:e2e
+
+# Run visual regression tests
+yarn test:e2e:visual
+
+# Update visual snapshots
+yarn test:e2e:visual:update
+```
+
+#### Wallet E2E Tests (MetaMask)
+
+These tests verify wallet connection functionality with a real MetaMask extension.
+
+```bash
+# One-time setup (clones and builds Synpress with MetaMask 13 support)
+yarn setup:synpress
+
+# Run wallet tests
+WALLET_SEED_PHRASE="your twelve word seed phrase here" yarn test:e2e:wallet
+```
+
+**Requirements:**
+
+-   Node.js 18+
+-   pnpm (will be installed automatically if missing)
+-   Chrome browser
+
+**Note:** The setup script clones a patched version of Synpress that supports MetaMask 13 (required for Chrome 127+). This takes a few minutes on first run.
+
 ### Change chain
 
 e.g. custom testnet chain

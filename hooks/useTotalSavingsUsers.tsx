@@ -1,6 +1,6 @@
 import { gql, useQuery } from "@apollo/client";
 import { ApolloClient, InMemoryCache } from "@apollo/client";
-import { CONFIG } from "../app.config";
+import { CONFIG } from "@config";
 
 // Create a separate Apollo Client for Ponder endpoint
 const ponderClient = new ApolloClient({

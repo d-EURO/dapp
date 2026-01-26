@@ -2,6 +2,7 @@ import TableHeader from "../Table/TableHead";
 import TableBody from "../Table/TableBody";
 import Table from "../Table";
 import TableRowEmpty from "../Table/TableRowEmpty";
+import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { PositionQuery, PriceQueryObjectArray } from "@juicedollar/api";
@@ -9,6 +10,9 @@ import { useState } from "react";
 import GovernancePositionsRow from "./GovernancePositionsRow";
 import { useTranslation } from "next-i18next";
 import { INTERNAL_PROTOCOL_POSITIONS } from "@utils";
+import { useExpandableTable } from "@hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function GovernancePositionsTable() {
 	const { t } = useTranslation();
@@ -45,6 +49,8 @@ export default function GovernancePositionsTable() {
 		reverse,
 	});
 
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(sorted);
+
 	const handleTabOnChange = function (e: string) {
 		if (tab === e) {
 			setReverse(!reverse);
@@ -66,13 +72,25 @@ export default function GovernancePositionsTable() {
 				headerClassNames={["text-center"]}
 			/>
 			<TableBody>
-				{sorted.length == 0 ? (
-					<TableRowEmpty>{t("governance.positions_table_empty")}</TableRowEmpty>
-				) : (
-					sorted.map((pos) => (
-						<GovernancePositionsRow key={pos.position} headers={headers} subHeaders={subHeaders} position={pos} tab={tab} />
-					))
-				)}
+				<>
+					{sorted.length == 0 ? (
+						<TableRowEmpty>{t("governance.positions_table_empty")}</TableRowEmpty>
+					) : (
+						visibleData.map((pos) => (
+							<GovernancePositionsRow key={pos.position} headers={headers} subHeaders={subHeaders} position={pos} tab={tab} />
+						))
+					)}
+					{showExpandButton && (
+						<TableShowMoreRow onShowMoreClick={toggleExpanded}>
+							<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
+								{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
+							</div>
+							<div className="justify-start items-center gap-2.5 flex">
+								<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+							</div>
+						</TableShowMoreRow>
+					)}
+				</>
 			</TableBody>
 		</Table>
 	);

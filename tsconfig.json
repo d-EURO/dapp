@@ -20,6 +20,7 @@
 			"@components/*": ["./components/*"],
 			"@hooks": ["./hooks"],
 			"@utils": ["./utils"],
+			"@config": ["./config"],
 			"@contracts": ["./contracts"]
 		},
 		"plugins": [
@@ -29,5 +30,5 @@
 		]
 	},
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-	"exclude": ["node_modules"]
+	"exclude": ["node_modules", "tests", "test", "playwright.config.ts"]
 }

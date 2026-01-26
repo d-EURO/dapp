@@ -63,11 +63,11 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 			const toastContent = [
 				{
 					title: t("governance.txs.from"),
-					value: `${formatCurrency(info.rate / 10000)}%`,
+					value: `${formatCurrency(info.rate / 10000, 0, 2)}%`,
 				},
 				{
 					title: t("governance.txs.proposing_to"),
-					value: `${formatCurrency(newRate / 10000)}%`,
+					value: `${formatCurrency(newRate / 10000, 0, 2)}%`,
 				},
 				{
 					title: t("governance.txs.transaction"),

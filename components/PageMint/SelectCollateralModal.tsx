@@ -44,7 +44,7 @@ export function SelectCollateralModal<T extends TokenOption>({
 	const getPriceByAddress = (address: string, decimals: number, balance: bigint) => {
 		const price = Object.values(prices).find((price: PriceQuery) => price.address.toLowerCase() === address.toLowerCase());
 		if (!price || !price.price?.usd) return "--";
-		return formatCurrency(price.price.usd * (Number(balance) / 10 ** decimals));
+		return formatCurrency(price.price.usd * (Number(balance) / 10 ** decimals), 2, 2);
 	};
 
 	return (

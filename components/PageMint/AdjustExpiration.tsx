@@ -1,8 +1,7 @@
 import { DateInputOutlined } from "@components/Input/DateInputOutlined";
 import { MaxButton } from "@components/Input/MaxButton";
-import { DetailsExpandablePanel } from "@components/PageMint/DetailsExpandablePanel";
 import { useTranslation } from "next-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { renderErrorTxToast } from "@components/TxToast";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { ADDRESS, PositionRollerABI, PositionV2ABI } from "@juicedollar/jusd";
@@ -11,63 +10,27 @@ import { writeContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
 import { useChainId, useReadContracts } from "wagmi";
 import { Address } from "viem/accounts";
-import {
-	getCarryOnQueryParams,
-	shortenAddress,
-	toDate,
-	toQueryString,
-	toTimestamp,
-	normalizeTokenSymbol,
-	NATIVE_WRAPPED_SYMBOLS,
-} from "@utils";
+import { getCarryOnQueryParams, toQueryString, toTimestamp, normalizeTokenSymbol, NATIVE_WRAPPED_SYMBOLS } from "@utils";
 import { toast } from "react-toastify";
 import { TxToast } from "@components/TxToast";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/redux.store";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
+import { useReferencePosition } from "../../hooks/useReferencePosition";
 import Button from "@components/Button";
 import { erc20Abi, maxUint256 } from "viem";
-import Link from "next/link";
-import { useContractUrl } from "../../hooks/useContractUrl";
-import { getLoanDetailsByCollateralAndLiqPrice } from "../../utils/loanCalculations";
+import { PositionQuery } from "@juicedollar/api";
 
-export const ExpirationManageSection = () => {
+interface AdjustExpirationProps {
+	position: PositionQuery;
+}
+
+export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 	const [expirationDate, setExpirationDate] = useState<Date | undefined | null>(undefined);
 	const [isTxOnGoing, setIsTxOnGoing] = useState(false);
 	const { t } = useTranslation();
 	const chainId = useChainId();
-
 	const router = useRouter();
-	const { address: positionAddress } = router.query;
 
-	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
-	const position = positions.find((p) => p.position == positionAddress);
-	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
-
-	const challenges = useSelector((state: RootState) => state.challenges.list?.list || []);
-	const challengedPositions = challenges.filter((c) => c.status === "Active").map((c) => c.position);
-
-	const isNativeWrappedPosition = position && NATIVE_WRAPPED_SYMBOLS.includes(position.collateralSymbol.toLowerCase());
-
-	const { targetPositionForExtend, canExtend } = useMemo(() => {
-		if (!position) return { targetPositionForExtend: undefined, canExtend: false };
-		const now = new Date().getTime() / 1000;
-		const currentExp = toTimestamp(toDate(position.expiration));
-		const extendTargets = positions
-			.filter((p) => p.collateral.toLowerCase() === position.collateral.toLowerCase())
-			.filter((p) => !challengedPositions.includes(p.position))
-			.filter((p) => now > toTimestamp(toDate(p.cooldown)))
-			.filter((p) => now < toTimestamp(toDate(p.expiration)))
-			.filter((p) => !p.closed)
-			.filter((p) => toTimestamp(toDate(p.expiration)) > currentExp)
-			.filter((p) => BigInt(p.availableForClones) > 0n)
-			.filter((p) => BigInt(p.availableForMinting) > 0n)
-			.sort((a, b) => toTimestamp(toDate(a.expiration)) - toTimestamp(toDate(b.expiration)));
-		return {
-			targetPositionForExtend: extendTargets[0],
-			canExtend: extendTargets.length > 0,
-		};
-	}, [positions, challengedPositions, position]);
+	const isNativeWrappedPosition = NATIVE_WRAPPED_SYMBOLS.includes(position.collateralSymbol.toLowerCase());
 
 	const { balancesByAddress, refetchBalances } = useWalletERC20Balances(
 		position
@@ -89,66 +52,53 @@ export const ExpirationManageSection = () => {
 	);
 
 	const collateralAllowance = position ? balancesByAddress[position.collateral]?.allowance?.[ADDRESS[chainId].roller] : undefined;
-	const deuroAllowance = position ? balancesByAddress[position.stablecoinAddress]?.allowance?.[ADDRESS[chainId].roller] : undefined;
-	const deuroBalance = position ? balancesByAddress[position.stablecoinAddress]?.balanceOf : 0n;
+	const jusdAllowance = position ? balancesByAddress[position.stablecoinAddress]?.allowance?.[ADDRESS[chainId].roller] : undefined;
+	const jusdBalance = position ? balancesByAddress[position.stablecoinAddress]?.balanceOf : 0n;
 
-	const url = useContractUrl(position?.position || "");
-
-	// Fetch principal and debt from smart contract
 	const { data: contractData } = useReadContracts({
 		contracts: position
 			? [
-					{
-						chainId,
-						address: position.position,
-						abi: PositionV2ABI,
-						functionName: "principal",
-					},
-					{
-						chainId,
-						address: position.position,
-						abi: PositionV2ABI,
-						functionName: "getDebt",
-					},
+					{ chainId, address: position.position as Address, abi: PositionV2ABI, functionName: "principal" },
+					{ chainId, address: position.position as Address, abi: PositionV2ABI, functionName: "getDebt" },
+					{ chainId, address: position.position as Address, abi: PositionV2ABI, functionName: "getInterest" },
 			  ]
 			: [],
 	});
 
 	const principal = contractData?.[0]?.result || 0n;
 	const currentDebt = contractData?.[1]?.result || 0n;
+	const positionInterest = contractData?.[2]?.result || 0n;
+
+	const { defaultPosition, isLoading: loadingDefault } = useReferencePosition();
 
 	useEffect(() => {
-		if (position) {
-			if (targetPositionForExtend?.expiration) {
-				setExpirationDate((date) => date ?? new Date(targetPositionForExtend.expiration * 1000));
-			} else {
-				setExpirationDate((date) => date ?? new Date(position.expiration * 1000));
-			}
+		if (position && defaultPosition) {
+			setExpirationDate((date) => date ?? new Date(defaultPosition.expiration * 1000));
 		}
-	}, [position, targetPositionForExtend]);
+	}, [position, defaultPosition]);
 
-	if (!position) {
-		return (
-			<div className="flex justify-center items-center h-64">
-				<span className="text-text-muted2">Loading position data...</span>
-			</div>
-		);
-	}
-
-	const currentExpirationDate = position ? new Date(position.expiration * 1000) : new Date();
+	const currentExpirationDate = new Date(position.expiration * 1000);
 	const isExtending = !!(expirationDate && expirationDate.getTime() > currentExpirationDate.getTime());
+	const currentCollateralBalance = BigInt(position.collateralBalance);
+	const targetMinCollateral = defaultPosition ? BigInt(defaultPosition.minimumCollateral) : 0n;
 
 	const handleAdjustExpiration = async () => {
 		try {
 			setIsTxOnGoing(true);
 
-			const newExpirationTimestamp = toTimestamp(expirationDate as Date);
-			const target = targetPositionForExtend?.position;
-
-			if (!target) {
+			if (!defaultPosition) {
 				toast.error(t("mint.no_extension_target_available"));
 				return;
 			}
+
+			const newExpirationTimestamp = toTimestamp(expirationDate as Date);
+			const target = defaultPosition.position;
+			const interestBuffer = positionInterest / 10n + BigInt(1e16);
+			const repay = principal + positionInterest + interestBuffer;
+			const collWithdraw = currentCollateralBalance;
+			const depositAmount = collWithdraw < targetMinCollateral ? targetMinCollateral : collWithdraw;
+			const mintForDeposit = principal;
+			const extraNeeded = depositAmount > collWithdraw ? depositAmount - collWithdraw : 0n;
 
 			let txHash: `0x${string}`;
 
@@ -156,38 +106,43 @@ export const ExpirationManageSection = () => {
 				txHash = await writeContract(WAGMI_CONFIG, {
 					address: ADDRESS[chainId].roller,
 					abi: PositionRollerABI,
-					functionName: "rollFullyNativeWithExpiration",
-					args: [positionAddress as Address, target as Address, newExpirationTimestamp],
-					value: 0n,
+					functionName: "rollNative",
+					args: [
+						position.position as Address,
+						repay,
+						collWithdraw,
+						target as Address,
+						mintForDeposit,
+						depositAmount,
+						newExpirationTimestamp,
+					],
+					value: extraNeeded,
 				});
 			} else {
 				txHash = await writeContract(WAGMI_CONFIG, {
 					address: ADDRESS[chainId].roller,
 					abi: PositionRollerABI,
-					functionName: "rollFullyWithExpiration",
-					args: [positionAddress as Address, target as Address, newExpirationTimestamp],
+					functionName: "roll",
+					args: [
+						position.position as Address,
+						repay,
+						collWithdraw,
+						target as Address,
+						mintForDeposit,
+						depositAmount,
+						newExpirationTimestamp,
+					],
 				});
 			}
 
-			const toastContent = [
-				{
-					title: t("common.txs.transaction"),
-					hash: txHash,
-				},
-			];
+			const toastContent = [{ title: t("common.txs.transaction"), hash: txHash }];
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: txHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title={t("mint.txs.extending")} rows={toastContent} />,
-				},
-				success: {
-					render: <TxToast title={t("mint.txs.extending_success")} rows={toastContent} />,
-				},
+				pending: { render: <TxToast title={t("mint.txs.extending")} rows={toastContent} /> },
+				success: { render: <TxToast title={t("mint.txs.extending_success")} rows={toastContent} /> },
 			});
 
-			const carryOnQueryParams = getCarryOnQueryParams(router);
-			const _href = `/dashboard${toQueryString(carryOnQueryParams)}`;
-			router.push(_href);
+			router.push(`/dashboard${toQueryString(getCarryOnQueryParams(router))}`);
 		} catch (error) {
 			toast.error(renderErrorTxToast(error));
 		} finally {
@@ -206,12 +161,7 @@ export const ExpirationManageSection = () => {
 				args: [ADDRESS[chainId].roller, maxUint256],
 			});
 
-			const toastContent = [
-				{
-					title: t("common.txs.transaction"),
-					hash: approvingHash,
-				},
-			];
+			const toastContent = [{ title: t("common.txs.transaction"), hash: approvingHash }];
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approvingHash, confirmations: 1 }), {
 				pending: {
@@ -240,7 +190,7 @@ export const ExpirationManageSection = () => {
 		}
 	};
 
-	const handleApproveDeuro = async () => {
+	const handleApproveJusd = async () => {
 		try {
 			setIsTxOnGoing(true);
 
@@ -251,20 +201,11 @@ export const ExpirationManageSection = () => {
 				args: [ADDRESS[chainId].roller, maxUint256],
 			});
 
-			const toastContent = [
-				{
-					title: t("common.txs.transaction"),
-					hash: approvingHash,
-				},
-			];
+			const toastContent = [{ title: t("common.txs.transaction"), hash: approvingHash }];
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approvingHash, confirmations: 1 }), {
-				pending: {
-					render: <TxToast title={t("common.txs.title", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
-				},
-				success: {
-					render: <TxToast title={t("common.txs.success", { symbol: position.stablecoinSymbol })} rows={toastContent} />,
-				},
+				pending: { render: <TxToast title={t("common.txs.title", { symbol: position.stablecoinSymbol })} rows={toastContent} /> },
+				success: { render: <TxToast title={t("common.txs.success", { symbol: position.stablecoinSymbol })} rows={toastContent} /> },
 			});
 
 			await refetchBalances();
@@ -275,24 +216,14 @@ export const ExpirationManageSection = () => {
 		}
 	};
 
-	const collateralPrice = prices?.[position.collateral.toLowerCase() as Address]?.price?.usd || 0;
-	const loanDetails = getLoanDetailsByCollateralAndLiqPrice(position, BigInt(position?.collateralBalance), BigInt(position.price));
-
 	const daysUntilExpiration = Math.ceil((currentExpirationDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-
-	// Calculate interest amount to be paid using smart contract data
 	const interest = currentDebt > principal ? currentDebt - principal : 0n;
+	const interestWithBuffer = interest + interest / 10n + BigInt(1e16);
+	const hasInsufficientBalance = interestWithBuffer > 0n && BigInt(jusdBalance || 0) < interestWithBuffer;
 
-	// Check if user has enough dEURO balance to pay interest
-	const hasInsufficientBalance = interest > 0n && BigInt(deuroBalance || 0) < interest;
-
-	// Format number with commas
 	const formatNumber = (value: bigint, decimals: number = 18): string => {
 		const num = Number(value) / Math.pow(10, decimals);
-		return new Intl.NumberFormat(router?.locale || "en", {
-			minimumFractionDigits: 2,
-			maximumFractionDigits: 2,
-		}).format(num);
+		return new Intl.NumberFormat(router?.locale || "en", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
 	};
 
 	return (
@@ -313,11 +244,8 @@ export const ExpirationManageSection = () => {
 			<div className="flex flex-col gap-y-1.5">
 				<div className="text-lg font-extrabold leading-[1.4375rem]">{t("mint.newly_selected_expiration_date")}</div>
 				<DateInputOutlined
-					maxDate={
-						canExtend && targetPositionForExtend?.expiration
-							? new Date(targetPositionForExtend.expiration * 1000)
-							: currentExpirationDate
-					}
+					minDate={currentExpirationDate}
+					maxDate={defaultPosition ? new Date(defaultPosition.expiration * 1000) : currentExpirationDate}
 					value={expirationDate}
 					placeholderText={new Date(position.expiration * 1000).toISOString().split("T")[0]}
 					className="placeholder:text-[#5D647B]"
@@ -325,37 +253,31 @@ export const ExpirationManageSection = () => {
 					rightAdornment={
 						<MaxButton
 							className="h-full py-3.5 px-3"
-							onClick={() =>
-								setExpirationDate(
-									targetPositionForExtend?.expiration ? new Date(targetPositionForExtend.expiration * 1000) : undefined
-								)
-							}
-							disabled={!targetPositionForExtend}
+							onClick={() => setExpirationDate(defaultPosition ? new Date(defaultPosition.expiration * 1000) : undefined)}
+							disabled={!defaultPosition}
 							label={t("common.max")}
 						/>
 					}
 				/>
 			</div>
-			{!canExtend && (
-				<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-					<div className="text-sm text-yellow-800">{t("mint.no_extension_target_available")}</div>
-				</div>
+			{!defaultPosition && !loadingDefault && (
+				<div className="text-xs text-text-muted2 px-4">{t("mint.no_extension_target_available")}</div>
 			)}
 			{!isNativeWrappedPosition && !collateralAllowance ? (
 				<Button
 					className="text-lg leading-snug !font-extrabold"
 					onClick={handleApproveCollateral}
 					isLoading={isTxOnGoing}
-					disabled={isTxOnGoing || !canExtend}
+					disabled={isTxOnGoing || !defaultPosition}
 				>
 					{t("common.approve")} {normalizeTokenSymbol(position.collateralSymbol)}
 				</Button>
-			) : !deuroAllowance ? (
+			) : !jusdAllowance ? (
 				<Button
 					className="text-lg leading-snug !font-extrabold"
-					onClick={handleApproveDeuro}
+					onClick={handleApproveJusd}
 					isLoading={isTxOnGoing}
-					disabled={isTxOnGoing || !canExtend}
+					disabled={isTxOnGoing || !defaultPosition}
 				>
 					{t("common.approve")} {position.stablecoinSymbol}
 				</Button>
@@ -378,7 +300,7 @@ export const ExpirationManageSection = () => {
 									{formatNumber(interest)} {position.stablecoinSymbol}
 								</span>
 							</div>
-							<div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+							<div className="text-xs text-gray-500 mt-1">
 								{t("mint.current_debt", { amount: formatNumber(currentDebt), symbol: position.stablecoinSymbol })}{" "}
 								{t("mint.original_amount", { amount: formatNumber(principal), symbol: position.stablecoinSymbol })}
 							</div>
@@ -387,13 +309,16 @@ export const ExpirationManageSection = () => {
 									<div className="text-xs font-medium text-red-600 dark:text-red-400">
 										{t("mint.insufficient_balance", { symbol: position.stablecoinSymbol })}
 									</div>
-									<div className="text-xs text-red-500 dark:text-red-500 mt-1">
+									<div className="text-xs text-red-500 mt-1">
 										{t("mint.you_have", {
-											amount: formatNumber(BigInt(deuroBalance || 0)),
+											amount: formatNumber(BigInt(jusdBalance || 0)),
 											symbol: position.stablecoinSymbol,
 										})}
 										<br />
-										{t("mint.you_need", { amount: formatNumber(interest), symbol: position.stablecoinSymbol })}
+										{t("mint.you_need", {
+											amount: formatNumber(interestWithBuffer),
+											symbol: position.stablecoinSymbol,
+										})}
 									</div>
 								</div>
 							)}
@@ -403,31 +328,18 @@ export const ExpirationManageSection = () => {
 						className="text-lg leading-snug !font-extrabold"
 						onClick={handleAdjustExpiration}
 						isLoading={isTxOnGoing}
-						disabled={isTxOnGoing || !expirationDate || !isExtending || !canExtend || hasInsufficientBalance}
+						disabled={isTxOnGoing || !expirationDate || !isExtending || !defaultPosition || hasInsufficientBalance}
 					>
-						{t("mint.extend_roll_borrowing")}
+						{t("mint.extend_roll_borrowing")}{" "}
+						{expirationDate &&
+							`to ${expirationDate.toLocaleDateString(router?.locale || "en", {
+								year: "numeric",
+								month: "short",
+								day: "numeric",
+							})}`}
 					</Button>
 				</>
 			)}
-
-			<DetailsExpandablePanel
-				loanDetails={loanDetails}
-				collateralPriceDeuro={collateralPrice}
-				collateralDecimals={position.collateralDecimals}
-				startingLiquidationPrice={BigInt(position.price)}
-				extraRows={
-					<div className="py-1.5 flex justify-between">
-						<span className="text-base leading-tight">{t("common.position")}</span>
-						<Link
-							className="underline text-right text-sm font-extrabold leading-none tracking-tight"
-							href={url}
-							target="_blank"
-						>
-							{shortenAddress(position.position)}
-						</Link>
-					</div>
-				}
-			/>
 		</div>
 	);
 };

@@ -1,13 +1,21 @@
 import { formatUnits } from "viem";
 import { formatCurrency } from "./format";
 
+// For INPUT fields - allows precise entry (8 decimals for collateral)
 export const getDisplayDecimals = (unit: string): number => {
-	const stablecoins = ["JUSD", "DEURO"];
-	return stablecoins.includes(unit.toUpperCase()) ? 2 : 8;
+	const protocolTokens = ["JUSD", "USD", "JUICE", "SVJUSD", "SUSD"];
+	return protocolTokens.includes(unit.toUpperCase()) ? 2 : 8;
+};
+
+// For DISPLAY only - Collateral: 3 decimals, JUSD/USD: 2 decimals
+export const getDisplayDecimalsForDisplay = (unit: string): number => {
+	const protocolTokens = ["JUSD", "USD", "JUICE", "SVJUSD", "SUSD"];
+	return protocolTokens.includes(unit.toUpperCase()) ? 2 : 3;
 };
 
 export const formatPositionValue = (value: bigint, decimals: number, unit: string): string => {
-	return `${formatCurrency(formatUnits(value, decimals), 0, getDisplayDecimals(unit))} ${unit}`;
+	const displayDecimals = getDisplayDecimalsForDisplay(unit);
+	return `${formatCurrency(formatUnits(value, decimals), displayDecimals, displayDecimals)} ${unit}`;
 };
 
 export const formatPositionDelta = (delta: bigint, decimals: number, unit: string): string => {

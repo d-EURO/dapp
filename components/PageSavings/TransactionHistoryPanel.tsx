@@ -26,8 +26,8 @@ const HystoryRow = ({ item }: { item: TransactionHistoryData }) => {
 		<>
 			<TxLabelSimple className="text-left font-medium text-sm/5" label={dateStr} tx={item.txHash as Hash} showLink />
 			<div className="text-right font-medium text-sm/5">{item.type}</div>
-			<div className="text-right font-medium text-sm/5">{formatCurrency(item.rate / 10_000)} %</div>
-			<div className="text-right font-medium text-sm/5">{formatCurrency(formatUnits(BigInt(item.amount), 18))}</div>
+			<div className="text-right font-medium text-sm/5">{formatCurrency(item.rate / 10_000, 0, 2)} %</div>
+			<div className="text-right font-medium text-sm/5">{formatCurrency(formatUnits(BigInt(item.amount), 18), 2, 2)}</div>
 		</>
 	);
 };

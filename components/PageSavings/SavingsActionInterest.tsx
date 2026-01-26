@@ -45,11 +45,11 @@ export default function SavingsActionInterest({ balance, interest, disabled, set
 			const toastContent = [
 				{
 					title: `${t("savings.txs.saved_amount")}`,
-					value: `${formatCurrency(formatUnits(balance, 18))} ${TOKEN_SYMBOL}`,
+					value: `${formatCurrency(formatUnits(balance, 18), 2, 2)} ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: `${t("savings.txs.claim_interest")}`,
-					value: `${formatCurrency(formatUnits(interest, 18))} ${TOKEN_SYMBOL}`,
+					value: `${formatCurrency(formatUnits(interest, 18), 2, 2)} ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: `${t("common.txs.transaction")}`,

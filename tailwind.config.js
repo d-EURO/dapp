@@ -34,7 +34,6 @@ module.exports = {
 				layout: {
 					primary: "#f5f6f9",
 					secondary: "#F57F00",
-					footer: "#272B38",
 				},
 				menu: {
 					default: {

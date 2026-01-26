@@ -1,12 +1,8 @@
-import Link from "next/link";
 import { DEFAULT_FRONTEND_CODE, shortenHash, SOCIAL, ZERO_FRONTEND_CODE } from "@utils";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faBook, faBookmark, faComments, faCodeCommit } from "@fortawesome/free-solid-svg-icons";
-import { faGithub, faTelegram, faXTwitter, faTwitter } from "@fortawesome/free-brands-svg-icons";
-import { SubmitIssue } from "./LoadingScreen";
+import { faBook } from "@fortawesome/free-solid-svg-icons";
+import { faGithub, faTelegram, faXTwitter } from "@fortawesome/free-brands-svg-icons";
+import { SubmitIssue, FooterButton } from "./LoadingScreen";
 import { usePathname } from "next/navigation";
-import { useIsMainnet } from "@hooks";
 import { useFrontendCode } from "../hooks/useFrontendCode";
 import { useTranslation } from "next-i18next";
 
@@ -30,7 +26,6 @@ const DynamicDocs = (): string => {
 };
 
 export default function Footer() {
-	const isMainnet = useIsMainnet();
 	const { t } = useTranslation();
 	const { marketingCode, frontendCode } = useFrontendCode();
 	const parsedFrontendCode =
@@ -38,11 +33,11 @@ export default function Footer() {
 	const code = marketingCode || parsedFrontendCode;
 
 	return (
-		<footer className="md:flex max-md:grid-rows-2 max-md:justify-items-center md:px-12 pb-12 pt-6 bg-layout-footer text-layout-primary mt-auto">
+		<footer className="md:flex max-md:grid-rows-2 max-md:justify-items-center md:px-12 pb-12 pt-6 bg-transparent border-t border-borders-primary text-text-primary mt-auto">
 			<div className="flex-1 justify-start text-center md:text-left">
 				<SubmitIssue />
 				{code && (
-					<div className="mt-4 text-sm text-layout-primary">
+					<div className="mt-4 text-sm text-text-primary">
 						{t("common.using_referral_code")}: <span className="font-bold">{code}</span>
 					</div>
 				)}
@@ -50,35 +45,18 @@ export default function Footer() {
 
 			<ul className="flex justify-end gap-8 max-md:pt-12">
 				<li>
-					<FooterButton link={DynamicDocs()} text="Doc" icon={faBook} />
+					<FooterButton link={DynamicDocs()} icon={faBook} />
 				</li>
 				<li>
-					<FooterButton link={SOCIAL.Github_organization} text="Github" icon={faGithub} />
+					<FooterButton link={SOCIAL.Github_organization} icon={faGithub} />
 				</li>
 				<li>
-					<FooterButton link={SOCIAL.Forum} text="Forum" icon={faComments} />
+					<FooterButton link={SOCIAL.Telegram} icon={faTelegram} />
 				</li>
 				<li>
-					<FooterButton link={SOCIAL.Telegram} text="Telegram" icon={faTelegram} />
-				</li>
-				<li>
-					<FooterButton link={SOCIAL.Twitter} text="Twitter" icon={faXTwitter} />
+					<FooterButton link={SOCIAL.Twitter} icon={faXTwitter} />
 				</li>
 			</ul>
 		</footer>
 	);
 }
-
-interface ButtonProps {
-	link: string;
-	text: string;
-	icon: IconProp;
-}
-
-const FooterButton = ({ link, text, icon }: ButtonProps) => {
-	return (
-		<Link href={link} target="_blank" rel="noreferrer" className="flex gap-1 hover:opacity-70">
-			<FontAwesomeIcon icon={icon} className="w-6 h-6" />
-		</Link>
-	);
-};

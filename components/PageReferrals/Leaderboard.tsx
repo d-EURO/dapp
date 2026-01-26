@@ -12,6 +12,7 @@ import { SectionTitle } from "@components/SectionTitle";
 import { useTranslation } from "next-i18next";
 import { gql, useQuery } from "@apollo/client";
 import { formatUnits } from "viem";
+import { useExpandableTable } from "@hooks";
 
 interface LeaderboardData {
 	refCode: string;
@@ -34,7 +35,6 @@ export default function Leaderboard() {
 		t("referrals.savings_volume"),
 		t("referrals.total_volume"),
 	];
-	const [isShowMore, setIsShowMore] = useState(false);
 	const [tab, setTab] = useState<string>(headers[5]);
 	const [reverse, setReverse] = useState<boolean>(false);
 
@@ -86,6 +86,8 @@ export default function Leaderboard() {
 
 	const sortedData = sortLeaderboard({ leaderboard: [...data], headers, tab, reverse });
 
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(sortedData);
+
 	return (
 		<div className="flex flex-col gap-2 sm:gap-0">
 			<SectionTitle id="referral-leaderboard">{t("referrals.referral_leaderboard")}</SectionTitle>
@@ -96,24 +98,24 @@ export default function Leaderboard() {
 						{sortedData.length === 0 ? (
 							<TableRowEmpty>{t("referrals.no_bonus_history_yet")}</TableRowEmpty>
 						) : (
-							sortedData.slice(0, isShowMore ? data.length : 5).map((row, i) => (
+							visibleData.map((row, i) => (
 								<TableRow key={i} headers={headers} tab={tab}>
 									<div className="text-base sm:font-medium leading-tight text-left">{row.refCode}</div>
 									<div className="text-base sm:font-medium leading-tight">{row.referrals}</div>
-									<div className="text-base sm:font-medium leading-tight">{formatCurrency(row.loansVolume)}</div>
-									<div className="text-base sm:font-medium leading-tight">{formatCurrency(row.investVolume)}</div>
-									<div className="text-base sm:font-medium leading-tight">{formatCurrency(row.savingsVolume)}</div>
-									<div className="text-base sm:font-medium leading-tight">{formatCurrency(row.totalVolume)}</div>
+									<div className="text-base sm:font-medium leading-tight">{formatCurrency(row.loansVolume, 2, 2)}</div>
+									<div className="text-base sm:font-medium leading-tight">{formatCurrency(row.investVolume, 2, 2)}</div>
+									<div className="text-base sm:font-medium leading-tight">{formatCurrency(row.savingsVolume, 2, 2)}</div>
+									<div className="text-base sm:font-medium leading-tight">{formatCurrency(row.totalVolume, 2, 2)}</div>
 								</TableRow>
 							))
 						)}
-						{sortedData.length > 5 && (
-							<TableShowMoreRow onShowMoreClick={() => setIsShowMore(!isShowMore)}>
+						{showExpandButton && (
+							<TableShowMoreRow onShowMoreClick={toggleExpanded}>
 								<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
-									{isShowMore ? t("referrals.show_less") : t("referrals.show_more")}
+									{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
 								</div>
 								<div className="justify-start items-center gap-2.5 flex">
-									<FontAwesomeIcon icon={isShowMore ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+									<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
 								</div>
 							</TableShowMoreRow>
 						)}

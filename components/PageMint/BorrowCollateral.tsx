@@ -174,7 +174,7 @@ export function BorrowCollateralItem({ item }: { item: CollateralItem }): React.
 						<div
 							className={`mb-3 rounded-full text-center max-h-7 max-w-[100] text-text-header font-bold bg-card-body-secondary`}
 						>
-							{formatCurrency(item.ratios.highestLTV, 1, 1)}% LTV
+							{formatCurrency(item.ratios.highestLTV, 0, 2)}% LTV
 						</div>
 						<div
 							className={`rounded-full text-center max-h-7 max-w-[100] text-gray-900 font-bold ${item.ratios.worstStatusColors}`}

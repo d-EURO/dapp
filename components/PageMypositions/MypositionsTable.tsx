@@ -2,6 +2,7 @@ import TableHeader from "../Table/TableHead";
 import TableBody from "../Table/TableBody";
 import Table from "../Table";
 import TableRowEmpty from "../Table/TableRowEmpty";
+import { TableShowMoreRow } from "@components/Table/TableShowMoreRow";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { ChallengesPositionsMapping, PositionQuery, PriceQueryObjectArray } from "@juicedollar/api";
@@ -11,6 +12,9 @@ import MypositionsRow from "./MypositionsRow";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
+import { useExpandableTable } from "@hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function MypositionsTable() {
 	const { t } = useTranslation();
@@ -68,6 +72,8 @@ export default function MypositionsTable() {
 		reverse,
 	});
 
+	const { visibleData, isExpanded, toggleExpanded, showExpandButton } = useExpandableTable(sorted);
+
 	const handleTabOnChange = function (e: string) {
 		if (tab === e) {
 			setReverse(!reverse);
@@ -91,13 +97,25 @@ export default function MypositionsTable() {
 				headerClassNames={["pl-10"]}
 			/>
 			<TableBody>
-				{sorted.length == 0 ? (
-					<TableRowEmpty>{t("my_positions.no_positions")}</TableRowEmpty>
-				) : (
-					sorted.map((pos) => (
-						<MypositionsRow headers={headers} subHeaders={subHeaders} position={pos} key={pos.position} tab={tab} />
-					))
-				)}
+				<>
+					{sorted.length == 0 ? (
+						<TableRowEmpty>{t("my_positions.no_positions")}</TableRowEmpty>
+					) : (
+						visibleData.map((pos) => (
+							<MypositionsRow headers={headers} subHeaders={subHeaders} position={pos} key={pos.position} tab={tab} />
+						))
+					)}
+					{showExpandButton && (
+						<TableShowMoreRow onShowMoreClick={toggleExpanded}>
+							<div className="text-table-header-active text-base font-black leading-normal tracking-tight">
+								{isExpanded ? t("referrals.show_less") : t("referrals.show_more")}
+							</div>
+							<div className="justify-start items-center gap-2.5 flex">
+								<FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} className="w-4 h-4 text-table-header-active" />
+							</div>
+						</TableShowMoreRow>
+					)}
+				</>
 			</TableBody>
 		</Table>
 	);
@@ -130,7 +148,7 @@ function sortPositions(params: SortPositions): PositionQuery[] {
 		positions.sort((a, b) => {
 			const calc = function (p: PositionQuery) {
 				const size: number = parseFloat(formatUnits(BigInt(p.collateralBalance), p.collateralDecimals));
-				const price: number = prices[p.collateral.toLowerCase() as Address]?.price?.eur || 1;
+				const price: number = prices[p.collateral.toLowerCase() as Address]?.price?.usd || 1;
 				return size * price;
 			};
 			return calc(b) - calc(a);
@@ -140,7 +158,7 @@ function sortPositions(params: SortPositions): PositionQuery[] {
 		positions.sort((a, b) => {
 			const calc = function (p: PositionQuery) {
 				const liqPrice: number = parseFloat(formatUnits(BigInt(p.price), 36 - p.collateralDecimals));
-				const price: number = prices[p.collateral.toLowerCase() as Address]?.price?.eur || 1;
+				const price: number = prices[p.collateral.toLowerCase() as Address]?.price?.usd || 1;
 				return price / liqPrice;
 			};
 			return calc(b) - calc(a);

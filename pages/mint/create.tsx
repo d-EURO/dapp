@@ -93,7 +93,7 @@ export default function PositionCreate({}) {
 			setInitialCollAmountError("");
 			setCollTokenAddrError("");
 		}
-	}, [collateralAddress, collTokenData]);
+	}, [collateralAddress, collTokenData, t]);
 
 	const onChangeProposalFee = (value: string) => {
 		const valueBigInt = BigInt(value);
@@ -391,11 +391,7 @@ export default function PositionCreate({}) {
 							/>
 						</div>
 						<div>
-							<Trans i18nKey="mint.discuss_recommendation">
-								<Link href={SOCIAL.Forum} target="_blank">
-									discuss
-								</Link>
-							</Trans>
+							<Trans i18nKey="mint.discuss_recommendation"></Trans>
 						</div>
 					</div>
 

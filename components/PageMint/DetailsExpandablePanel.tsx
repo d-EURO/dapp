@@ -5,7 +5,7 @@ import { LoanDetails } from "../../utils/loanCalculations";
 import { ExpandablePanel } from "../ExpandablePanel";
 interface DetailsExpandablePanelProps {
 	loanDetails?: LoanDetails;
-	collateralPriceDeuro: number;
+	collateralPriceUsd: number;
 	collateralDecimals: number;
 	startingLiquidationPrice: bigint;
 	extraRows?: React.ReactNode;
@@ -26,7 +26,7 @@ const defaultLoanDetails = {
 
 export function DetailsExpandablePanel({
 	loanDetails = defaultLoanDetails,
-	collateralPriceDeuro = 0,
+	collateralPriceUsd = 0,
 	collateralDecimals = 0,
 	startingLiquidationPrice = 0n,
 	extraRows = null,
@@ -35,7 +35,7 @@ export function DetailsExpandablePanel({
 
 	const effectiveLTV =
 		(Number(formatUnits(loanDetails.loanAmount, 18)) * 100) /
-			(Number(formatUnits(loanDetails.requiredCollateral, collateralDecimals)) * collateralPriceDeuro) || 0;
+			(Number(formatUnits(loanDetails.requiredCollateral, collateralDecimals)) * collateralPriceUsd) || 0;
 
 	return (
 		<ExpandablePanel title={t("mint.details")}>
@@ -72,18 +72,18 @@ export function DetailsExpandablePanel({
 			<div className="py-1.5 flex justify-between">
 				<span className="text-base leading-tight">{t("mint.effective_annual_interest")}</span>
 				<span className="text-right text-sm font-extrabold leading-none tracking-tight">
-					{formatCurrency(loanDetails.effectiveInterest)}%
+					{formatCurrency(loanDetails.effectiveInterest, 0, 2)}%
 				</span>
 			</div>
 			<div className="py-1.5 flex justify-between">
 				<span className="text-base leading-tight">{t("mint.market_price")}</span>
 				<span className="text-right text-sm font-extrabold leading-none tracking-tight">
-					{formatCurrency(collateralPriceDeuro, 2, 2)} {TOKEN_SYMBOL}
+					{formatCurrency(collateralPriceUsd, 2, 2)} USD
 				</span>
 			</div>
 			<div className="py-1.5 flex justify-between">
 				<span className="text-base leading-tight">{t("mint.loan_to_value")}</span>
-				<span className="text-right text-sm font-extrabold leading-none tracking-tight">{formatCurrency(effectiveLTV)}%</span>
+				<span className="text-right text-sm font-extrabold leading-none tracking-tight">{formatCurrency(effectiveLTV, 0, 2)}%</span>
 			</div>
 			{extraRows}
 		</ExpandablePanel>

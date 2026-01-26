@@ -199,7 +199,7 @@ export default function ChallengePlaceBid() {
 				},
 				{
 					title: t("challenges.txs.expected", { symbol: TOKEN_SYMBOL }),
-					value: formatCurrency(formatUnits(expectedDEURO(), 18)) + " " + TOKEN_SYMBOL,
+					value: formatCurrency(formatUnits(expectedDEURO(), 18), 2, 2) + " " + TOKEN_SYMBOL,
 				},
 				{
 					title: t("common.txs.transaction"),

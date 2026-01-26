@@ -42,11 +42,11 @@ export default function SavingsActionWithdraw({ balance, change, disabled, setLo
 			const toastContent = [
 				{
 					title: `${t("savings.txs.saved_amount")}`,
-					value: `${formatCurrency(formatUnits(balance, 18))} ${TOKEN_SYMBOL}`,
+					value: `${formatCurrency(formatUnits(balance, 18), 2, 2)} ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: `${t("savings.txs.withdraw")}`,
-					value: `${formatCurrency(formatUnits(change, 18))} ${TOKEN_SYMBOL}`,
+					value: `${formatCurrency(formatUnits(change, 18), 2, 2)} ${TOKEN_SYMBOL}`,
 				},
 				{
 					title: `${t("common.txs.transaction")}`,

@@ -130,7 +130,7 @@ export default function MonitoringForceSell() {
 				},
 				{
 					title: t("monitoring.txs.expected_euro", { symbol: TOKEN_SYMBOL }),
-					value: formatCurrency(formatUnits(expectedEURO(), 18)) + " " + TOKEN_SYMBOL,
+					value: formatCurrency(formatUnits(expectedEURO(), 18), 2, 2) + " " + TOKEN_SYMBOL,
 				},
 				{
 					title: t("common.txs.transaction"),
