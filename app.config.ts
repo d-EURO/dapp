@@ -100,10 +100,10 @@ export const WAGMI_METADATA = {
 	icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
 export const WAGMI_CONFIG = createConfig({
-	chains: [testnet, mainnet] as const,
+	chains: [mainnet, testnet] as const,
 	transports: {
-		[testnet.id]: http(CONFIG.network.testnet),
 		[mainnet.id]: http(CONFIG.network.mainnet),
+		[testnet.id]: http(CONFIG.network.testnet),
 	},
 	batch: {
 		multicall: {

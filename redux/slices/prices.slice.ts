@@ -79,7 +79,7 @@ export const fetchPricesList =
 			const response3 = await API_CLIENT.get("/prices/erc20/collateral");
 			dispatch(slice.actions.setCollateralERC20Info(response3.data as ApiPriceERC20Mapping));
 
-			const response4 = await API_CLIENT.get("/prices/erc20/deps");
+			const response4 = await API_CLIENT.get("/prices/erc20/poolshares");
 			dispatch(slice.actions.setNativePSERC20Info(response4.data as ApiPriceERC20));
 		} catch (error) {
 			logApiError(error, "prices data");

@@ -11,8 +11,8 @@ permissions:
 env:
     DOCKER_TAGS: dfxswiss/juicedollar-dapp:beta
     AZURE_RESOURCE_GROUP: rg-dfx-api-dev
-    AZURE_CONTAINER_APP_1: ca-dfx-jdtd-dev
-    AZURE_CONTAINER_APP_2: ca-dfx-jdmd-dev
+    AZURE_CONTAINER_APP_TESTNET: ca-dfx-jdtd-dev
+    AZURE_CONTAINER_APP_MAINNET: ca-dfx-jdmd-dev
     DEPLOY_INFO: ${{ github.ref_name }}-${{ github.sha }}
 
 jobs:
@@ -47,17 +47,17 @@ jobs:
               with:
                   creds: ${{ secrets.DFX_DEV_CREDENTIALS }}
 
-            - name: Update Azure Container App 1
+            - name: Update Azure Container App (testnet)
               uses: azure/CLI@v2
               with:
                   inlineScript: |
-                      az containerapp update --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_CONTAINER_APP_1 }} --image ${{ env.DOCKER_TAGS }} --set-env-vars DEPLOY_INFO=${{ env.DEPLOY_INFO }}
+                      az containerapp update --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_CONTAINER_APP_TESTNET }} --image ${{ env.DOCKER_TAGS }} --set-env-vars DEPLOY_INFO=${{ env.DEPLOY_INFO }}
 
-            - name: Update Azure Container App 2
+            - name: Update Azure Container App (mainnet)
               uses: azure/CLI@v2
               with:
                   inlineScript: |
-                      az containerapp update --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_CONTAINER_APP_2 }} --image ${{ env.DOCKER_TAGS }} --set-env-vars DEPLOY_INFO=${{ env.DEPLOY_INFO }}
+                      az containerapp update --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_CONTAINER_APP_MAINNET }} --image ${{ env.DOCKER_TAGS }} --set-env-vars DEPLOY_INFO=${{ env.DEPLOY_INFO }}
 
             - name: Logout from Azure
               run: |
