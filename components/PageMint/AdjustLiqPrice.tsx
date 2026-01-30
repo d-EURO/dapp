@@ -62,10 +62,11 @@ export const AdjustLiqPrice = ({
 	const reference = useReferencePosition(position, positionPrice);
 
 	const maxPriceIncrease = liqPrice * 2n;
-	const maxAllowedPrice = reference.price <= maxPriceIncrease ? reference.price : maxPriceIncrease;
-	const deltaIncrease = maxAllowedPrice > liqPrice ? maxAllowedPrice - liqPrice : 0n;
+	const deltaIncrease = maxPriceIncrease - liqPrice;
 	const maxDeltaIncrease = deltaIncrease * 10n >= liqPrice ? deltaIncrease : 0n;
-	const hasValidReference = reference.address !== null && maxDeltaIncrease > 0n;
+
+	const useReference = isIncrease && reference.address !== null && newPrice <= reference.price;
+	const showCooldownMessage = isIncrease && !useReference && delta > 0n;
 
 	const isDecreaseInvalid = !isIncrease && delta > maxDeltaDecrease;
 
@@ -75,18 +76,12 @@ export const AdjustLiqPrice = ({
 		setDeltaAmount("");
 	}, [isIncrease]);
 
-	useEffect(() => {
-		if (!hasValidReference) {
-			setIsIncrease(false);
-		}
-	}, [hasValidReference]);
-
 	const handleExecute = async () => {
 		if (!userAddress || delta === 0n) return;
 		try {
 			setIsTxOnGoing(true);
 
-			const adjustHash = isIncrease
+			const adjustHash = useReference
 				? await writeContract(WAGMI_CONFIG, {
 						address: position.position as Address,
 						abi: PositionV2ABI,
@@ -130,19 +125,13 @@ export const AdjustLiqPrice = ({
 								{t("mint.increase")}
 							</SvgIconButton>
 						)}
-						{maxDeltaDecrease > 0n && (
-							<SvgIconButton
-								isSelected={!isIncrease}
-								onClick={() => setIsIncrease(false)}
-								SvgComponent={RemoveCircleOutlineIcon}
-							>
-								{t("mint.decrease")}
-							</SvgIconButton>
-						)}
+						<SvgIconButton isSelected={!isIncrease} onClick={() => setIsIncrease(false)} SvgComponent={RemoveCircleOutlineIcon}>
+							{t("mint.decrease")}
+						</SvgIconButton>
 					</div>
 				</div>
 
-				{(maxDeltaIncrease > 0n || maxDeltaDecrease > 0n) && (
+				{((isIncrease && maxDeltaIncrease > 0n) || (!isIncrease && maxDeltaDecrease > 0n)) && (
 					<SliderInputOutlined
 						value={deltaAmount}
 						onChange={(val) => setDeltaAmount(roundToWholeUnits(val, priceDecimals))}
@@ -154,7 +143,7 @@ export const AdjustLiqPrice = ({
 				)}
 			</div>
 
-			{!hasValidReference && maxDeltaDecrease === 0n && (
+			{!isIncrease && maxDeltaDecrease === 0n && (
 				<div className="text-sm text-text-muted2 px-4">
 					{t("mint.position_at_limit")}{" "}
 					<button
@@ -195,6 +184,15 @@ export const AdjustLiqPrice = ({
 					</span>
 				</div>
 			</div>
+
+			{showCooldownMessage && (
+				<div className="text-sm text-text-muted2 px-4">
+					<div className="font-semibold mb-1">Cooldown active</div>
+					After increasing your liquidation price, a 3-day cooldown applies before you can increase your loan.
+					<br />
+					Once a higher liquidation price exists in the system, future increases will be instant.
+				</div>
+			)}
 
 			<Button
 				className="w-full text-lg leading-snug !font-extrabold"
