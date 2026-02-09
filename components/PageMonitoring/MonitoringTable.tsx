@@ -27,7 +27,7 @@ export default function MonitoringTable() {
 	const matchingPositions = openPositionsByCollateral.flat();
 
 	const sorted: PositionQuery[] = sortPositions(matchingPositions, coingecko || {}, headers, tab, reverse).filter(
-		(p) => !INTERNAL_PROTOCOL_POSITIONS.includes(p.position)
+		(p) => !INTERNAL_PROTOCOL_POSITIONS.includes(p.position) && p.expiration * 1000 > Date.now()
 	);
 
 	const handleTabOnChange = function (e: string) {

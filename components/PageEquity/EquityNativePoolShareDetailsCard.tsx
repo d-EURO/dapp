@@ -36,7 +36,7 @@ const getStartTimestampByTimeframe = (timeframe: Timeframe) => {
 };
 
 export default function EquityNativePoolShareDetailsCard() {
-	const [timeframe, setTimeframe] = useState<Timeframe>(Timeframe.ALL);
+	const [timeframe, setTimeframe] = useState<Timeframe>(Timeframe.MONTH);
 	const poolStats = usePoolStats();
 	const earnings = useSelector((state: RootState) => state.ecosystem.depsInfo?.earnings);
 	const profit = earnings?.profit ?? "-";
