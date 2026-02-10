@@ -19,6 +19,7 @@ import { useTranslation } from "next-i18next";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
+import { mainnet, testnet } from "@config";
 
 export default function SavingsInteractionSection() {
 	const { userSavingsBalance, interestToBeCollected, refetchInterest } = useSavingsInterest();
@@ -53,6 +54,7 @@ export default function SavingsInteractionSection() {
 			setIsTxOnGoing(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: juiceDollarAddress,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -141,6 +143,7 @@ export default function SavingsInteractionSection() {
 			setIsTxOnGoing(true);
 
 			const saveHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsGatewayABI,
 				functionName: "save",
@@ -170,6 +173,7 @@ export default function SavingsInteractionSection() {
 					: BigInt(amount) + interestToBeCollected;
 
 			const withdrawHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsGatewayABI,
 				functionName: "withdraw",

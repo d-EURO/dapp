@@ -9,7 +9,7 @@ import { DateInputOutlined } from "@components/Input/DateInputOutlined";
 import { SliderInputOutlined } from "@components/Input/SliderInputOutlined";
 import { DetailsExpandablePanel } from "@components/PageMint/DetailsExpandablePanel";
 import { NormalInputOutlined } from "@components/Input/NormalInputOutlined";
-import { PositionQuery } from "@juicedollar/api";
+import { PositionQuery, ApiPositionsListing } from "@juicedollar/api";
 import { BorrowingDEUROModal } from "@components/PageMint/BorrowingDEUROModal";
 import { SelectCollateralModal } from "./SelectCollateralModal";
 import { InputTitle } from "@components/Input/InputTitle";
@@ -23,6 +23,8 @@ import {
 	NATIVE_WRAPPED_SYMBOLS,
 	normalizeTokenSymbol,
 	formatPositionValue,
+	MAINNET_CHAIN_ID,
+	MAINNET_GENESIS_POSITION,
 } from "@utils";
 import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { RootState, store } from "../../redux/redux.store";
@@ -30,7 +32,8 @@ import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { useTranslation } from "next-i18next";
 import { ADDRESS, MintingHubGatewayABI } from "@juicedollar/jusd";
 import { useAccount, useChainId } from "wagmi";
-import { API_CLIENT, WAGMI_CONFIG, WAGMI_CHAIN } from "../../app.config";
+import { WAGMI_CONFIG, WAGMI_CHAIN } from "../../app.config";
+import { getApiClient } from "@utils";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { TxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
@@ -44,6 +47,7 @@ import {
 import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { MaxButton } from "@components/Input/MaxButton";
 import Link from "next/link";
+import { mainnet, testnet } from "@config";
 
 export default function PositionCreate({}) {
 	const [selectedCollateral, setSelectedCollateral] = useState<TokenBalance | null | undefined>(null);
@@ -96,8 +100,36 @@ export default function PositionCreate({}) {
 	useEffect(() => {
 		const loadDefaultPosition = async () => {
 			try {
-				const response = await API_CLIENT.get<PositionQuery>("/positions/default");
+				const apiClient = getApiClient(chainId);
+
+				// TEMPORARY: On mainnet, fetch from /positions/list (NPM package has wrong genesis)
+				if (chainId === MAINNET_CHAIN_ID) {
+					const genesisResponse = await apiClient.get<ApiPositionsListing>(`/positions/list`);
+					const allPositions = genesisResponse.data?.list || [];
+					const genesisPos = allPositions.find(
+						(p: PositionQuery) => p.position.toLowerCase() === MAINNET_GENESIS_POSITION.toLowerCase()
+					);
+
+					if (genesisPos) {
+						setDefaultPosition(genesisPos);
+						const nativeToken: TokenBalance = {
+							symbol: WAGMI_CHAIN.nativeCurrency.symbol,
+							name: WAGMI_CHAIN.nativeCurrency.name,
+							address: "0x0000000000000000000000000000000000000000" as Address,
+							decimals: genesisPos.collateralDecimals,
+							balanceOf: 0n,
+							allowance: {},
+						};
+						handleOnSelectedToken(nativeToken, genesisPos);
+						return;
+					}
+				}
+
+				// Testnet: use default endpoint
+				const response = await apiClient.get<PositionQuery>("/positions/default");
 				const position = response.data as PositionQuery;
+
+				if (!position) return;
 
 				if (!NATIVE_WRAPPED_SYMBOLS.includes(position.collateralSymbol.toLowerCase())) {
 					console.warn("Default position collateral is not a wrapped-native asset:", position.collateralSymbol);
@@ -122,7 +154,7 @@ export default function PositionCreate({}) {
 
 		loadDefaultPosition();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [chainId]);
 
 	useEffect(() => {
 		if (!selectedPosition || !selectedCollateral) return;
@@ -309,6 +341,7 @@ export default function PositionCreate({}) {
 			}
 
 			const hash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: gatewayAddress,
 				abi: MintingHubGatewayABI,
 				functionName: "clone",
@@ -352,7 +385,7 @@ export default function PositionCreate({}) {
 				},
 			});
 
-			store.dispatch(fetchPositionsList());
+			store.dispatch(fetchPositionsList(chainId));
 			setIsCloneSuccess(true);
 			await refetchBalances();
 		} catch (error) {

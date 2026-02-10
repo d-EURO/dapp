@@ -18,6 +18,7 @@ import { useReferencePosition } from "../../hooks/useReferencePosition";
 import Button from "@components/Button";
 import { erc20Abi, maxUint256 } from "viem";
 import { PositionQuery } from "@juicedollar/api";
+import { mainnet, testnet } from "@config";
 
 interface AdjustExpirationProps {
 	position: PositionQuery;
@@ -104,6 +105,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 
 			if (isNativeWrappedPosition) {
 				txHash = await writeContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: ADDRESS[chainId].roller,
 					abi: PositionRollerABI,
 					functionName: "rollNative",
@@ -120,6 +122,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 				});
 			} else {
 				txHash = await writeContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: ADDRESS[chainId].roller,
 					abi: PositionRollerABI,
 					functionName: "roll",
@@ -155,6 +158,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 			setIsTxOnGoing(true);
 
 			const approvingHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -195,6 +199,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 			setIsTxOnGoing(true);
 
 			const approvingHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.stablecoinAddress,
 				abi: erc20Abi,
 				functionName: "approve",

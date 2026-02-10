@@ -1,7 +1,7 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
 import { PricesState, DispatchBoolean, DispatchApiPriceMapping, DispatchApiPriceERC20Mapping, DispatchApiPriceERC20 } from "./prices.types";
 import { ApiPriceERC20, ApiPriceERC20Mapping, ApiPriceMapping } from "@juicedollar/api";
-import { API_CLIENT } from "../../app.config";
+import { getApiClient } from "@utils";
 import { zeroAddress } from "viem";
 import { logApiError } from "../../utils/errorLogger";
 
@@ -63,23 +63,22 @@ export const actions = slice.actions;
 
 // --------------------------------------------------------------------------------
 export const fetchPricesList =
-	() => async (dispatch: Dispatch<DispatchBoolean | DispatchApiPriceMapping | DispatchApiPriceERC20Mapping | DispatchApiPriceERC20>) => {
-		// ---------------------------------------------------------------
+	(chainId: number) =>
+	async (dispatch: Dispatch<DispatchBoolean | DispatchApiPriceMapping | DispatchApiPriceERC20Mapping | DispatchApiPriceERC20>) => {
+		const api = getApiClient(chainId);
 		console.log("Loading [REDUX]: PricesList");
 
 		try {
-			// ---------------------------------------------------------------
-			// Query raw data from backend api
-			const response1 = await API_CLIENT.get("/prices/mapping");
+			const response1 = await api.get("/prices/mapping");
 			dispatch(slice.actions.setListMapping(response1.data as ApiPriceMapping));
 
-			const response2 = await API_CLIENT.get("/prices/erc20/mint");
+			const response2 = await api.get("/prices/erc20/mint");
 			dispatch(slice.actions.setMintERC20Info(response2.data as ApiPriceERC20));
 
-			const response3 = await API_CLIENT.get("/prices/erc20/collateral");
+			const response3 = await api.get("/prices/erc20/collateral");
 			dispatch(slice.actions.setCollateralERC20Info(response3.data as ApiPriceERC20Mapping));
 
-			const response4 = await API_CLIENT.get("/prices/erc20/poolshares");
+			const response4 = await api.get("/prices/erc20/poolshares");
 			dispatch(slice.actions.setNativePSERC20Info(response4.data as ApiPriceERC20));
 		} catch (error) {
 			logApiError(error, "prices data");

@@ -1,7 +1,6 @@
-import { useReadContracts } from "wagmi";
+import { useChainId, useReadContracts } from "wagmi";
 import { NativePSHolder } from "./useNativePSHolders";
 import { decodeBigIntCall } from "../utils/format";
-import { WAGMI_CHAIN } from "../app.config";
 import { ADDRESS, EquityABI } from "@juicedollar/jusd";
 
 type VotesData = {
@@ -11,20 +10,25 @@ type VotesData = {
 };
 
 export const useVotingPowers = (holders: NativePSHolder[]) => {
-	let contractCalls: any[] = [];
-	holders.forEach((holder) => {
-		contractCalls.push({
-			address: ADDRESS[WAGMI_CHAIN.id].equity,
-			abi: EquityABI,
-			functionName: "votes",
-			args: [holder.address],
+	const chainId = useChainId();
+	const contractCalls: any[] = [];
+	if (chainId) {
+		holders.forEach((holder) => {
+			contractCalls.push({
+				chainId,
+				address: ADDRESS[chainId].equity,
+				abi: EquityABI,
+				functionName: "votes",
+				args: [holder.address],
+			});
 		});
-	});
-	contractCalls.push({
-		address: ADDRESS[WAGMI_CHAIN.id].equity,
-		abi: EquityABI,
-		functionName: "totalVotes",
-	});
+		contractCalls.push({
+			chainId,
+			address: ADDRESS[chainId].equity,
+			abi: EquityABI,
+			functionName: "totalVotes",
+		});
+	}
 
 	const { data } = useReadContracts({
 		contracts: contractCalls,

@@ -6,24 +6,27 @@ import { useRouter } from "next/router";
 import { Address } from "viem";
 import { shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useEffect } from "react";
+import { useChainId } from "wagmi";
 import { store } from "../../redux/redux.store";
 import { fetchPositionsList } from "../../redux/slices/positions.slice";
 import { fetchChallengesList } from "../../redux/slices/challenges.slice";
 import { fetchBidsList } from "../../redux/slices/bids.slice";
+import { WAGMI_CHAIN } from "../../app.config";
 import { SectionTitle } from "@components/SectionTitle";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
 export default function Positions() {
+	const chainId = useChainId() ?? WAGMI_CHAIN.id;
 	const router = useRouter();
 	const overwrite: Address = router.query.address as Address;
 	const { t } = useTranslation();
 
 	useEffect(() => {
-		store.dispatch(fetchPositionsList());
-		store.dispatch(fetchChallengesList());
-		store.dispatch(fetchBidsList());
-	}, []);
+		store.dispatch(fetchPositionsList(chainId));
+		store.dispatch(fetchChallengesList(chainId));
+		store.dispatch(fetchBidsList(chainId));
+	}, [chainId]);
 
 	return (
 		<>

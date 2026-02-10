@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useContractUrl } from "../../hooks/useContractUrl";
 import { getLoanDetailsByCollateralAndLiqPrice } from "../../utils/loanCalculations";
 import { erc20Abi } from "viem";
+import { mainnet, testnet } from "@config";
 
 export const PriceManageSection = () => {
 	const router = useRouter();
@@ -165,6 +166,7 @@ export const PriceManageSection = () => {
 			setIsTxOnGoing(true);
 
 			const adjustPriceHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.position,
 				abi: PositionV2ABI,
 				functionName: "adjustPrice",

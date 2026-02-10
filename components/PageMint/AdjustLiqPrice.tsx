@@ -10,16 +10,17 @@ import { SvgIconButton } from "./PlusMinusButtons";
 import Button from "@components/Button";
 import { PositionQuery } from "@juicedollar/api";
 import { SolverPosition } from "../../utils/positionSolver";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { PositionV2ABI } from "@juicedollar/jusd";
 import { writeContract, waitForTransactionReceipt } from "wagmi/actions";
-import { WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG, WAGMI_CHAIN } from "../../app.config";
 import { toast } from "react-toastify";
 import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { store } from "../../redux/redux.store";
 import { fetchPositionsList } from "../../redux/slices/positions.slice";
 import { Address } from "viem";
 import { useReferencePosition } from "../../hooks/useReferencePosition";
+import { mainnet, testnet } from "@config";
 
 interface AdjustLiqPriceProps {
 	position: PositionQuery;
@@ -49,6 +50,7 @@ export const AdjustLiqPrice = ({
 }: AdjustLiqPriceProps) => {
 	const { t } = useTranslation();
 	const router = useRouter();
+	const chainId = useChainId() ?? WAGMI_CHAIN.id;
 	const { address: userAddress } = useAccount();
 
 	const [deltaAmount, setDeltaAmount] = useState<string>("");
@@ -87,12 +89,14 @@ export const AdjustLiqPrice = ({
 
 			const adjustHash = useReference
 				? await writeContract(WAGMI_CONFIG, {
+						chainId: chainId as typeof mainnet.id | typeof testnet.id,
 						address: position.position as Address,
 						abi: PositionV2ABI,
 						functionName: "adjustPriceWithReference",
 						args: [newPrice, reference.address!],
 				  })
 				: await writeContract(WAGMI_CONFIG, {
+						chainId: chainId as typeof mainnet.id | typeof testnet.id,
 						address: position.position as Address,
 						abi: PositionV2ABI,
 						functionName: "adjustPrice",
@@ -104,7 +108,7 @@ export const AdjustLiqPrice = ({
 				success: { render: <TxToast title={t("mint.txs.adjusting_price_success")} rows={[]} /> },
 			});
 
-			store.dispatch(fetchPositionsList());
+			store.dispatch(fetchPositionsList(chainId));
 			refetch();
 			onSuccess();
 		} catch (error) {
@@ -133,11 +137,9 @@ export const AdjustLiqPrice = ({
 						{t("mint.adjust")} {t("mint.liquidation_price")}
 					</div>
 					<div className="flex flex-row items-center">
-						{maxDeltaIncrease > 0n && (
-							<SvgIconButton isSelected={isIncrease} onClick={() => setIsIncrease(true)} SvgComponent={AddCircleOutlineIcon}>
-								{t("mint.increase")}
-							</SvgIconButton>
-						)}
+						<SvgIconButton isSelected={isIncrease} onClick={() => setIsIncrease(true)} SvgComponent={AddCircleOutlineIcon}>
+							{t("mint.increase")}
+						</SvgIconButton>
 						<SvgIconButton isSelected={!isIncrease} onClick={() => setIsIncrease(false)} SvgComponent={RemoveCircleOutlineIcon}>
 							{t("mint.decrease")}
 						</SvgIconButton>

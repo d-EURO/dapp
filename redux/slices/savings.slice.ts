@@ -1,5 +1,5 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
-import { API_CLIENT } from "../../app.config";
+import { getApiClient } from "@utils";
 import {
 	DispatchApiLeadrateInfo,
 	DispatchApiLeadrateProposed,
@@ -84,7 +84,7 @@ export const actions = slice.actions;
 
 // --------------------------------------------------------------------------------
 export const fetchSavings =
-	(account: Address | undefined) =>
+	(chainId: number, account: Address | undefined) =>
 	async (
 		dispatch: Dispatch<
 			| DispatchBoolean
@@ -96,35 +96,33 @@ export const fetchSavings =
 			| DispatchApiSavingsLeaderboard
 		>
 	) => {
-		// ---------------------------------------------------------------
+		const api = getApiClient(chainId);
 		console.log("Loading [REDUX]: Savings");
 
 		try {
-			// ---------------------------------------------------------------
-			// Query raw data from backend api
-			const response1 = await API_CLIENT.get("/savings/leadrate/info");
+			const response1 = await api.get("/savings/leadrate/info");
 			dispatch(slice.actions.setLeadrateInfo(response1.data as ApiLeadrateInfo));
 
-			const response2 = await API_CLIENT.get("/savings/leadrate/proposals");
+			const response2 = await api.get("/savings/leadrate/proposals");
 			dispatch(slice.actions.setLeadrateProposed(response2.data as ApiLeadrateProposed));
 
-			const response3 = await API_CLIENT.get("/savings/leadrate/rates");
+			const response3 = await api.get("/savings/leadrate/rates");
 			dispatch(slice.actions.setLeadrateRate(response3.data as ApiLeadrateRate));
 
-			const response4 = await API_CLIENT.get("/savings/core/info");
+			const response4 = await api.get("/savings/core/info");
 			dispatch(slice.actions.setSavingsInfo(response4.data as ApiSavingsInfo));
 
-			const response6 = await API_CLIENT.get(`/savings/core/user/${zeroAddress}`);
+			const response6 = await api.get(`/savings/core/user/${zeroAddress}`);
 			dispatch(slice.actions.setSavingsAllUserTable(response6.data as ApiSavingsUserTable));
 
 			if (account == undefined) {
 				dispatch(slice.actions.setSavingsUserTable(undefined));
 			} else {
-				const response5 = await API_CLIENT.get(`/savings/core/user/${account}`);
+				const response5 = await api.get(`/savings/core/user/${account}`);
 				dispatch(slice.actions.setSavingsUserTable(response5.data as ApiSavingsUserTable));
 			}
 
-			const response7 = await API_CLIENT.get("/savings/core/info/leaderboard");
+			const response7 = await api.get("/savings/core/info/leaderboard");
 			dispatch(slice.actions.setSavingsLeaderboard(response7.data as ApiSavingsUserLeaderboard[]));
 		} catch (error) {
 			logApiError(error, "savings data");
@@ -142,7 +140,8 @@ export const fetchSavings =
 		dispatch(slice.actions.setLoaded(true));
 	};
 
-export const fetchSavingsCoreInfo = () => async (dispatch: Dispatch<DispatchApiSavingsInfo>) => {
-	const response = await API_CLIENT.get("/savings/core/info");
+export const fetchSavingsCoreInfo = (chainId: number) => async (dispatch: Dispatch<DispatchApiSavingsInfo>) => {
+	const api = getApiClient(chainId);
+	const response = await api.get("/savings/core/info");
 	dispatch(slice.actions.setSavingsInfo(response.data as ApiSavingsInfo));
 };

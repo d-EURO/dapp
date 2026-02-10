@@ -1,18 +1,21 @@
 import ChallengesTable from "@components/PageChallenges/ChallengesTable";
 import Head from "next/head";
 import { useEffect } from "react";
+import { useChainId } from "wagmi";
 import { store } from "../../redux/redux.store";
 import { fetchChallengesList } from "../../redux/slices/challenges.slice";
+import { WAGMI_CHAIN } from "../../app.config";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import { TOKEN_SYMBOL } from "@utils";
 
 export default function ChallengesPage() {
+	const chainId = useChainId() ?? WAGMI_CHAIN.id;
 	const { t } = useTranslation();
 
 	useEffect(() => {
-		store.dispatch(fetchChallengesList());
-	}, []);
+		store.dispatch(fetchChallengesList(chainId));
+	}, [chainId]);
 
 	return (
 		<>

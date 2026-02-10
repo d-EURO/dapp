@@ -23,6 +23,7 @@ import { useRouter as useNavigation } from "next/navigation";
 import { ADDRESS, JuiceDollarABI, MintingHubV2ABI } from "@juicedollar/jusd";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
+import { mainnet, testnet } from "@config";
 
 export default function MonitoringForceSell() {
 	const [isInit, setInit] = useState(false);
@@ -46,12 +47,14 @@ export default function MonitoringForceSell() {
 
 	useEffect(() => {
 		const acc: Address | undefined = account.address;
-		const ADDR = ADDRESS[WAGMI_CHAIN.id];
+		if (!chainId) return;
+		const ADDR = ADDRESS[chainId];
 		if (position === undefined) return;
 
 		const fetchAsync = async function () {
 			if (acc !== undefined) {
 				const _balance = await readContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: ADDR.juiceDollar,
 					abi: JuiceDollarABI,
 					functionName: "balanceOf",
@@ -61,6 +64,7 @@ export default function MonitoringForceSell() {
 			}
 
 			const _price = await readContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDR.mintingHubGateway,
 				abi: MintingHubV2ABI,
 				functionName: "expiredPurchasePrice",
@@ -70,7 +74,7 @@ export default function MonitoringForceSell() {
 		};
 
 		fetchAsync();
-	}, [data, position, account.address]);
+	}, [data, position, account.address, chainId]);
 
 	useEffect(() => {
 		if (isInit) return;
@@ -117,6 +121,7 @@ export default function MonitoringForceSell() {
 			setBidding(true);
 
 			const bidWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubV2ABI,
 				functionName: "buyExpiredCollateral",

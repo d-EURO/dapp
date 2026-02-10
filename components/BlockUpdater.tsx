@@ -1,4 +1,4 @@
-import { useAccount, useBlockNumber } from "wagmi";
+import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { Address } from "viem";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -21,7 +21,8 @@ let initStart: number = 0;
 let loading: boolean = false;
 
 export default function BockUpdater({ children }: { children?: React.ReactElement | React.ReactElement[] }) {
-	const { error, data } = useBlockNumber({ chainId: WAGMI_CHAIN.id, watch: true });
+	const chainId = useChainId() ?? WAGMI_CHAIN.id;
+	const { error, data } = useBlockNumber({ chainId, watch: true });
 	const { address: connectedAddress } = useAccount();
 	const router = useRouter();
 	const overwrite = getPublicViewAddress(router);
@@ -50,13 +51,13 @@ export default function BockUpdater({ children }: { children?: React.ReactElemen
 		initStart = Date.now();
 
 		console.log(`Init [BlockUpdater]: Start loading application data... ${initStart}`);
-		store.dispatch(fetchEcosystem());
-		store.dispatch(fetchPositionsList());
-		store.dispatch(fetchPricesList());
-		store.dispatch(fetchChallengesList());
-		store.dispatch(fetchBidsList());
-		store.dispatch(fetchSavings(latestAddress));
-	}, [initialized, latestAddress]);
+		store.dispatch(fetchEcosystem(chainId));
+		store.dispatch(fetchPositionsList(chainId));
+		store.dispatch(fetchPricesList(chainId));
+		store.dispatch(fetchChallengesList(chainId));
+		store.dispatch(fetchBidsList(chainId));
+		store.dispatch(fetchSavings(chainId, latestAddress));
+	}, [initialized, latestAddress, chainId]);
 
 	// --------------------------------------------------------------------------------
 	// Init done
@@ -85,13 +86,13 @@ export default function BockUpdater({ children }: { children?: React.ReactElemen
 
 		// Block update policy: EACH BLOCK
 		console.log(`Policy [BlockUpdater]: EACH BLOCK ${fetchedLatestHeight}`);
-		store.dispatch(fetchPositionsList());
-		store.dispatch(fetchChallengesList());
-		store.dispatch(fetchBidsList());
+		store.dispatch(fetchPositionsList(chainId));
+		store.dispatch(fetchChallengesList(chainId));
+		store.dispatch(fetchBidsList(chainId));
 		store.dispatch(fetchAccount(latestAddress));
-		store.dispatch(fetchSavings(latestAddress));
-		store.dispatch(fetchPricesList());
-		store.dispatch(fetchEcosystem());
+		store.dispatch(fetchSavings(chainId, latestAddress));
+		store.dispatch(fetchPricesList(chainId));
+		store.dispatch(fetchEcosystem(chainId));
 
 		// Block update policy: EACH 10 BLOCKS
 		if (fetchedLatestHeight >= latestHeight10 + 10) {
@@ -101,7 +102,22 @@ export default function BockUpdater({ children }: { children?: React.ReactElemen
 
 		// Unlock block updates
 		loading = false;
-	}, [initialized, error, data, latestHeight, latestHeight10, latestAddress]);
+	}, [initialized, error, data, latestHeight, latestHeight10, latestAddress, chainId]);
+
+	// --------------------------------------------------------------------------------
+	// Chain change: reset block state and refetch all data for new network
+	useEffect(() => {
+		if (!initialized) return;
+		setLatestHeight(0);
+		setLatestHeight10(0);
+		console.log(`Policy [BlockUpdater]: Chain changed to ${chainId}, refetching API data`);
+		store.dispatch(fetchEcosystem(chainId));
+		store.dispatch(fetchPositionsList(chainId));
+		store.dispatch(fetchPricesList(chainId));
+		store.dispatch(fetchChallengesList(chainId));
+		store.dispatch(fetchBidsList(chainId));
+		store.dispatch(fetchSavings(chainId, latestAddress));
+	}, [chainId, latestAddress]);
 
 	// --------------------------------------------------------------------------------
 	// Connected to correct chain changes
@@ -119,14 +135,14 @@ export default function BockUpdater({ children }: { children?: React.ReactElemen
 			setLatestAddress(undefined);
 			console.log(`Policy [BlockUpdater]: Address reset`);
 			store.dispatch(accountActions.resetAccountState());
-			store.dispatch(fetchSavings(undefined));
+			store.dispatch(fetchSavings(chainId, undefined));
 		} else if (address && (!latestAddress || address != latestAddress)) {
 			setLatestAddress(address as `0x${string}`);
 			console.log(`Policy [BlockUpdater]: Address changed to: ${address}`);
 			store.dispatch(fetchAccount(address as `0x${string}`));
-			store.dispatch(fetchSavings(address as `0x${string}`));
+			store.dispatch(fetchSavings(chainId, address as `0x${string}`));
 		}
-	}, [address, latestAddress]);
+	}, [address, latestAddress, chainId]);
 
 	// --------------------------------------------------------------------------------
 	// Loading Guard

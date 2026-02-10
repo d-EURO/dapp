@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { shortenAddress } from "@utils";
 import { renderErrorToast, renderErrorTxToast, TxToast } from "@components/TxToast";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import Button from "@components/Button";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { VoteData } from "./GovernanceVotersTable";
 import { ADDRESS, EquityABI } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
+import { mainnet, testnet } from "@config";
 interface Props {
 	voter: VoteData;
 	disabled?: boolean;
@@ -19,7 +20,7 @@ interface Props {
 export default function GovernanceVotersAction({ voter, disabled, connectedWallet }: Props) {
 	const [isDelegating, setDelegating] = useState<boolean>(false);
 	const account = useAccount();
-	const chainId = CONFIG_CHAIN().id;
+	const chainId = useChainId();
 	const [isHidden, setHidden] = useState<boolean>(false);
 	const { t } = useTranslation();
 
@@ -32,6 +33,7 @@ export default function GovernanceVotersAction({ voter, disabled, connectedWalle
 			setDelegating(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].equity,
 				abi: EquityABI,
 				functionName: "delegateVoteTo",

@@ -1,16 +1,16 @@
 import { erc20Abi, getAddress, isAddress, zeroAddress } from "viem";
-import { useAccount, useReadContracts } from "wagmi";
+import { useAccount, useChainId, useReadContracts } from "wagmi";
 import { decodeBigIntCall } from "../utils/format";
-import { WAGMI_CHAIN } from "../app.config";
 import { ADDRESS } from "@juicedollar/jusd";
 
 export const useTokenData = (addr: string) => {
 	if (!isAddress(addr)) addr = zeroAddress;
 	const tokenAddress = getAddress(addr);
 	const { address } = useAccount();
+	const chainId = useChainId();
 
 	const account = address || zeroAddress;
-	const mintingHub = ADDRESS[WAGMI_CHAIN.id].mintingHubGateway;
+	const mintingHub = ADDRESS[chainId].mintingHubGateway;
 	const { data, refetch } = useReadContracts({
 		contracts: [
 			{

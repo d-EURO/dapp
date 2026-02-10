@@ -1,16 +1,17 @@
 import { ChallengesQueryItem, PositionQuery, PositionsQueryObjectArray } from "@juicedollar/api";
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { formatBigInt, TOKEN_SYMBOL } from "@utils";
 import { renderErrorToast, renderErrorTxToast, TxToast } from "@components/TxToast";
 import { RootState } from "../../redux/redux.store";
 import { useSelector } from "react-redux";
 import { Address } from "viem";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import Button from "@components/Button";
 import { ADDRESS, MintingHubV2ABI } from "@juicedollar/jusd";
+import { mainnet, testnet } from "@config";
 
 interface Props {
 	challenge: ChallengesQueryItem;
@@ -21,7 +22,7 @@ export default function MyPositionsChallengesCancel({ challenge, hidden }: Props
 	const [isCancelling, setCancelling] = useState<boolean>(false);
 	const positions: PositionsQueryObjectArray = useSelector((state: RootState) => state.positions.mapping?.map || {});
 	const account = useAccount();
-	const chainId = CONFIG_CHAIN().id;
+	const chainId = useChainId();
 	const [isHidden, setHidden] = useState<boolean>(
 		hidden == true || challenge.status !== "Active" || account.address !== challenge.challenger
 	);
@@ -39,6 +40,7 @@ export default function MyPositionsChallengesCancel({ challenge, hidden }: Props
 			setCancelling(true);
 
 			const cancelWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubV2ABI,
 				functionName: "bid",

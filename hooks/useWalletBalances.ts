@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Abi, Address, erc20Abi } from "viem";
-import { useAccount, useReadContracts, useBalance } from "wagmi";
+import { useAccount, useChainId, useReadContracts, useBalance } from "wagmi";
 import { WAGMI_CHAIN } from "../app.config";
 
 type QueryItem = {
@@ -79,7 +79,7 @@ export function useWalletERC20Balances(tokenList: TokenDescriptor[] = [], { acco
 		address: account,
 	});
 
-	const chainId = WAGMI_CHAIN.id as number;
+	const chainId = (useChainId() ?? WAGMI_CHAIN.id) as number;
 	const nativeSymbol = WAGMI_CHAIN.nativeCurrency.symbol;
 	const nativeName = WAGMI_CHAIN.nativeCurrency.name;
 	const nativeDecimals = WAGMI_CHAIN.nativeCurrency.decimals;

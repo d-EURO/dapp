@@ -10,6 +10,7 @@ import { formatUnits } from "viem";
 import { ADDRESS, SavingsGatewayABI } from "@juicedollar/jusd";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { useTranslation } from "next-i18next";
+import { mainnet, testnet } from "@config";
 interface Props {
 	balance: bigint;
 	interest: bigint;
@@ -36,6 +37,7 @@ export default function SavingsActionInterest({ balance, interest, disabled, set
 			 * https://github.com/d-EURO/dapp/blob/main/components/PageSavings/SavingsActionInterest.tsx
 			 */
 			const writeHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsGatewayABI,
 				functionName: "adjust",

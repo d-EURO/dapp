@@ -6,7 +6,7 @@ import {
 	ApiChallengesPositions,
 	ApiChallengesPrices,
 } from "@juicedollar/api";
-import { API_CLIENT } from "../../app.config";
+import { getApiClient } from "@utils";
 import {
 	ChallengesState,
 	DispatchApiChallengesChallengers,
@@ -82,7 +82,7 @@ export const actions = slice.actions;
 
 // --------------------------------------------------------------------------------
 export const fetchChallengesList =
-	() =>
+	(chainId: number) =>
 	async (
 		dispatch: Dispatch<
 			| DispatchBoolean
@@ -93,25 +93,23 @@ export const fetchChallengesList =
 			| DispatchApiChallengesPrices
 		>
 	) => {
-		// ---------------------------------------------------------------
+		const api = getApiClient(chainId);
 		console.log("Loading [REDUX]: ChallengesList");
 
 		try {
-			// ---------------------------------------------------------------
-			// Query raw data from backend api
-			const response1 = await API_CLIENT.get("/challenges/list");
+			const response1 = await api.get("/challenges/list");
 			dispatch(slice.actions.setList(response1.data as ApiChallengesListing));
 
-			const responseMapping = await API_CLIENT.get("/challenges/mapping");
+			const responseMapping = await api.get("/challenges/mapping");
 			dispatch(slice.actions.setMapping(responseMapping.data as ApiChallengesMapping));
 
-			const response2 = await API_CLIENT.get("/challenges/challengers");
+			const response2 = await api.get("/challenges/challengers");
 			dispatch(slice.actions.setChallengers(response2.data as ApiChallengesChallengers));
 
-			const response3 = await API_CLIENT.get("/challenges/positions");
+			const response3 = await api.get("/challenges/positions");
 			dispatch(slice.actions.setPositions(response3.data as ApiChallengesPositions));
 
-			const response4 = await API_CLIENT.get("/challenges/prices");
+			const response4 = await api.get("/challenges/prices");
 			dispatch(slice.actions.setPrices(response4.data as ApiChallengesPrices));
 		} catch (error) {
 			logApiError(error, "challenges data");

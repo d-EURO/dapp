@@ -1,15 +1,16 @@
 import { MinterQuery } from "@juicedollar/api";
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { shortenAddress } from "@utils";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import Button from "@components/Button";
 import { Address } from "viem";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { ADDRESS, JuiceDollarABI } from "@juicedollar/jusd";
+import { mainnet, testnet } from "@config";
 
 interface Props {
 	minter: MinterQuery;
@@ -19,7 +20,7 @@ interface Props {
 export default function GovernanceMintersAction({ minter, disabled }: Props) {
 	const [isVetoing, setVetoing] = useState<boolean>(false);
 	const account = useAccount();
-	const chainId = CONFIG_CHAIN().id;
+	const chainId = useChainId();
 	const [isHidden, setHidden] = useState<boolean>(false);
 
 	const handleOnClick = async function (e: any) {
@@ -34,6 +35,7 @@ export default function GovernanceMintersAction({ minter, disabled }: Props) {
 			setVetoing(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].juiceDollar,
 				abi: JuiceDollarABI,
 				functionName: "denyMinter",

@@ -2,21 +2,22 @@ import Head from "next/head";
 import { ReactNode } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { useIsMainnet } from "../hooks/useWalletConnectStats";
+import { TestnetTopBar } from "./TestnetBanner";
+import { useRedirectOnChainChange } from "../hooks/useRedirectOnChainChange";
 
 type LayoutProps = {
 	children: NonNullable<ReactNode>;
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-	const isMainnet = useIsMainnet();
-
+	useRedirectOnChainChange();
 	return (
 		<div className="flex flex-col min-h-screen">
 			<Head>
 				<title>JUSD - Home</title>
 			</Head>
 
+			<TestnetTopBar />
 			<Navbar />
 
 			<main className="flex-1 pt-24 pb-16">

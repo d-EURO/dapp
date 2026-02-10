@@ -20,6 +20,7 @@ import { useChainId } from "wagmi";
 import { ADDRESS, SavingsGatewayABI } from "@juicedollar/jusd";
 import { readContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
+import { mainnet, testnet } from "@config";
 import { useExpandableTable } from "@hooks";
 
 interface ReferralData {
@@ -103,6 +104,7 @@ export default function YourReferralsTable() {
 				const promises = referredAddresses.map(async (address) => {
 					try {
 						const accruedInterest = await readContract(WAGMI_CONFIG, {
+							chainId: chainId as typeof mainnet.id | typeof testnet.id,
 							address: ADDRESS[chainId].savingsGateway,
 							abi: SavingsGatewayABI,
 							functionName: "accruedInterest",

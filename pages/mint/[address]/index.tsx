@@ -13,7 +13,8 @@ import { toast } from "react-toastify";
 import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import DateInput from "@components/Input/DateInput";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
-import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
+import { WAGMI_CONFIG } from "../../../app.config";
+import { mainnet, testnet } from "@config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import Link from "next/link";
@@ -69,6 +70,7 @@ export default function PositionBorrow({}) {
 
 		const fetchAsync = async function () {
 			const _balance = await readContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral,
 				abi: erc20Abi,
 				functionName: "balanceOf",
@@ -77,16 +79,17 @@ export default function PositionBorrow({}) {
 			setUserBalance(_balance);
 
 			const _allowance = await readContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral,
 				abi: erc20Abi,
 				functionName: "allowance",
-				args: [acc, ADDRESS[WAGMI_CHAIN.id].mintingHubGateway],
+				args: [acc, ADDRESS[chainId].mintingHubGateway],
 			});
 			setUserAllowance(_allowance);
 		};
 
 		fetchAsync();
-	}, [data, account.address, position]);
+	}, [data, account.address, position, chainId]);
 
 	// ---------------------------------------------------------------------------
 	// dont continue if position not loaded correctly
@@ -175,6 +178,7 @@ export default function PositionBorrow({}) {
 			setApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral as Address,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -218,6 +222,7 @@ export default function PositionBorrow({}) {
 			let cloneWriteHash: Hash = zeroHash;
 
 			cloneWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubGatewayABI,
 				functionName: "clone",

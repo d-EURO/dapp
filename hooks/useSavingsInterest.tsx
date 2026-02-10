@@ -13,6 +13,7 @@ import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/ac
 import { WAGMI_CONFIG } from "../app.config";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
 import { gql, useQuery } from "@apollo/client";
+import { mainnet, testnet } from "@config";
 
 export const useSavingsInterest = () => {
 	const [amount, setAmount] = useState(0n);
@@ -53,43 +54,60 @@ export const useSavingsInterest = () => {
 	useEffect(() => {
 		if (account === zeroAddress || isClaiming) return;
 
-		const fetchAsync = async function () {
-			const [_userSavings, _userTicks] = await readContract(WAGMI_CONFIG, {
-				address: ADDR.savingsGateway,
-				abi: SavingsGatewayABI,
-				functionName: "savings",
-				args: [account as `0x${string}`],
-			});
-			setUserSavingsBalance(_userSavings);
+		if (!ADDR?.savingsGateway) {
+			setUserSavingsBalance(0n);
+			setInterestToBeCollected(0n);
+			setUserSavingsInterest(0n);
+			if (!isLoaded) setAmount(0n);
+			setLoaded(true);
+			return;
+		}
 
-			const _current = await readContract(WAGMI_CONFIG, {
-				address: ADDR.savingsGateway,
-				abi: SavingsGatewayABI,
-				functionName: "currentTicks",
-			});
+		(async () => {
+			try {
+				const [_userSavings, _userTicks] = await readContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
+					address: ADDR.savingsGateway,
+					abi: SavingsGatewayABI,
+					functionName: "savings",
+					args: [account as `0x${string}`],
+				});
+				setUserSavingsBalance(_userSavings);
 
-			const accruedInterest = await readContract(WAGMI_CONFIG, {
-				address: ADDR.savingsGateway,
-				abi: SavingsGatewayABI,
-				functionName: "accruedInterest",
-				args: [account as `0x${string}`],
-			});
-			setInterestToBeCollected(accruedInterest);
+				const _current = await readContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
+					address: ADDR.savingsGateway,
+					abi: SavingsGatewayABI,
+					functionName: "currentTicks",
+				});
+				const accruedInterest = await readContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
+					address: ADDR.savingsGateway,
+					abi: SavingsGatewayABI,
+					functionName: "accruedInterest",
+					args: [account as `0x${string}`],
+				});
+				setInterestToBeCollected(accruedInterest);
 
-			const _locktime = _userTicks >= _current && leadrate > 0n ? (_userTicks - _current) / BigInt(leadrate) : 0n;
-			const _tickDiff = _current - _userTicks;
-			const _interest = _userTicks == 0n || _locktime > 0 ? 0n : (_tickDiff * _userSavings) / (1_000_000n * 365n * 24n * 60n * 60n);
+				const _locktime = _userTicks >= _current && leadrate > 0n ? (_userTicks - _current) / BigInt(leadrate) : 0n;
+				const _tickDiff = _current - _userTicks;
+				const _interest =
+					_userTicks == 0n || _locktime > 0 ? 0n : (_tickDiff * _userSavings) / (1_000_000n * 365n * 24n * 60n * 60n);
+				setUserSavingsInterest(_interest);
 
-			setUserSavingsInterest(_interest);
-
-			if (!isLoaded) {
-				setAmount(_userSavings);
+				if (!isLoaded) {
+					setAmount(_userSavings);
+					setLoaded(true);
+				}
+			} catch {
+				setUserSavingsBalance(0n);
+				setInterestToBeCollected(0n);
+				setUserSavingsInterest(0n);
+				if (!isLoaded) setAmount(0n);
 				setLoaded(true);
 			}
-		};
-
-		fetchAsync();
-	}, [data, account, ADDR, isLoaded, leadrate, isClaiming, refetchSignal]);
+		})();
+	}, [data, account, ADDR, isLoaded, leadrate, isClaiming, refetchSignal, chainId]);
 
 	useEffect(() => {
 		setLoaded(false);
@@ -107,6 +125,7 @@ export const useSavingsInterest = () => {
 			setIsClaiming(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDR.savingsGateway,
 				abi: SavingsGatewayABI,
 				functionName: "adjust",
@@ -155,6 +174,7 @@ export const useSavingsInterest = () => {
 			setIsReinvesting(true);
 
 			const reinvestHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsGatewayABI,
 				functionName: "refreshBalance",

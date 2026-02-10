@@ -1,7 +1,6 @@
-import { useAccount, useReadContracts } from "wagmi";
+import { useAccount, useChainId, useReadContracts } from "wagmi";
 import { decodeBigIntCall } from "@utils";
 import { Address, erc20Abi } from "viem";
-import { WAGMI_CHAIN } from "../app.config";
 import { ADDRESS, StablecoinBridgeABI } from "@juicedollar/jusd";
 
 const getTokenContractBasics = (chainId: number, address: Address, account: Address, bridgeAddress: Address) => {
@@ -75,7 +74,7 @@ const parseStablecoinStats = (data: any, fromIndex: number) => {
 };
 
 export const useSwapStats = () => {
-	const chainId = WAGMI_CHAIN.id as number;
+	const chainId = useChainId();
 	const { address } = useAccount();
 	const account = address || "0x0";
 
