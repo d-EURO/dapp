@@ -18,6 +18,7 @@ import { InputTitle } from "@components/Input/InputTitle";
 import { MaxButton } from "@components/Input/MaxButton";
 import { TokenBalance } from "../../hooks/useWalletBalances";
 import { TokenInteractionSide } from "./EquityInteractionCard";
+import { mainnet, testnet } from "@config";
 interface Props {
 	openSelector: (tokenInteractionSide: TokenInteractionSide) => void;
 	selectedFromToken: TokenBalance | undefined;
@@ -63,6 +64,7 @@ export default function InteractionStablecoinAndSavingVault({
 			setApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].juiceDollar,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -105,6 +107,7 @@ export default function InteractionStablecoinAndSavingVault({
 	const handleDeposit = async () => {
 		try {
 			const depositWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsVaultJUSD,
 				abi: SavingsVaultJUSDABI,
 				functionName: "deposit",
@@ -179,6 +182,7 @@ export default function InteractionStablecoinAndSavingVault({
 		try {
 			setRedeeming(true);
 			const redeemWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsVaultJUSD,
 				abi: SavingsVaultJUSDABI,
 				functionName: "redeem",

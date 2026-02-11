@@ -19,13 +19,13 @@ import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutl
 import { InputTitle } from "@components/Input/InputTitle";
 import { MaxButton } from "@components/Input/MaxButton";
 import { TokenModalRowButton, TokenSelectModal } from "@components/TokenSelectModal";
+import { useChainId } from "wagmi";
+import { mainnet, testnet } from "@config";
 
 enum TokenInteractionSide {
 	INPUT = "input",
 	OUTPUT = "output",
 }
-
-const STABLECOIN_SYMBOLS = ["SUSD"];
 
 const noTokenMeta = {
 	symbol: "",
@@ -50,8 +50,10 @@ const getAmountWithLeastPrecision = (amount: bigint, fromDecimals: bigint, toDec
 };
 
 export default function Swap() {
-	const [fromSymbol, setFromSymbol] = useState(STABLECOIN_SYMBOLS[0]);
-	const [fromOptions, setFromOptions] = useState(STABLECOIN_SYMBOLS);
+	const swapStats = useSwapStats();
+	const stablecoinSymbols = Object.keys(swapStats.bridgeTokens);
+	const [fromSymbol, setFromSymbol] = useState("");
+	const [fromOptions, setFromOptions] = useState<string[]>([]);
 	const [toSymbol, setToSymbol] = useState(TOKEN_SYMBOL);
 	const [toOptions, setToOptions] = useState([TOKEN_SYMBOL]);
 	const [amount, setAmount] = useState(0n);
@@ -59,8 +61,17 @@ export default function Swap() {
 	const [isTxOnGoing, setTxOnGoing] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [interactionSide, setInteractionSide] = useState<TokenInteractionSide>();
-	const swapStats = useSwapStats();
 	const { t } = useTranslation();
+	const chainId = useChainId();
+
+	// Sync fromSymbol/fromOptions when bridge tokens load from package
+	useEffect(() => {
+		if (stablecoinSymbols.length === 0) return;
+		setFromOptions(stablecoinSymbols);
+		if (!fromSymbol || (fromSymbol !== TOKEN_SYMBOL && !stablecoinSymbols.includes(fromSymbol))) {
+			setFromSymbol(stablecoinSymbols[0]);
+		}
+	}, [stablecoinSymbols.join(","), fromSymbol]);
 
 	const getSelectedStablecoinSymbol = useCallback(() => {
 		return fromSymbol === TOKEN_SYMBOL ? toSymbol : fromSymbol;
@@ -68,28 +79,27 @@ export default function Swap() {
 
 	const getTokenMetaBySymbol = useCallback(
 		(symbol: string) => {
-			switch (symbol) {
-				case TOKEN_SYMBOL:
-					const userAllowance = swapStats.dEuro.bridgeAllowance;
-					return {
-						symbol: TOKEN_SYMBOL,
-						userBal: swapStats.dEuro.userBal,
-						userAllowance: userAllowance,
-						limit: 0n,
-						minted: 0n,
-						remaining: 0n,
-						decimals: swapStats.dEuro.decimals,
-						bridgeBal: 0n,
-						contractBridgeAddress: "0x0",
-						contractAddress: swapStats.dEuro.contractAddress,
-					};
-				case "SUSD":
-					return swapStats.startUSD;
-				default:
-					return noTokenMeta;
+			if (symbol === TOKEN_SYMBOL) {
+				const stablecoinSymbol = getSelectedStablecoinSymbol();
+				const bridgeAddr = swapStats.bridgeTokens[stablecoinSymbol]?.contractBridgeAddress ?? "0x0";
+				const userAllowance = bridgeAddr !== "0x0" ? swapStats.jusdData.bridgeAllowances[bridgeAddr] ?? 0n : 0n;
+				return {
+					symbol: TOKEN_SYMBOL,
+					userBal: swapStats.jusdData.userBal,
+					userAllowance,
+					limit: 0n,
+					minted: 0n,
+					remaining: 0n,
+					decimals: swapStats.jusdData.decimals,
+					bridgeBal: 0n,
+					contractBridgeAddress: "0x0",
+					contractAddress: swapStats.jusdData.contractAddress,
+				};
 			}
+			const token = swapStats.bridgeTokens[symbol];
+			return token ?? noTokenMeta;
 		},
-		[swapStats]
+		[swapStats, getSelectedStablecoinSymbol]
 	);
 
 	const onChangeAmount = useCallback(
@@ -180,6 +190,7 @@ export default function Swap() {
 			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress as `0x${string}`;
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: fromContractAddress as `0x${string}`,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -225,6 +236,7 @@ export default function Swap() {
 			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress as `0x${string}`;
 
 			const mintWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: bridgeAddress,
 				abi: StablecoinBridgeABI,
 				functionName: "mint",
@@ -274,6 +286,7 @@ export default function Swap() {
 			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress as `0x${string}`;
 
 			const burnWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: bridgeAddress,
 				abi: StablecoinBridgeABI,
 				functionName: "burn",
@@ -443,7 +456,9 @@ export default function Swap() {
 							/>
 							<div className="mx-auto mt-12 max-w-full flex-col">
 								<GuardToAllowedChainBtn>
-									{amount > fromTokenMeta.userAllowance ? (
+									{!fromSymbol ? (
+										<Button disabled>{t("common.loading")}</Button>
+									) : amount > fromTokenMeta.userAllowance ? (
 										<Button isLoading={isTxOnGoing} onClick={() => handleApprove()}>
 											{t("common.approve")}
 										</Button>
@@ -464,16 +479,21 @@ export default function Swap() {
 			</div>
 			<TokenSelectModal title={t("swap.select_stablecoin")} isOpen={isModalOpen} setIsOpen={setIsModalOpen}>
 				<div className="h-full">
-					<TokenModalRowButton
-						currency="$"
-						symbol={swapStats.startUSD.symbol}
-						price={formatCurrency(formatUnits(swapStats.startUSD.userBal, Number(swapStats.startUSD.decimals)), 2, 2) as string}
-						balance={
-							formatCurrency(formatUnits(swapStats.startUSD.userBal, Number(swapStats.startUSD.decimals)), 2, 2) as string
-						}
-						name={swapStats.startUSD.symbol}
-						onClick={() => handleSelectToken(swapStats.startUSD.symbol)}
-					/>
+					{(interactionSide === TokenInteractionSide.INPUT ? fromOptions : toOptions).map((symbol) => {
+						const token = getTokenMetaBySymbol(symbol);
+						if (!token || !token.symbol) return null;
+						return (
+							<TokenModalRowButton
+								key={symbol}
+								currency="$"
+								symbol={token.symbol}
+								price={formatCurrency(formatUnits(token.userBal, Number(token.decimals)), 2, 2) as string}
+								balance={formatCurrency(formatUnits(token.userBal, Number(token.decimals)), 2, 2) as string}
+								name={token.symbol}
+								onClick={() => handleSelectToken(token.symbol)}
+							/>
+						);
+					})}
 				</div>
 			</TokenSelectModal>
 		</>

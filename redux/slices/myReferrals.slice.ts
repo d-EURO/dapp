@@ -1,5 +1,5 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
-import { API_CLIENT } from "../../app.config";
+import { getApiClient } from "@utils";
 import { getFrontendCodeFromReferralName, getReferralLink, getReferralNameFromFrontendCode } from "@utils";
 import { ReferralsState, DispatchString, DispatchBoolean, DispatchReferralsState, DispatchFrontendCode } from "./myReferrals.types";
 
@@ -60,11 +60,12 @@ export const clearMyReferralData = () => async (dispatch: Dispatch) => {
 	dispatch(slice.actions.setMyFrontendCode(null));
 };
 
-export const fetchReferralData = () => async (dispatch: Dispatch) => {
+export const fetchReferralData = (chainId: number) => async (dispatch: Dispatch) => {
+	const api = getApiClient(chainId);
 	console.log("Loading [REDUX]: ReferralData");
 
 	try {
-		const response = await API_CLIENT.get("/referrals/my-data");
+		const response = await api.get("/referrals/my-data");
 		dispatch(slice.actions.setReferralData(response.data));
 		dispatch(slice.actions.setLoaded(true));
 	} catch (error) {

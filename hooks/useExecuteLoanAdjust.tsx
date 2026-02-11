@@ -6,10 +6,12 @@ import { formatPositionValue, normalizeTokenSymbol } from "@utils";
 import { renderErrorTxToast } from "../components/TxToast";
 import { fetchPositionsList } from "../redux/slices/positions.slice";
 import { store } from "../redux/redux.store";
+import { mainnet, testnet } from "@config";
 import { executeTx } from "./useApproveToken";
 import { SolverOutcome } from "../utils/positionSolver";
 
 interface ExecuteLoanAdjustParams {
+	chainId: number;
 	outcome: SolverOutcome;
 	position: PositionQuery;
 	principal: bigint;
@@ -19,6 +21,7 @@ interface ExecuteLoanAdjustParams {
 }
 
 export const executeLoanAdjust = async ({
+	chainId,
 	outcome,
 	position,
 	principal,
@@ -71,6 +74,7 @@ export const executeLoanAdjust = async ({
 	// Case 3: call repay() first
 	if (needsSeparateRepay) {
 		await executeTx({
+			chainId: chainId as typeof mainnet.id | typeof testnet.id,
 			contractParams: {
 				address: posAddr,
 				abi: PositionV2ABI,
@@ -83,8 +87,8 @@ export const executeLoanAdjust = async ({
 		});
 	}
 
-	// All cases: call adjust()
 	await executeTx({
+		chainId: chainId as typeof mainnet.id | typeof testnet.id,
 		contractParams: {
 			address: posAddr,
 			abi: PositionV2ABI,
@@ -97,7 +101,7 @@ export const executeLoanAdjust = async ({
 		rows,
 	});
 
-	store.dispatch(fetchPositionsList());
+	store.dispatch(fetchPositionsList(chainId));
 	onSuccess();
 };
 

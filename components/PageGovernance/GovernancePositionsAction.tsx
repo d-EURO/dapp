@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { CONFIG, WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { shortenAddress } from "@utils";
-import { renderErrorToast, renderErrorTxToast, TxToast } from "@components/TxToast";
-import { useAccount } from "wagmi";
+import { renderErrorTxToast, TxToast } from "@components/TxToast";
+import { useAccount, useChainId } from "wagmi";
 import Button from "@components/Button";
 import { Address, zeroAddress } from "viem";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { PositionQuery } from "@juicedollar/api";
 import { PositionV2ABI } from "@juicedollar/jusd";
+import { mainnet, testnet } from "@config";
 
 interface Props {
 	position: PositionQuery;
@@ -20,6 +21,7 @@ export default function GovernancePositionsAction({ position, disabled }: Props)
 	const [isDenying, setDenying] = useState<boolean>(false);
 	const [isHidden, setHidden] = useState<boolean>(false);
 	const account = useAccount();
+	const chainId = useChainId();
 
 	const handleOnClick = async function (e: any) {
 		e.preventDefault();
@@ -32,6 +34,7 @@ export default function GovernancePositionsAction({ position, disabled }: Props)
 			setDenying(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.position,
 				abi: PositionV2ABI,
 				functionName: "deny",

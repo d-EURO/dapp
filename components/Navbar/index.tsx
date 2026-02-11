@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Link from "next/link";
+import { useChainId } from "wagmi";
 import WalletConnect from "./WalletConnect";
 import NavButton from "./NavButton";
 import { useIsMainnet } from "@hooks";
-import { CONFIG } from "@config";
+import { CONFIG, testnet } from "@config";
 import { GlobalPreferences } from "./GlobalPreferences";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";
@@ -39,9 +40,15 @@ export function NavItems() {
 
 export default function Navbar() {
 	const [isNavBarOpen, setIsNavBarOpen] = useState(false);
+	const chainId = useChainId();
+	const hasTestnetBar = chainId === testnet.id;
 
 	return (
-		<div className="fixed top-0 left-0 right-0 z-20 md:bg-white md:border-b md:border-menu-separator md:bg-menu-back md:backdrop-blur">
+		<div
+			className={`fixed left-0 right-0 z-20 md:bg-white md:border-b md:border-menu-separator md:bg-menu-back md:backdrop-blur ${
+				hasTestnetBar ? "top-8" : "top-0"
+			}`}
+		>
 			<div className="mx-auto max-w-6xl px-4 md:max-w-[1440px] md:px-0">
 				<div className="w-full bg-white border-b border-menu-separator bg-menu-back backdrop-blur md:bg-transparent md:border-0">
 					<header className="flex w-full h-16 px-4 md:px-5 justify-between items-center shrink-0">

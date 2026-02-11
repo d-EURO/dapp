@@ -10,16 +10,17 @@ import { SvgIconButton } from "./PlusMinusButtons";
 import { MaxButton } from "@components/Input/MaxButton";
 import Button from "@components/Button";
 import { PositionQuery } from "@juicedollar/api";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { PositionV2ABI } from "@juicedollar/jusd";
 import { writeContract, waitForTransactionReceipt, getPublicClient } from "wagmi/actions";
-import { WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG, WAGMI_CHAIN } from "../../app.config";
 import { toast } from "react-toastify";
 import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { store } from "../../redux/redux.store";
 import { fetchPositionsList } from "../../redux/slices/positions.slice";
 import { Tooltip } from "flowbite-react";
 import { approveToken } from "../../hooks/useApproveToken";
+import { mainnet, testnet } from "@config";
 
 enum StrategyKey {
 	HIGHER_PRICE = "higherPrice",
@@ -63,6 +64,7 @@ export const AdjustCollateral = ({
 }: AdjustCollateralProps) => {
 	const { t } = useTranslation();
 	const router = useRouter();
+	const chainId = useChainId() ?? WAGMI_CHAIN.id;
 	const { address: userAddress } = useAccount();
 	const isNativeWrappedPosition = NATIVE_WRAPPED_SYMBOLS.includes(position.collateralSymbol?.toLowerCase() || "");
 
@@ -190,6 +192,7 @@ export const AdjustCollateral = ({
 			tokenAddress: position.stablecoinAddress as Address,
 			spender: position.position as Address,
 			amount: calculatedRepayAmount * 10n,
+			chainId: chainId as typeof mainnet.id | typeof testnet.id,
 			t,
 			onSuccess: refetchAllowance,
 		});
@@ -215,6 +218,7 @@ export const AdjustCollateral = ({
 
 			if (isIncrease) {
 				const adjustHash = await writeContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: position.position as Address,
 					abi: PositionV2ABI,
 					functionName: "adjust",
@@ -253,6 +257,7 @@ export const AdjustCollateral = ({
 				// Case 3: call repay() first
 				if (needsSeparateRepay) {
 					const repayHash = await writeContract(WAGMI_CONFIG, {
+						chainId: chainId as typeof mainnet.id | typeof testnet.id,
 						address: position.position as Address,
 						abi: PositionV2ABI,
 						functionName: "repay",
@@ -279,7 +284,9 @@ export const AdjustCollateral = ({
 				}
 
 				// All cases: call adjust()
-				const publicClient = getPublicClient(WAGMI_CONFIG);
+				const publicClient = getPublicClient(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
+				});
 				const estimatedGas =
 					(await publicClient
 						?.estimateContractGas({
@@ -292,6 +299,7 @@ export const AdjustCollateral = ({
 						.catch(() => 300_000n)) ?? 300_000n;
 
 				const withdrawHash = await writeContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: position.position as Address,
 					abi: PositionV2ABI,
 					functionName: "adjust",
@@ -313,7 +321,7 @@ export const AdjustCollateral = ({
 				});
 			}
 
-			store.dispatch(fetchPositionsList());
+			store.dispatch(fetchPositionsList(chainId));
 			if (isClosingPosition) {
 				router.push("/dashboard");
 			} else {

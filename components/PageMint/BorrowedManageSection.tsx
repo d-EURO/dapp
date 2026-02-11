@@ -29,6 +29,7 @@ import Link from "next/link";
 import { useContractUrl } from "../../hooks/useContractUrl";
 import { calculateOptimalRepayAmount, calculateTimeBuffer } from "../../utils/dynamicRepayCalculations";
 import { ErrorDisplay } from "@components/ErrorDisplay";
+import { mainnet, testnet } from "@config";
 
 export const BorrowedManageSection = () => {
 	const [amount, setAmount] = useState("");
@@ -193,6 +194,7 @@ export const BorrowedManageSection = () => {
 			const { loanAmount } = getLoanDetailsByCollateralAndYouGetAmount(position, balanceOf, BigInt(amount));
 
 			const borrowMoreHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.position,
 				abi: PositionV2ABI,
 				functionName: "mint",
@@ -233,6 +235,7 @@ export const BorrowedManageSection = () => {
 			setIsTxOnGoing(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.stablecoinAddress as Address,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -280,6 +283,7 @@ export const BorrowedManageSection = () => {
 
 			if (isPayingFullDebt) {
 				payBackHash = await writeContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: position.position,
 					abi: PositionV2ABI,
 					functionName: "repayFull",
@@ -298,6 +302,7 @@ export const BorrowedManageSection = () => {
 				});
 
 				payBackHash = await writeContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: position.position,
 					abi: PositionV2ABI,
 					functionName: "repay",

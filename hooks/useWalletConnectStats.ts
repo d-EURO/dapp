@@ -1,7 +1,6 @@
 import { useWeb3ModalState } from "@web3modal/wagmi/react";
-import { mainnet } from "viem/chains";
-import { useAccount } from "wagmi";
-import { WAGMI_CHAIN } from "../app.config";
+import { useAccount, useChainId } from "wagmi";
+import { mainnet } from "@config";
 
 export const useIsConnectedToCorrectChain = (): boolean => {
 	const { address, chain, isConnected } = useAccount();
@@ -12,5 +11,5 @@ export const useIsConnectedToCorrectChain = (): boolean => {
 };
 
 export const useIsMainnet = (): boolean => {
-	return (WAGMI_CHAIN.id as number) === (mainnet.id as number);
+	return useChainId() === mainnet.id;
 };

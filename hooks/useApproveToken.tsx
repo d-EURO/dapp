@@ -3,18 +3,21 @@ import { writeContract, waitForTransactionReceipt } from "@wagmi/core";
 import { toast } from "react-toastify";
 import { WAGMI_CONFIG } from "../app.config";
 import { TxToast, TxToastRowType, renderErrorTxToast } from "../components/TxToast";
+import { mainnet, testnet } from "@config";
 
 interface ApproveParams {
 	tokenAddress: Address;
 	spender: Address;
 	amount: bigint;
+	chainId: typeof mainnet.id | typeof testnet.id;
 	t: (key: string) => string;
 	onSuccess?: () => void;
 }
 
-export const approveToken = async ({ tokenAddress, spender, amount, t, onSuccess }: ApproveParams): Promise<boolean> => {
+export const approveToken = async ({ tokenAddress, spender, amount, chainId, t, onSuccess }: ApproveParams): Promise<boolean> => {
 	try {
 		const hash = await writeContract(WAGMI_CONFIG, {
+			chainId: chainId as typeof mainnet.id | typeof testnet.id,
 			address: tokenAddress,
 			abi: erc20Abi,
 			functionName: "approve",
@@ -35,14 +38,24 @@ export const approveToken = async ({ tokenAddress, spender, amount, t, onSuccess
 };
 
 interface ExecuteTxParams {
+	chainId: typeof mainnet.id | typeof testnet.id;
 	contractParams: any;
 	pendingTitle: string;
 	successTitle: string;
 	rows?: TxToastRowType[];
 }
 
-export const executeTx = async ({ contractParams, pendingTitle, successTitle, rows = [] }: ExecuteTxParams): Promise<`0x${string}`> => {
-	const hash = await writeContract(WAGMI_CONFIG, contractParams);
+export const executeTx = async ({
+	chainId,
+	contractParams,
+	pendingTitle,
+	successTitle,
+	rows = [],
+}: ExecuteTxParams): Promise<`0x${string}`> => {
+	const hash = await writeContract(WAGMI_CONFIG, {
+		chainId,
+		...contractParams,
+	});
 	const toastRows = [...rows, { title: "Transaction", hash }];
 	await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash, confirmations: 1 }), {
 		pending: { render: <TxToast title={pendingTitle} rows={toastRows} /> },

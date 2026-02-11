@@ -1,12 +1,4 @@
 import { gql, useQuery } from "@apollo/client";
-import { ApolloClient, InMemoryCache } from "@apollo/client";
-import { CONFIG } from "@config";
-
-// Create a separate Apollo Client for Ponder endpoint
-const ponderClient = new ApolloClient({
-	uri: CONFIG.ponder,
-	cache: new InMemoryCache(),
-});
 
 export const useTotalSavingsUsers = () => {
 	// Query the SavingsStats entity which contains aggregated user count
@@ -20,7 +12,6 @@ export const useTotalSavingsUsers = () => {
 			}
 		`,
 		{
-			client: ponderClient,
 			pollInterval: 60000, // Poll every 60 seconds
 			fetchPolicy: "cache-and-network",
 		}

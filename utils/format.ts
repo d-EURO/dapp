@@ -116,12 +116,12 @@ export const shortenHash = (hash: Hash): string => {
 };
 
 export const decodeBigIntCall = (data: any): bigint => {
-	if (data.error || !data.result) return 0n;
+	if (!data || data.error || !data.result) return 0n;
 	else return BigInt(String(data.result));
 };
 
 export const decodeStringCall = (data: any): string => {
-	if (data.error) return "";
+	if (!data || data.error) return "";
 	else return String(data.result);
 };
 

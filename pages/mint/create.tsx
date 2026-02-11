@@ -12,11 +12,11 @@ import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/ac
 import { formatBigInt, shortenAddress, TOKEN_SYMBOL, SOCIAL } from "@utils";
 import { toast } from "react-toastify";
 import { TxToast, renderErrorToast, renderErrorTxToast } from "@components/TxToast";
-import Link from "next/link";
 import NormalInput from "@components/Input/NormalInput";
 import AddressInput from "@components/Input/AddressInput";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
-import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG } from "../../app.config";
+import { mainnet, testnet } from "@config";
 import { ADDRESS, MintingHubGatewayABI } from "@juicedollar/jusd";
 import { useTranslation, Trans } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -54,7 +54,7 @@ export default function PositionCreate({}) {
 	const collTokenData = useTokenData(collateralAddress);
 	const userBalance = useUserBalance();
 
-	const { allowance: deuroAllowance, refetch: refetchDeuroAllowance } = useTokenData(ADDRESS[WAGMI_CHAIN.id].juiceDollar);
+	const { allowance: deuroAllowance, refetch: refetchDeuroAllowance } = useTokenData(ADDRESS[chainId].juiceDollar);
 
 	const { t } = useTranslation();
 
@@ -66,16 +66,17 @@ export default function PositionCreate({}) {
 
 		const fetchAsync = async function () {
 			const _allowance = await readContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: collateralAddress as Address,
 				abi: erc20Abi,
 				functionName: "allowance",
-				args: [acc, ADDRESS[WAGMI_CHAIN.id].mintingHubGateway],
+				args: [acc, ADDRESS[chainId].mintingHubGateway],
 			});
 			setUserAllowance(_allowance);
 		};
 
 		fetchAsync();
-	}, [data, account.address, collateralAddress, isConfirming]);
+	}, [data, account.address, collateralAddress, isConfirming, chainId]);
 
 	useEffect(() => {
 		if (isAddress(collateralAddress)) {
@@ -217,6 +218,7 @@ export default function PositionCreate({}) {
 			setIsConfirming("approve");
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: collTokenData.address,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -258,6 +260,7 @@ export default function PositionCreate({}) {
 			setIsConfirming("approveDeuro");
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].juiceDollar,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -300,6 +303,7 @@ export default function PositionCreate({}) {
 		try {
 			setIsConfirming("open");
 			const openWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubGatewayABI,
 				functionName: "openPosition",

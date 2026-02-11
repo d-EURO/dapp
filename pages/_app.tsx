@@ -11,13 +11,19 @@ import { Provider as ReduxProvider } from "react-redux";
 import { ToastContainer } from "react-toastify";
 import Web3ModalProvider from "@components/Web3Modal";
 import { store } from "../redux/redux.store";
-import { PONDER_CLIENT } from "../app.config";
+import { getPonderClient, WAGMI_CHAIN } from "../app.config";
 import BlockUpdater from "@components/BlockUpdater";
+import { useChainId } from "wagmi";
 import USGovSanctionList from "@components/USGovSanctionList";
 import { FrontendCodeProvider } from "@components/FrontendCodeProvider";
 import { appWithTranslation } from "next-i18next";
 import { useLanguageSelector } from "../hooks/useLanguageSelector";
 import ErrorBoundary from "@components/ErrorBoundary";
+
+function PonderProvider({ children }: { children: React.ReactNode }) {
+	const chainId = useChainId() ?? WAGMI_CHAIN.id;
+	return <ApolloProvider client={getPonderClient(chainId)}>{children}</ApolloProvider>;
+}
 
 function App({ Component, pageProps }: AppProps) {
 	useLanguageSelector();
@@ -25,7 +31,7 @@ function App({ Component, pageProps }: AppProps) {
 	return (
 		<ReduxProvider store={store}>
 			<Web3ModalProvider>
-				<ApolloProvider client={PONDER_CLIENT}>
+				<PonderProvider>
 					<BlockUpdater>
 						<FrontendCodeProvider>
 							<NextSeoProvider />
@@ -45,7 +51,7 @@ function App({ Component, pageProps }: AppProps) {
 							</ErrorBoundary>
 						</FrontendCodeProvider>
 					</BlockUpdater>
-				</ApolloProvider>
+				</PonderProvider>
 			</Web3ModalProvider>
 		</ReduxProvider>
 	);

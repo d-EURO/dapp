@@ -11,8 +11,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
-import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../../app.config";
+import { WAGMI_CONFIG } from "../../../app.config";
+import { mainnet, testnet } from "@config";
 import { useEffect, useState } from "react";
+import { useChainId } from "wagmi";
 import { readContract } from "wagmi/actions";
 import { ChallengesQueryItem, PositionQuery } from "@juicedollar/api";
 import { useRouter as useNavigation } from "next/navigation";
@@ -26,7 +28,7 @@ export default function PositionDetail() {
 
 	const router = useRouter();
 	const address = router.query.address as Address;
-	const chainId = CONFIG_CHAIN().id;
+	const chainId = useChainId();
 
 	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
 	const challengesPositions = useSelector((state: RootState) => state.challenges.positions);
@@ -43,6 +45,7 @@ export default function PositionDetail() {
 
 		const fetchAsync = async function () {
 			const data = await readContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.stablecoinAddress,
 				abi: JuiceDollarABI,
 				functionName: "calculateAssignedReserve",
@@ -53,7 +56,7 @@ export default function PositionDetail() {
 		};
 
 		fetchAsync();
-	}, [position]);
+	}, [position, chainId]);
 
 	if (!position) return;
 

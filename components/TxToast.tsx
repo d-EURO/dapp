@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { shortenHash, transactionLink } from "@utils";
 import { Hash } from "viem";
-import { WAGMI_CHAIN } from "../app.config";
+import { useChainId } from "wagmi";
+import { mainnet, testnet } from "@config";
 import { useTranslation } from "react-i18next";
 
 export const renderErrorToast = (error: string | string[], t?: any) => {
@@ -41,7 +42,8 @@ export type TxToastRowType = { title: string; value?: string | JSX.Element; hash
 
 export const TxToast = (props: { title: string; rows: TxToastRowType[]; success?: boolean }) => {
 	const { title, rows, success = true } = props;
-	const chain = WAGMI_CHAIN;
+	const chainId = useChainId();
+	const chain = chainId === 4114 ? mainnet : testnet;
 	let reasonLine: number;
 
 	return (

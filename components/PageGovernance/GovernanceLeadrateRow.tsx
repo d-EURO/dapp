@@ -4,14 +4,15 @@ import { formatCurrency } from "../../utils/format";
 import { AddressLabelSimple, TxLabelSimple } from "@components/AddressLabel";
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
-import { useAccount } from "wagmi";
+import { WAGMI_CONFIG } from "../../app.config";
+import { useAccount, useChainId } from "wagmi";
 import { ADDRESS, SavingsABI } from "@juicedollar/jusd";
 import { ApiLeadrateInfo, LeadrateProposed } from "@juicedollar/api";
 import Button from "@components/Button";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { toast } from "react-toastify";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
+import { mainnet, testnet } from "@config";
 
 interface Props {
 	headers: string[];
@@ -27,7 +28,7 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 	const [isHidden, setHidden] = useState<boolean>(false);
 
 	const account = useAccount();
-	const chainId = CONFIG_CHAIN().id;
+	const chainId = useChainId();
 
 	const vetoUntil = proposal.nextChange * 1000;
 	const hoursUntil: number = (vetoUntil - Date.now()) / 1000 / 60 / 60;
@@ -43,6 +44,7 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 			setApplying(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsABI,
 				functionName: "applyChange",
@@ -88,6 +90,7 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 			setDenying(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsABI,
 				functionName: "proposeChange",

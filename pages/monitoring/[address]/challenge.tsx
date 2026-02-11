@@ -23,7 +23,8 @@ import { toast } from "react-toastify";
 import { TxToast, renderErrorToast, renderErrorTxStackToast, renderErrorTxToast } from "@components/TxToast";
 import DisplayLabel from "@components/DisplayLabel";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
-import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
+import { WAGMI_CONFIG } from "../../../app.config";
+import { mainnet, testnet } from "@config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import Link from "next/link";
@@ -62,12 +63,13 @@ export default function PositionChallenge() {
 
 	useEffect(() => {
 		const acc: Address | undefined = account.address;
-		const fc: Address = ADDRESS[WAGMI_CHAIN.id].juiceDollar;
+		const fc: Address = ADDRESS[chainId].juiceDollar;
 		if (acc === undefined) return;
 		if (!position || !position.collateral) return;
 
 		const fetchAsync = async function () {
 			const _balanceColl = await readContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral,
 				abi: erc20Abi,
 				functionName: "balanceOf",
@@ -76,16 +78,17 @@ export default function PositionChallenge() {
 			setUserErc20Balance(_balanceColl);
 
 			const _allowanceColl = await readContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral,
 				abi: erc20Abi,
 				functionName: "allowance",
-				args: [acc, ADDRESS[WAGMI_CHAIN.id].mintingHubGateway],
+				args: [acc, ADDRESS[chainId].mintingHubGateway],
 			});
 			setUserAllowance(_allowanceColl);
 		};
 
 		fetchAsync();
-	}, [data, account.address, position]);
+	}, [data, account.address, position, chainId]);
 
 	useEffect(() => {
 		if (isNavigating && position?.position) {
@@ -122,6 +125,7 @@ export default function PositionChallenge() {
 			setApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral as Address,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -173,6 +177,7 @@ export default function PositionChallenge() {
 			setChallenging(true);
 
 			const challengeWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubV2ABI,
 				functionName: "challenge",

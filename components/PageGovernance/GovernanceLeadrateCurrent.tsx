@@ -11,21 +11,22 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import AppBox from "@components/AppBox";
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
-import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
+import { useAccount, useChainId } from "wagmi";
+import { WAGMI_CONFIG } from "../../app.config";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { ADDRESS, SavingsABI } from "@juicedollar/jusd";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 import { useTranslation } from "next-i18next";
 import { BigNumberInput } from "@components/Input/BigNumberInput";
+import { mainnet, testnet } from "@config";
 
 interface Props {}
 
 export default function GovernanceLeadrateCurrent({}: Props) {
 	const [isHandling, setHandling] = useState<boolean>(false);
 	const account = useAccount();
-	const chainId = CONFIG_CHAIN().id;
+	const chainId = useChainId();
 	const info = useSelector((state: RootState) => state.savings.leadrateInfo);
 	const [newRate, setNewRate] = useState<number>(info?.rate || 0);
 	const [isHidden, setHidden] = useState<boolean>(false);
@@ -54,6 +55,7 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 			setHandling(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsABI,
 				functionName: "proposeChange",

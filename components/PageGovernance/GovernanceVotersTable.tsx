@@ -8,9 +8,10 @@ import { useEffect, useState } from "react";
 import { useNativePSHolders, useVotingPowers, useExpandableTable } from "@hooks";
 import GovernanceVotersRow from "./GovernanceVotersRow";
 
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { readContract } from "wagmi/actions";
-import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG } from "../../app.config";
+import { mainnet, testnet } from "@config";
 import { ADDRESS, EquityABI } from "@juicedollar/jusd";
 import { useTranslation } from "next-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -30,6 +31,7 @@ export default function GovernanceVotersTable() {
 	const [reverse, setReverse] = useState<boolean>(false);
 	const [accountVotes, setAccountVotes] = useState<VoteData>({ nativePS: 0n, holder: zeroAddress, votingPower: 0n, votingPowerRatio: 0 });
 
+	const chainId = useChainId();
 	const account = useAccount();
 	const nativePoolShareHolders = useNativePSHolders();
 	const votingPowersHook = useVotingPowers(nativePoolShareHolders.holders);
@@ -45,31 +47,40 @@ export default function GovernanceVotersTable() {
 	});
 
 	useEffect(() => {
-		if (account.address == undefined) return;
+		if (account.address == undefined || !chainId) return;
 		const holder = account.address;
+		const equityAddress = ADDRESS[chainId]?.equity;
 
-		const fetcher = async function () {
-			const nativePS = await readContract(WAGMI_CONFIG, {
-				address: ADDRESS[WAGMI_CHAIN.id].equity,
-				abi: EquityABI,
-				functionName: "balanceOf",
-				args: [holder],
-			});
+		if (!equityAddress) {
+			setAccountVotes({ holder, nativePS: 0n, votingPower: 0n, votingPowerRatio: 0 });
+			return;
+		}
 
-			const votingPowerRatio = await readContract(WAGMI_CONFIG, {
-				address: ADDRESS[WAGMI_CHAIN.id].equity,
-				abi: EquityABI,
-				functionName: "relativeVotes",
-				args: [holder],
-			});
-
-			const votingPower = votingPowerRatio * votesTotal;
-
-			setAccountVotes({ holder, nativePS, votingPower, votingPowerRatio: parseFloat(formatUnits(votingPowerRatio, 18)) });
-		};
-
-		fetcher();
-	}, [account, votesTotal]);
+		(async () => {
+			try {
+				const [nativePS, votingPowerRatio] = await Promise.all([
+					readContract(WAGMI_CONFIG, {
+						chainId: chainId as typeof mainnet.id | typeof testnet.id,
+						address: equityAddress,
+						abi: EquityABI,
+						functionName: "balanceOf",
+						args: [holder],
+					}),
+					readContract(WAGMI_CONFIG, {
+						chainId: chainId as typeof mainnet.id | typeof testnet.id,
+						address: equityAddress,
+						abi: EquityABI,
+						functionName: "relativeVotes",
+						args: [holder],
+					}),
+				]);
+				const votingPower = votingPowerRatio * votesTotal;
+				setAccountVotes({ holder, nativePS, votingPower, votingPowerRatio: parseFloat(formatUnits(votingPowerRatio, 18)) });
+			} catch {
+				setAccountVotes({ holder, nativePS: 0n, votingPower: 0n, votingPowerRatio: 0 });
+			}
+		})();
+	}, [account, votesTotal, chainId]);
 
 	const matchingVotes: VoteData[] = votesData.filter((v) => v.holder.toLowerCase() !== account.address?.toLowerCase());
 	const votesDataSorted: VoteData[] = sortVotes({

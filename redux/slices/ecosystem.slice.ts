@@ -1,5 +1,5 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
-import { API_CLIENT } from "../../app.config";
+import { getApiClient } from "@utils";
 import {
 	DispatchApiEcosystemCollateralPositions,
 	DispatchApiEcosystemCollateralStats,
@@ -80,7 +80,7 @@ export const actions = slice.actions;
 
 // --------------------------------------------------------------------------------
 export const fetchEcosystem =
-	() =>
+	(chainId: number) =>
 	async (
 		dispatch: Dispatch<
 			| DispatchBoolean
@@ -91,25 +91,23 @@ export const fetchEcosystem =
 			| DispatchApiEcosystemStablecoinMinters
 		>
 	) => {
-		// ---------------------------------------------------------------
+		const api = getApiClient(chainId);
 		console.log("Loading [REDUX]: Ecosystem");
 
 		try {
-			// ---------------------------------------------------------------
-			// Query raw data from backend api
-			const response1 = await API_CLIENT.get("/ecosystem/collateral/positions");
+			const response1 = await api.get("/ecosystem/collateral/positions");
 			dispatch(slice.actions.setCollateralPositions(response1.data as ApiEcosystemCollateralPositions));
 
-			const response2 = await API_CLIENT.get("/ecosystem/collateral/stats");
+			const response2 = await api.get("/ecosystem/collateral/stats");
 			dispatch(slice.actions.setCollateralStats(response2.data as ApiEcosystemCollateralStats));
 
-			const response3 = await API_CLIENT.get("/ecosystem/poolshares/info");
+			const response3 = await api.get("/ecosystem/poolshares/info");
 			dispatch(slice.actions.setDepsInfo(response3.data as ApiEcosystemPoolSharesInfo));
 
-			const response4 = await API_CLIENT.get("/ecosystem/stablecoin/info");
+			const response4 = await api.get("/ecosystem/stablecoin/info");
 			dispatch(slice.actions.setStablecoinInfo(response4.data as ApiEcosystemStablecoinInfo));
 
-			const response5 = await API_CLIENT.get("/ecosystem/stablecoin/minter/list");
+			const response5 = await api.get("/ecosystem/stablecoin/minter/list");
 			dispatch(slice.actions.setStablecoinMinters(response5.data as ApiMinterListing));
 
 			// ---------------------------------------------------------------

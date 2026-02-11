@@ -10,7 +10,8 @@ import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/ac
 import { toast } from "react-toastify";
 import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
-import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
+import { WAGMI_CONFIG } from "../../../app.config";
+import { mainnet, testnet } from "@config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import { PositionQuery } from "@juicedollar/api";
@@ -47,13 +48,14 @@ export default function PositionAdjust() {
 	// ---------------------------------------------------------------------------
 	useEffect(() => {
 		const acc: Address | undefined = account.address;
-		const fc: Address = ADDRESS[WAGMI_CHAIN.id].juiceDollar;
+		const fc: Address = ADDRESS[chainId].juiceDollar;
 		if (!position || !position.collateral) return;
 
 		const fetchAsync = async function () {
 			if (acc !== undefined) {
 				const _balanceFrank = await readContract(WAGMI_CONFIG, {
-					address: ADDRESS[WAGMI_CHAIN.id].juiceDollar,
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
+					address: ADDRESS[chainId].juiceDollar,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					args: [acc],
@@ -61,6 +63,7 @@ export default function PositionAdjust() {
 				setUserFrankBalance(_balanceFrank);
 
 				const _balanceColl = await readContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: position.collateral,
 					abi: erc20Abi,
 					functionName: "balanceOf",
@@ -69,6 +72,7 @@ export default function PositionAdjust() {
 				setUserCollBalance(_balanceColl);
 
 				const _allowanceColl = await readContract(WAGMI_CONFIG, {
+					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: position.collateral,
 					abi: erc20Abi,
 					functionName: "allowance",
@@ -78,6 +82,7 @@ export default function PositionAdjust() {
 			}
 
 			const _balanceChallenge = await readContract(WAGMI_CONFIG, {
+				chainId: chainId as 4114 | 5115,
 				address: position.position,
 				abi: PositionV2ABI,
 				functionName: "challengedAmount",
@@ -86,7 +91,7 @@ export default function PositionAdjust() {
 		};
 
 		fetchAsync();
-	}, [data, account.address, position]);
+	}, [data, account.address, position, chainId]);
 
 	// ---------------------------------------------------------------------------
 	if (!position) return null;
@@ -180,6 +185,7 @@ export default function PositionAdjust() {
 			setApproving(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral as Address,
 				abi: erc20Abi,
 				functionName: "approve",
@@ -220,6 +226,7 @@ export default function PositionAdjust() {
 		try {
 			setAdjusting(true);
 			const adjustWriteHash = await writeContract(WAGMI_CONFIG, {
+				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.position,
 				abi: PositionV2ABI,
 				functionName: "adjust",
