@@ -6,4 +6,4 @@ import { mainnet } from "@config";
 export const MAINNET_CHAIN_ID = mainnet.id;
 
 // HARDCODED: Mainnet genesis position (NPM package has zeroAddress)
-export const MAINNET_GENESIS_POSITION: Address = "0xe8c97614Ac1A5Ac0e8aB2d0e04b4B315817ecb36";
+export const MAINNET_GENESIS_POSITION: Address = "0xeA4512AB7EDa6Ac7745FE8F97C80014d80fcF7E8";
