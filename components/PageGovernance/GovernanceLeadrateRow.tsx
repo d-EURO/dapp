@@ -135,8 +135,8 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 				actionCol={
 					currentProposal ? (
 						info.isPending && info.isProposal ? (
-							<GuardToMinVotingPower label="Deny">
-								<GuardToAllowedChainBtn label="Deny" disabled={!info.isPending || !info.isProposal}>
+							<GuardToAllowedChainBtn label="Deny" disabled={!info.isPending || !info.isProposal}>
+								<GuardToMinVotingPower label="Deny">
 									<Button
 										className="h-10"
 										disabled={!info.isPending || !info.isProposal || isHidden}
@@ -145,11 +145,11 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 									>
 										Deny
 									</Button>
-								</GuardToAllowedChainBtn>
-							</GuardToMinVotingPower>
+								</GuardToMinVotingPower>
+							</GuardToAllowedChainBtn>
 						) : (
-							<GuardToMinVotingPower label="Apply">
-								<GuardToAllowedChainBtn label="Apply" disabled={!info.isProposal}>
+							<GuardToAllowedChainBtn label="Apply" disabled={!info.isProposal}>
+								<GuardToMinVotingPower label="Apply">
 									<Button
 										className="h-10"
 										disabled={!info.isProposal || isHidden}
@@ -158,8 +158,8 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 									>
 										Apply
 									</Button>
-								</GuardToAllowedChainBtn>
-							</GuardToMinVotingPower>
+								</GuardToMinVotingPower>
+							</GuardToAllowedChainBtn>
 						)
 					) : (
 						<></>
