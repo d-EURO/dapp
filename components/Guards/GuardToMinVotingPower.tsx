@@ -6,7 +6,6 @@ import Button from "@components/Button";
 interface Props {
 	children?: React.ReactNode;
 	label?: string;
-	disabled?: boolean;
 	buttonClassName?: string;
 }
 
