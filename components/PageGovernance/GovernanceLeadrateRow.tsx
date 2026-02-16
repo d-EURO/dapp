@@ -10,6 +10,7 @@ import { ADDRESS, SavingsABI } from "@deuro/eurocoin";
 import { ApiLeadrateInfo, LeadrateProposed } from "@deuro/api";
 import Button from "@components/Button";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
+import GuardToMinVotingPower from "@components/Guards/GuardToMinVotingPower";
 import { toast } from "react-toastify";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
 
@@ -134,27 +135,31 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 				actionCol={
 					currentProposal ? (
 						info.isPending && info.isProposal ? (
-							<GuardToAllowedChainBtn label="Deny" disabled={!info.isPending || !info.isProposal}>
-								<Button
-									className="h-10"
-									disabled={!info.isPending || !info.isProposal || isHidden}
-									isLoading={isDenying}
-									onClick={(e) => handleOnDeny(e)}
-								>
-									Deny
-								</Button>
-							</GuardToAllowedChainBtn>
+							<GuardToMinVotingPower label="Deny">
+								<GuardToAllowedChainBtn label="Deny" disabled={!info.isPending || !info.isProposal}>
+									<Button
+										className="h-10"
+										disabled={!info.isPending || !info.isProposal || isHidden}
+										isLoading={isDenying}
+										onClick={(e) => handleOnDeny(e)}
+									>
+										Deny
+									</Button>
+								</GuardToAllowedChainBtn>
+							</GuardToMinVotingPower>
 						) : (
-							<GuardToAllowedChainBtn label="Apply" disabled={!info.isProposal}>
-								<Button
-									className="h-10"
-									disabled={!info.isProposal || isHidden}
-									isLoading={isApplying}
-									onClick={(e) => handleOnApply(e)}
-								>
-									Apply
-								</Button>
-							</GuardToAllowedChainBtn>
+							<GuardToMinVotingPower label="Apply">
+								<GuardToAllowedChainBtn label="Apply" disabled={!info.isProposal}>
+									<Button
+										className="h-10"
+										disabled={!info.isProposal || isHidden}
+										isLoading={isApplying}
+										onClick={(e) => handleOnApply(e)}
+									>
+										Apply
+									</Button>
+								</GuardToAllowedChainBtn>
+							</GuardToMinVotingPower>
 						)
 					) : (
 						<></>
