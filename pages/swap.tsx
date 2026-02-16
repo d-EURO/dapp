@@ -54,7 +54,7 @@ export default function Swap() {
 	const swapStats = useSwapStats();
 	const options = [...swapStats.supportedStablecoins.map((stablecoin) => stablecoin.symbol), TOKEN_SYMBOL];
 	const [fromSymbol, setFromSymbol] = useState(options[0]);
-	const [toSymbol, setToSymbol] = useState(TOKEN_SYMBOL);;
+	const [toSymbol, setToSymbol] = useState(TOKEN_SYMBOL);
 	const [amount, setAmount] = useState(0n);
 	const [error, setError] = useState("");
 	const [isTxOnGoing, setTxOnGoing] = useState(false);
@@ -257,7 +257,7 @@ export default function Swap() {
 				},
 				success: {
 					render: <TxToast title={t("swap.swap_tx.success", { fromSymbol, toSymbol })} rows={toastContent} />,
-				}
+				},
 			});
 			swapStats.refetch();
 			setAmount(0n);
@@ -480,8 +480,8 @@ export default function Swap() {
 								<GuardToAllowedChainBtn>
 									{isBridgeExpired ? (
 										<Button disabled={true}>{t("swap.bridge_expired", { symbol: TOKEN_SYMBOL })}</Button>
-									/* @ts-ignore come on typescript */
-									) : amount > fromTokenMeta.userAllowance ? (
+									) : /* @ts-ignore come on typescript */
+									amount > fromTokenMeta.userAllowance ? (
 										<Button isLoading={isTxOnGoing} onClick={() => handleApprove()}>
 											{t("common.approve")}
 										</Button>
@@ -508,6 +508,7 @@ export default function Swap() {
 				<div className="h-full">
 					{notExpiredStablecoins.map((stablecoin) => (
 						<TokenModalRowButton
+							key={stablecoin.symbol}
 							currency="€"
 							symbol={swapStats[stablecoin.symbol as keyof StablecoinsStats].symbol}
 							price={
@@ -542,6 +543,7 @@ export default function Swap() {
 				<div className="h-full">
 					{stablecoinsWithBridgeBal.map((stablecoin) => (
 						<TokenModalRowButton
+							key={stablecoin.symbol}
 							currency="€"
 							symbol={swapStats[stablecoin.symbol as keyof StablecoinsStats].symbol}
 							price={
