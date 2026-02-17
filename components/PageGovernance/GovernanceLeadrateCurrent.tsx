@@ -113,12 +113,12 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 					</div>
 				</div>
 
-				<GuardToMinVotingPower buttonClassName="h-full w-full sm:max-w-48 p-4" label={t("dashboard.propose")}>
-					<GuardToAllowedChainBtn
-						buttonClassName="h-full w-full sm:max-w-48 p-4"
-						label={t("dashboard.propose")}
-						disabled={isDisabled || isHidden}
-					>
+				<GuardToAllowedChainBtn
+					buttonClassName="h-full w-full sm:max-w-48 p-4"
+					label={t("dashboard.propose")}
+					disabled={isDisabled || isHidden}
+				>
+					<GuardToMinVotingPower buttonClassName="h-full w-full sm:max-w-48 p-4" label={t("dashboard.propose")}>
 						<Button
 							className="h-full full sm:max-w-48 p-4"
 							disabled={isDisabled || isHidden}
@@ -127,8 +127,8 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 						>
 							{t("dashboard.propose")}
 						</Button>
-					</GuardToAllowedChainBtn>
-				</GuardToMinVotingPower>
+					</GuardToMinVotingPower>
+				</GuardToAllowedChainBtn>
 			</div>
 		</AppCard>
 	);
