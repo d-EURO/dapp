@@ -10,6 +10,7 @@ import { ADDRESS, SavingsABI } from "@juicedollar/jusd";
 import { ApiLeadrateInfo, LeadrateProposed } from "@juicedollar/api";
 import Button from "@components/Button";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
+import GuardToMinVotingPower from "@components/Guards/GuardToMinVotingPower";
 import { toast } from "react-toastify";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
 import { mainnet, testnet } from "@config";
@@ -138,25 +139,29 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 					currentProposal ? (
 						info.isPending && info.isProposal ? (
 							<GuardToAllowedChainBtn label="Deny" disabled={!info.isPending || !info.isProposal}>
-								<Button
-									className="h-10"
-									disabled={!info.isPending || !info.isProposal || isHidden}
-									isLoading={isDenying}
-									onClick={(e) => handleOnDeny(e)}
-								>
-									Deny
-								</Button>
+								<GuardToMinVotingPower label="Deny">
+									<Button
+										className="h-10"
+										disabled={!info.isPending || !info.isProposal || isHidden}
+										isLoading={isDenying}
+										onClick={(e) => handleOnDeny(e)}
+									>
+										Deny
+									</Button>
+								</GuardToMinVotingPower>
 							</GuardToAllowedChainBtn>
 						) : (
 							<GuardToAllowedChainBtn label="Apply" disabled={!info.isProposal}>
-								<Button
-									className="h-10"
-									disabled={!info.isProposal || isHidden}
-									isLoading={isApplying}
-									onClick={(e) => handleOnApply(e)}
-								>
-									Apply
-								</Button>
+								<GuardToMinVotingPower label="Apply">
+									<Button
+										className="h-10"
+										disabled={!info.isProposal || isHidden}
+										isLoading={isApplying}
+										onClick={(e) => handleOnApply(e)}
+									>
+										Apply
+									</Button>
+								</GuardToMinVotingPower>
 							</GuardToAllowedChainBtn>
 						)
 					) : (

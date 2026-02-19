@@ -4,6 +4,7 @@ import { formatCurrency, shortenAddress } from "../../utils/format";
 import { useDelegationQuery } from "@hooks";
 import { AddressLabelSimple } from "@components/AddressLabel";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
+import GuardToMinVotingPower from "@components/Guards/GuardToMinVotingPower";
 import Button from "@components/Button";
 import NormalInput from "@components/Input/NormalInput";
 import AppCard from "@components/AppCard";
@@ -119,14 +120,16 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 					label={t("dashboard.propose")}
 					disabled={isDisabled || isHidden}
 				>
-					<Button
-						className="h-full full sm:max-w-48 p-4"
-						disabled={isDisabled || isHidden}
-						isLoading={isHandling}
-						onClick={(e) => handleOnClick(e)}
-					>
-						{t("dashboard.propose")}
-					</Button>
+					<GuardToMinVotingPower buttonClassName="h-full w-full sm:max-w-48 p-4" label={t("dashboard.propose")}>
+						<Button
+							className="h-full full sm:max-w-48 p-4"
+							disabled={isDisabled || isHidden}
+							isLoading={isHandling}
+							onClick={(e) => handleOnClick(e)}
+						>
+							{t("dashboard.propose")}
+						</Button>
+					</GuardToMinVotingPower>
 				</GuardToAllowedChainBtn>
 			</div>
 		</AppCard>
