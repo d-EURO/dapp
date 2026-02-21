@@ -18,7 +18,8 @@ function formatAmount(value: bigint): string {
 export default function CoverageBridges() {
 	const { t } = useTranslation();
 	const { bridges: allBridges, isLoading } = useBridgeStats();
-	const bridges = allBridges.filter((b) => b.minted > 0n);
+	const ONE_DEURO = 10n ** 18n;
+	const bridges = allBridges.filter((b) => b.minted >= ONE_DEURO);
 
 	const headers = [
 		t("coverage.stablecoin"),
