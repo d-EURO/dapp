@@ -4,9 +4,16 @@ import TableHeader from "../Table/TableHead";
 import TableRow from "../Table/TableRow";
 import TokenLogo from "../TokenLogo";
 import { SectionTitle } from "../SectionTitle";
-import { formatBigInt } from "../../utils/format";
 import { TOKEN_SYMBOL } from "@utils";
 import { useTranslation } from "next-i18next";
+import { formatUnits } from "viem";
+import { formatCurrency } from "../../utils/format";
+
+function formatAmount(value: bigint): string {
+	const num = parseFloat(formatUnits(value, 18));
+	if (num < 1 && num > 0) return "0";
+	return formatCurrency(Math.round(num), 0, 0) ?? "0";
+}
 
 export default function CoverageBridges() {
 	const { t } = useTranslation();
@@ -43,16 +50,16 @@ export default function CoverageBridges() {
 							: 0;
 
 						return (
-							<TableRow key={bridge.symbol} headers={headers} tab="">
+							<TableRow key={bridge.bridgeAddress} headers={headers} tab="">
 								<div className="flex items-center gap-2 text-left">
 									<TokenLogo currency={bridge.symbol} size={6} />
 									<span className="font-semibold">{bridge.symbol}</span>
 								</div>
 								<div>
-									{formatBigInt(minted, 18, 0)} {TOKEN_SYMBOL}
+									{formatAmount(minted)} {TOKEN_SYMBOL}
 								</div>
 								<div>
-									{formatBigInt(limit, 18, 0)} {TOKEN_SYMBOL}
+									{formatAmount(limit)} {TOKEN_SYMBOL}
 								</div>
 								<div className="flex flex-col items-end gap-1">
 									<span>{utilization.toFixed(1)}%</span>
