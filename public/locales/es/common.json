@@ -646,5 +646,36 @@
             "withdrawing": "Retirando de ahorros...",
             "successfully_withdrawn": "Retiro exitoso"
         }
+    },
+    "coverage": {
+        "title": "Cobertura",
+        "total_supply": "Oferta Total",
+        "positions": "Posiciones Colateralizadas",
+        "bridges": "Puentes de Stablecoins",
+        "reserves": "Reservas",
+        "other": "Otros (Comisiones/Intereses)",
+        "collateral_positions": "Posiciones Colateralizadas",
+        "collateral": "Colateral",
+        "open_positions": "Posiciones Abiertas",
+        "total_minted": "Total Acuñado",
+        "interest_avg": "Interés Prom.",
+        "utilization": "Utilización",
+        "stablecoin_bridges": "Puentes de Stablecoins",
+        "stablecoin": "Stablecoin",
+        "minted": "Acuñado",
+        "limit": "Límite",
+        "status": "Estado",
+        "active": "Activo",
+        "expired": "Expirado",
+        "reserves_earnings": "Reservas y Ganancias",
+        "reserve_breakdown": "Desglose de Reservas",
+        "total_reserve": "Reserva Total",
+        "minter_reserve": "Reserva del Acuñador",
+        "equity_reserve": "Reserva de Capital",
+        "earnings": "Ganancias",
+        "profit": "Ganancia",
+        "loss": "Pérdida",
+        "unrealized_profit": "Ganancia No Realizada",
+        "net_earnings": "Ganancias Netas"
     }
 }

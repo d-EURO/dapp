@@ -645,5 +645,36 @@
             "withdrawing": "Retrait de l'épargne en cours…",
             "successfully_withdrawn": "Retrait effectué avec succès"
         }
+    },
+    "coverage": {
+        "title": "Couverture",
+        "total_supply": "Offre Totale",
+        "positions": "Positions Collatéralisées",
+        "bridges": "Ponts Stablecoins",
+        "reserves": "Réserves",
+        "other": "Autres (Frais/Intérêts)",
+        "collateral_positions": "Positions Collatéralisées",
+        "collateral": "Collatéral",
+        "open_positions": "Positions Ouvertes",
+        "total_minted": "Total Frappé",
+        "interest_avg": "Intérêt Moy.",
+        "utilization": "Utilisation",
+        "stablecoin_bridges": "Ponts Stablecoins",
+        "stablecoin": "Stablecoin",
+        "minted": "Frappé",
+        "limit": "Limite",
+        "status": "Statut",
+        "active": "Actif",
+        "expired": "Expiré",
+        "reserves_earnings": "Réserves & Revenus",
+        "reserve_breakdown": "Détail des Réserves",
+        "total_reserve": "Réserve Totale",
+        "minter_reserve": "Réserve du Frappeur",
+        "equity_reserve": "Réserve de Capital",
+        "earnings": "Revenus",
+        "profit": "Profit",
+        "loss": "Perte",
+        "unrealized_profit": "Profit Non Réalisé",
+        "net_earnings": "Revenus Nets"
     }
 }
