@@ -7,6 +7,51 @@ import {
 } from "@deuro/api";
 
 // --------------------------------------------------------------------------------
+export type ExposureItem = {
+	collateral: {
+		address: string;
+		chainId: number;
+		name: string;
+		symbol: string;
+	};
+	positions: {
+		open: number;
+		originals: number;
+		clones: number;
+	};
+	mint: {
+		totalMinted: number;
+		totalContribution: number;
+		totalLimit: number;
+		totalMintedRatio: number;
+		interestAverage: number;
+		totalTheta: number;
+		thetaPerDepsToken: number;
+	};
+	reserveRiskWiped: {
+		depsPrice: number;
+		riskRatio: number;
+	};
+};
+
+export type AnalyticsExposure = {
+	general: {
+		balanceInReserve: number;
+		mintersContribution: number;
+		equityInReserve: number;
+		depsPrice: number;
+		depsTotalSupply: number;
+		thetaFromPositions: number;
+		thetaPerToken: number;
+		earningsPerAnnum: number;
+		earningsPerToken: number;
+		priceToEarnings: number;
+		priceToBookValue: number;
+	};
+	exposures: ExposureItem[];
+};
+
+// --------------------------------------------------------------------------------
 export type EcosystemState = {
 	error: string | null;
 	loaded: boolean;
@@ -16,6 +61,7 @@ export type EcosystemState = {
 	depsInfo: ApiEcosystemDepsInfo | undefined;
 	stablecoinInfo: ApiEcosystemStablecoinInfo | undefined;
 	stablecoinMinters: ApiMinterListing | undefined;
+	exposureData: AnalyticsExposure | undefined;
 };
 
 // --------------------------------------------------------------------------------
@@ -47,4 +93,9 @@ export type DispatchApiEcosystemStablecoinInfo = {
 export type DispatchApiEcosystemStablecoinMinters = {
 	type: string;
 	payload: ApiMinterListing | undefined;
+};
+
+export type DispatchAnalyticsExposure = {
+	type: string;
+	payload: AnalyticsExposure | undefined;
 };

@@ -646,5 +646,36 @@
             "withdrawing": "Auszahlung von Ersparnissen wird durchgeführt...",
             "successfully_withdrawn": "Erfolgreich ausgezahlt"
         }
+    },
+    "coverage": {
+        "title": "Deckung",
+        "total_supply": "Gesamtangebot",
+        "positions": "Besicherte Positionen",
+        "bridges": "Stablecoin-Bridges",
+        "reserves": "Reserven",
+        "other": "Sonstiges (Gebühren/Zinsen)",
+        "collateral_positions": "Besicherte Positionen",
+        "collateral": "Besicherung",
+        "open_positions": "Offene Positionen",
+        "total_minted": "Gesamt geprägt",
+        "interest_avg": "Ø Zinsen",
+        "utilization": "Auslastung",
+        "stablecoin_bridges": "Stablecoin-Bridges",
+        "stablecoin": "Stablecoin",
+        "minted": "Geprägt",
+        "limit": "Limit",
+        "status": "Status",
+        "active": "Aktiv",
+        "expired": "Abgelaufen",
+        "reserves_earnings": "Reserven & Erträge",
+        "reserve_breakdown": "Reserve-Aufschlüsselung",
+        "total_reserve": "Gesamtreserve",
+        "minter_reserve": "Minter-Reserve",
+        "equity_reserve": "Eigenkapitalreserve",
+        "earnings": "Erträge",
+        "profit": "Gewinn",
+        "loss": "Verlust",
+        "unrealized_profit": "Unrealisierter Gewinn",
+        "net_earnings": "Nettoertrag"
     }
 }

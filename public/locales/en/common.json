@@ -647,5 +647,36 @@
             "withdrawing": "Withdrawing from savings...",
             "successfully_withdrawn": "Successfully withdrawn"
         }
+    },
+    "coverage": {
+        "title": "Coverage",
+        "total_supply": "Total Supply",
+        "positions": "Collateral Positions",
+        "bridges": "Stablecoin Bridges",
+        "reserves": "Reserves",
+        "other": "Other (Fees/Interest)",
+        "collateral_positions": "Collateral Positions",
+        "collateral": "Collateral",
+        "open_positions": "Open Positions",
+        "total_minted": "Total Minted",
+        "interest_avg": "Avg. Interest",
+        "utilization": "Utilization",
+        "stablecoin_bridges": "Stablecoin Bridges",
+        "stablecoin": "Stablecoin",
+        "minted": "Minted",
+        "limit": "Limit",
+        "status": "Status",
+        "active": "Active",
+        "expired": "Expired",
+        "reserves_earnings": "Reserves & Earnings",
+        "reserve_breakdown": "Reserve Breakdown",
+        "total_reserve": "Total Reserve",
+        "minter_reserve": "Minter Reserve",
+        "equity_reserve": "Equity Reserve",
+        "earnings": "Earnings",
+        "profit": "Profit",
+        "loss": "Loss",
+        "unrealized_profit": "Unrealized Profit",
+        "net_earnings": "Net Earnings"
     }
 }
