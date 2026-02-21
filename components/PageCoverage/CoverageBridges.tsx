@@ -17,7 +17,8 @@ function formatAmount(value: bigint): string {
 
 export default function CoverageBridges() {
 	const { t } = useTranslation();
-	const { bridges, isLoading } = useBridgeStats();
+	const { bridges: allBridges, isLoading } = useBridgeStats();
+	const bridges = allBridges.filter((b) => b.minted > 0n || b.limit > 0n);
 
 	const headers = [
 		t("coverage.stablecoin"),
