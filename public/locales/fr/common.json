@@ -55,7 +55,8 @@
             "expert_mode": "Mode Expert",
             "global_preferences": "Préférences Globales",
             "language": "Langue",
-            "dashboard": "Tableau de bord"
+            "dashboard": "Tableau de bord",
+            "rates": "Taux"
         },
         "txs": {
             "amount": "Montant :",
@@ -648,6 +649,7 @@
     },
     "coverage": {
         "title": "Couverture",
+        "tvl": "Garanties",
         "total_supply": "Offre Totale",
         "positions": "Positions Collatéralisées",
         "bridges": "Ponts Stablecoins",
@@ -656,7 +658,9 @@
         "collateral_positions": "Positions Collatéralisées",
         "collateral": "Collatéral",
         "open_positions": "Positions Ouvertes",
+        "total_collateral": "Total Collatéral",
         "total_minted": "Total Frappé",
+        "collateralization": "Collatéralisation",
         "interest_avg": "Intérêt Moy.",
         "utilization": "Utilisation",
         "stablecoin_bridges": "Ponts Stablecoins",
@@ -675,6 +679,32 @@
         "profit": "Profit",
         "loss": "Perte",
         "unrealized_profit": "Profit Non Réalisé",
-        "net_earnings": "Revenus Nets"
+        "net_earnings": "Revenus Nets",
+        "supply_composition": "Composition du dEURO",
+        "free_circulating": "En libre circulation"
+    },
+    "minter_check": {
+        "title": "Vérification des Minters",
+        "description": "Chaque dEURO en circulation peut être retracé à un minter spécifique. Cette page vous permet de vérifier exactement comment tous les dEURO ont été créés. Cliquez sur une position pour la vérifier sur Etherscan.",
+        "total_supply": "Offre Totale",
+        "collateral_positions": "Positions Collatéralisées",
+        "bridge_minters": "Minters Bridge"
+    },
+    "rates": {
+        "title": "Taux d'intérêt en direct",
+        "loan_interest": "Intérêts de prêt (Revenus)",
+        "savings_interest": "Intérêts d'épargne (Dépenses)",
+        "open_positions": "Positions ouvertes",
+        "total_minted": "Total frappé",
+        "interest_pa": "Intérêts p.a.",
+        "total_savings_balance": "Solde total d'épargne",
+        "savings_rate": "Taux d'épargne",
+        "estimated_interest_pa": "Intérêts estimés p.a.",
+        "total_interest_paid": "Total des intérêts payés",
+        "net_interest_pa": "Intérêts nets p.a.",
+        "positions_breakdown": "Intérêts par collatéral",
+        "collateral": "Collatéral",
+        "avg_interest": "Intérêt moy.",
+        "total_minted_short": "Total frappé"
     }
 }
