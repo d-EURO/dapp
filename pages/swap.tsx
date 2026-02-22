@@ -2,7 +2,7 @@ import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
 import { erc20Abi, formatUnits, maxUint256 } from "viem";
 import Button from "@components/Button";
-import { StablecoinsStats, useSwapStats } from "@hooks";
+import { useSwapStats } from "@hooks";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -52,7 +52,7 @@ const getAmountWithLeastPrecision = (amount: bigint, fromDecimals: bigint, toDec
 
 export default function Swap() {
 	const swapStats = useSwapStats();
-	const options = [...swapStats.supportedStablecoins.map((stablecoin) => stablecoin.symbol), TOKEN_SYMBOL];
+	const options = [...swapStats.supportedStablecoins.map((stablecoin) => stablecoin.key), TOKEN_SYMBOL];
 	const [fromSymbol, setFromSymbol] = useState(options[0]);
 	const [toSymbol, setToSymbol] = useState(TOKEN_SYMBOL);
 	const [amount, setAmount] = useState(0n);
@@ -64,9 +64,10 @@ export default function Swap() {
 	const { t } = useTranslation();
 
 	const allStablecoins = swapStats.supportedStablecoins;
-	const notExpiredStablecoins = allStablecoins.filter(({ symbol }) => !swapStats[symbol as keyof StablecoinsStats].isExpired);
-	const stablecoinsWithBridgeBal = allStablecoins.filter(({ symbol }) => {
-		const stats = swapStats[symbol as keyof StablecoinsStats];
+	const notExpiredStablecoins = allStablecoins.filter(({ key }) => !swapStats.stablecoins[key]?.isExpired);
+	const stablecoinsWithBridgeBal = allStablecoins.filter(({ key }) => {
+		const stats = swapStats.stablecoins[key];
+		if (!stats) return false;
 		const balanceInUnits = Number(formatUnits(stats.bridgeBal, Number(stats.decimals)));
 		return balanceInUnits > 1;
 	});
@@ -80,7 +81,7 @@ export default function Swap() {
 			switch (symbol) {
 				case TOKEN_SYMBOL:
 					const stablecoinSymbol = getSelectedStablecoinSymbol();
-					const userAllowance = swapStats.dEuro.bridgeAllowance[stablecoinSymbol as keyof typeof swapStats.dEuro.bridgeAllowance];
+					const userAllowance = swapStats.dEuro.bridgeAllowance[stablecoinSymbol];
 					return {
 						symbol: TOKEN_SYMBOL,
 						userBal: swapStats.dEuro.userBal,
@@ -95,7 +96,7 @@ export default function Swap() {
 						isExpired: false,
 					};
 				default:
-					return swapStats[symbol as keyof StablecoinsStats] ?? noTokenMeta;
+					return swapStats.stablecoins[symbol] ?? noTokenMeta;
 			}
 		},
 		[swapStats, getSelectedStablecoinSymbol]
@@ -164,8 +165,14 @@ export default function Swap() {
 
 		if (amount > fromTokenData.userBal) {
 			setError(t("common.error.insufficient_balance", { symbol: fromSymbol }));
-		} else if (isBurning && amount * backwardCoefficient > toTokenData.bridgeBal * forwardCoefficient) {
-			setError(t("swap.error.insufficient_bridge", { symbol: toSymbol }));
+		} else if (isBurning) {
+			const mintedInStablecoinDecimals = rebaseDecimals(toTokenData.minted, 18n, toTokenData.decimals);
+			const effectiveBridgeBal = toTokenData.bridgeBal < mintedInStablecoinDecimals ? toTokenData.bridgeBal : mintedInStablecoinDecimals;
+			if (amount * backwardCoefficient > effectiveBridgeBal * forwardCoefficient) {
+				setError(t("swap.error.insufficient_bridge", { symbol: toSymbol }));
+			} else {
+				setError("");
+			}
 		} else if (isMinting && amount * backwardCoefficient > fromTokenData.remaining * forwardCoefficient) {
 			setError(t("swap.error.exceeds_limit"));
 		} else {
@@ -341,7 +348,11 @@ export default function Swap() {
 	const toTokenMeta = getTokenMetaBySymbol(toSymbol);
 	const stablecoinMeta = getTokenMetaBySymbol(getSelectedStablecoinSymbol());
 	const isBridgeExpired = toSymbol === TOKEN_SYMBOL && fromTokenMeta.isExpired;
-	const limit = fromSymbol === TOKEN_SYMBOL ? stablecoinMeta.bridgeBal : isBridgeExpired ? 0n : stablecoinMeta.remaining;
+	const burnLimit = (() => {
+		const mintedInStablecoinDecimals = rebaseDecimals(stablecoinMeta.minted, 18n, stablecoinMeta.decimals);
+		return stablecoinMeta.bridgeBal < mintedInStablecoinDecimals ? stablecoinMeta.bridgeBal : mintedInStablecoinDecimals;
+	})();
+	const limit = fromSymbol === TOKEN_SYMBOL ? burnLimit : isBridgeExpired ? 0n : stablecoinMeta.remaining;
 	const rebasedOutputAmount = rebaseDecimals(amount, fromTokenMeta.decimals, toTokenMeta.decimals);
 
 	return (
@@ -506,33 +517,31 @@ export default function Swap() {
 				setIsOpen={handleCloseModal}
 			>
 				<div className="h-full">
-					{notExpiredStablecoins.map((stablecoin) => (
-						<TokenModalRowButton
-							key={stablecoin.symbol}
-							currency="€"
-							symbol={swapStats[stablecoin.symbol as keyof StablecoinsStats].symbol}
-							price={
-								formatCurrency(
-									formatUnits(
-										swapStats[stablecoin.symbol as keyof StablecoinsStats].userBal,
-										Number(swapStats[stablecoin.symbol as keyof StablecoinsStats].decimals)
-									),
-									2,
-									2
-								) as string
-							}
-							balance={
-								formatCurrency(
-									formatUnits(
-										swapStats[stablecoin.symbol as keyof StablecoinsStats].userBal,
-										Number(swapStats[stablecoin.symbol as keyof StablecoinsStats].decimals)
-									)
-								) as string
-							}
-							name={stablecoin.symbol}
-							onClick={() => handleSelectToken(stablecoin.symbol)}
-						/>
-					))}
+					{notExpiredStablecoins.map((stablecoin) => {
+						const stats = swapStats.stablecoins[stablecoin.key];
+						if (!stats) return null;
+						return (
+							<TokenModalRowButton
+								key={stablecoin.key}
+								currency="€"
+								symbol={stats.symbol}
+								price={
+									formatCurrency(
+										formatUnits(stats.userBal, Number(stats.decimals)),
+										2,
+										2
+									) as string
+								}
+								balance={
+									formatCurrency(
+										formatUnits(stats.userBal, Number(stats.decimals))
+									) as string
+								}
+								name={stablecoin.key}
+								onClick={() => handleSelectToken(stablecoin.key)}
+							/>
+						);
+					})}
 				</div>
 			</TokenSelectModal>
 			<TokenSelectModal
@@ -541,33 +550,31 @@ export default function Swap() {
 				setIsOpen={handleCloseModal}
 			>
 				<div className="h-full">
-					{stablecoinsWithBridgeBal.map((stablecoin) => (
-						<TokenModalRowButton
-							key={stablecoin.symbol}
-							currency="€"
-							symbol={swapStats[stablecoin.symbol as keyof StablecoinsStats].symbol}
-							price={
-								formatCurrency(
-									formatUnits(
-										swapStats[stablecoin.symbol as keyof StablecoinsStats].userBal,
-										Number(swapStats[stablecoin.symbol as keyof StablecoinsStats].decimals)
-									),
-									2,
-									2
-								) as string
-							}
-							balance={
-								formatCurrency(
-									formatUnits(
-										swapStats[stablecoin.symbol as keyof StablecoinsStats].userBal,
-										Number(swapStats[stablecoin.symbol as keyof StablecoinsStats].decimals)
-									)
-								) as string
-							}
-							name={stablecoin.symbol}
-							onClick={() => handleSelectToken(stablecoin.symbol)}
-						/>
-					))}
+					{stablecoinsWithBridgeBal.map((stablecoin) => {
+						const stats = swapStats.stablecoins[stablecoin.key];
+						if (!stats) return null;
+						return (
+							<TokenModalRowButton
+								key={stablecoin.key}
+								currency="€"
+								symbol={stats.symbol}
+								price={
+									formatCurrency(
+										formatUnits(stats.userBal, Number(stats.decimals)),
+										2,
+										2
+									) as string
+								}
+								balance={
+									formatCurrency(
+										formatUnits(stats.userBal, Number(stats.decimals))
+									) as string
+								}
+								name={stablecoin.key}
+								onClick={() => handleSelectToken(stablecoin.key)}
+							/>
+						);
+					})}
 				</div>
 			</TokenSelectModal>
 		</>

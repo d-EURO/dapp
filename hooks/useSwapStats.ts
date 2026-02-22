@@ -4,11 +4,9 @@ import { Address, erc20Abi } from "viem";
 import { WAGMI_CHAIN } from "../app.config";
 import { ADDRESS, StablecoinBridgeABI } from "@deuro/eurocoin";
 import { buildContractBatcher } from "../utils/contractBatcher";
-import { StablecoinSymbol, SupportedStablecoin, useSupportedBridges } from "./useSupportedBridges";
+import { SupportedStablecoin, useSupportedBridges } from "./useSupportedBridges";
 
-type DEuroBridgeAllowance = {
-	[key in StablecoinSymbol]?: bigint;
-};
+type DEuroBridgeAllowance = Record<string, bigint>;
 interface DEuroStats {
 	userBal: bigint;
 	symbol: string;
@@ -31,10 +29,8 @@ interface StablecoinStats {
 	isExpired: boolean;
 }
 
-export type StablecoinsStats = {
-	[key in StablecoinSymbol]: StablecoinStats;
-};
-interface SwapStats extends StablecoinsStats {
+export interface SwapStats {
+	stablecoins: Record<string, StablecoinStats>;
 	supportedStablecoins: SupportedStablecoin[];
 	isError: boolean;
 	isLoading: boolean;
@@ -56,7 +52,7 @@ const parseStablecoinStats = (data?: any): {
 } => {
 	const horizon = data ? decodeBigIntCall(data?.horizon || 0) : BigInt(0);
 	const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
-	
+
 	return {
 		userBal: decodeBigIntCall(data?.balanceOf?.userBalance || 0),
 		symbol: decodeStringCall(data?.symbol ?? ""),
@@ -103,7 +99,7 @@ export const useSwapStats = (): SwapStats => {
 			abi: erc20Abi,
 			functionName: "allowance",
 			calls: supportedStablecoins.map((stablecoin) => ({
-				id: stablecoin.symbol,
+				id: stablecoin.key,
 				args: [account, stablecoin.bridgeAddress],
 			})),
 		},
@@ -112,6 +108,7 @@ export const useSwapStats = (): SwapStats => {
 				{
 					chainId,
 					address: stablecoin.address,
+					groupKey: stablecoin.key,
 					abi: erc20Abi,
 					functionName: "balanceOf",
 					calls: [
@@ -128,12 +125,14 @@ export const useSwapStats = (): SwapStats => {
 				{
 					chainId,
 					address: stablecoin.address,
+					groupKey: stablecoin.key,
 					abi: erc20Abi,
 					functionName: "symbol",
 				},
 				{
 					chainId,
 					address: stablecoin.address,
+					groupKey: stablecoin.key,
 					abi: erc20Abi,
 					functionName: "allowance",
 					args: [account, stablecoin.bridgeAddress],
@@ -141,27 +140,28 @@ export const useSwapStats = (): SwapStats => {
 				{
 					chainId,
 					address: stablecoin.address,
+					groupKey: stablecoin.key,
 					abi: erc20Abi,
 					functionName: "decimals",
 				},
 				{
 					chainId,
 					address: stablecoin.bridgeAddress,
-					groupKey: stablecoin.address,
+					groupKey: stablecoin.key,
 					abi: StablecoinBridgeABI,
 					functionName: "limit",
 				},
 				{
 					chainId,
 					address: stablecoin.bridgeAddress,
-					groupKey: stablecoin.address,
+					groupKey: stablecoin.key,
 					abi: StablecoinBridgeABI,
 					functionName: "minted",
 				},
 				{
 					chainId,
 					address: stablecoin.bridgeAddress,
-					groupKey: stablecoin.address,
+					groupKey: stablecoin.key,
 					abi: StablecoinBridgeABI,
 					functionName: "horizon",
 				},
@@ -185,7 +185,7 @@ export const useSwapStats = (): SwapStats => {
 	const bridgeAllowance = supportedStablecoins.reduce(
 		(acc, stablecoin) => ({
 			...acc,
-			[stablecoin.symbol]: decodeBigIntCall(parsedData?.[deuroAddress]?.allowance?.[stablecoin.symbol] || 0),
+			[stablecoin.key]: decodeBigIntCall(parsedData?.[deuroAddress]?.allowance?.[stablecoin.key] || 0),
 		}),
 		{}
 	);
@@ -198,20 +198,20 @@ export const useSwapStats = (): SwapStats => {
 		contractAddress: ADDRESS[chainId].decentralizedEURO,
 	};
 
-	const stablecoinsStats = supportedStablecoins.reduce(
+	const stablecoinsStats = supportedStablecoins.reduce<Record<string, StablecoinStats>>(
 		(acc, stablecoin) => ({
 			...acc,
-			[stablecoin.symbol]: {
-				...parseStablecoinStats(parsedData?.[stablecoin.address]),
+			[stablecoin.key]: {
+				...parseStablecoinStats(parsedData?.[stablecoin.key]),
 				contractAddress: stablecoin.address,
 				contractBridgeAddress: stablecoin.bridgeAddress,
 			},
 		}),
-		{} as StablecoinsStats
+		{}
 	);
 
 	return {
-		...stablecoinsStats,
+		stablecoins: stablecoinsStats,
 		supportedStablecoins,
 		isError,
 		isLoading,

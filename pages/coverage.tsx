@@ -3,6 +3,7 @@ import CoverageSummary from "@components/PageCoverage/CoverageSummary";
 import CoveragePositions from "@components/PageCoverage/CoveragePositions";
 import CoverageBridges from "@components/PageCoverage/CoverageBridges";
 import CoverageReserves from "@components/PageCoverage/CoverageReserves";
+import CoverageTVL from "@components/PageCoverage/CoverageTVL";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
@@ -17,6 +18,7 @@ export default function CoveragePage() {
 
 			<div className="flex flex-col gap-[4rem] mt-[4rem]">
 				<CoverageSummary />
+				<CoverageTVL />
 				<CoveragePositions />
 				<CoverageBridges />
 				<CoverageReserves />

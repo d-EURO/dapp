@@ -8,6 +8,7 @@ import { TOKEN_SYMBOL } from "@utils";
 import { useTranslation } from "next-i18next";
 import { formatUnits } from "viem";
 import { formatCurrency } from "../../utils/format";
+import { WAGMI_CHAIN } from "../../app.config";
 
 function formatAmount(value: bigint): string {
 	const num = parseFloat(formatUnits(value, 18));
@@ -20,13 +21,13 @@ export default function CoverageBridges() {
 	const { bridges: allBridges, isLoading } = useBridgeStats();
 	const ONE_DEURO = 10n ** 18n;
 	const bridges = allBridges.filter((b) => b.minted >= ONE_DEURO);
+	const explorerUrl = WAGMI_CHAIN.blockExplorers?.default.url ?? "https://etherscan.io";
 
 	const headers = [
 		t("coverage.stablecoin"),
 		t("coverage.minted"),
 		t("coverage.limit"),
 		t("coverage.utilization"),
-		t("coverage.status"),
 	];
 
 	if (isLoading) {
@@ -53,10 +54,15 @@ export default function CoverageBridges() {
 
 						return (
 							<TableRow key={bridge.bridgeAddress} headers={headers} tab="">
-								<div className="flex items-center gap-2 text-left">
+								<a
+									href={`${explorerUrl}/token/${bridge.tokenAddress}?a=${bridge.bridgeAddress}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center gap-2 text-left hover:underline"
+								>
 									<TokenLogo currency={bridge.symbol} size={6} />
 									<span className="font-semibold">{bridge.symbol}</span>
-								</div>
+								</a>
 								<div>
 									{formatAmount(minted)} {TOKEN_SYMBOL}
 								</div>
@@ -71,17 +77,6 @@ export default function CoverageBridges() {
 											style={{ width: `${Math.min(utilization, 100)}%` }}
 										/>
 									</div>
-								</div>
-								<div>
-									<span
-										className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
-											bridge.isExpired
-												? "bg-red-100 text-red-700"
-												: "bg-green-100 text-green-700"
-										}`}
-									>
-										{bridge.isExpired ? t("coverage.expired") : t("coverage.active")}
-									</span>
 								</div>
 							</TableRow>
 						);

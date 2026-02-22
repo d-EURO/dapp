@@ -10,6 +10,7 @@ import { WAGMI_CHAIN } from "../app.config";
 export interface BridgeStat {
 	symbol: string;
 	bridgeAddress: Address;
+	tokenAddress: Address;
 	minted: bigint;
 	limit: bigint;
 	remaining: bigint;
@@ -54,6 +55,7 @@ export const useBridgeStats = (): BridgeStatsResult => {
 	const contracts = useMemo(
 		() =>
 			bridgeMinters.flatMap((b) => [
+				{ chainId, address: b.address, abi: StablecoinBridgeABI, functionName: "eur" as const },
 				{ chainId, address: b.address, abi: StablecoinBridgeABI, functionName: "minted" as const },
 				{ chainId, address: b.address, abi: StablecoinBridgeABI, functionName: "limit" as const },
 				{ chainId, address: b.address, abi: StablecoinBridgeABI, functionName: "horizon" as const },
@@ -66,14 +68,16 @@ export const useBridgeStats = (): BridgeStatsResult => {
 	const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
 
 	const bridges: BridgeStat[] = bridgeMinters.map((b, i) => {
-		const base = i * 3;
-		const minted = data ? decodeBigIntCall(data[base] ?? 0) : 0n;
-		const limit = data ? decodeBigIntCall(data[base + 1] ?? 0) : 0n;
-		const horizon = data ? decodeBigIntCall(data[base + 2] ?? 0) : 0n;
+		const base = i * 4;
+		const tokenAddress = (data?.[base]?.result as Address) ?? ("0x0" as Address);
+		const minted = data ? decodeBigIntCall(data[base + 1] ?? 0) : 0n;
+		const limit = data ? decodeBigIntCall(data[base + 2] ?? 0) : 0n;
+		const horizon = data ? decodeBigIntCall(data[base + 3] ?? 0) : 0n;
 
 		return {
 			symbol: b.symbol,
 			bridgeAddress: b.address,
+			tokenAddress,
 			minted,
 			limit,
 			remaining: limit > minted ? limit - minted : 0n,
