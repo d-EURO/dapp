@@ -701,11 +701,6 @@
         "total_savings_balance": "Saldo total de ahorros",
         "savings_rate": "Tasa de ahorro",
         "estimated_interest_pa": "Intereses estimados p.a.",
-        "total_interest_paid": "Total de intereses pagados",
-        "net_interest_pa": "Intereses netos p.a.",
-        "positions_breakdown": "Intereses por colateral",
-        "collateral": "Colateral",
-        "avg_interest": "Interés prom.",
-        "total_minted_short": "Total acuñado"
+        "net_interest_pa": "Intereses netos p.a."
     }
 }
