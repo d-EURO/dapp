@@ -37,10 +37,10 @@ export default function RatesSummary() {
 
 	if (!eco.loaded || !savingsInfo) {
 		return (
-			<AppCard>
+			<div>
 				<SectionTitle>{t("rates.title")}</SectionTitle>
 				<p className="text-text-muted">{t("common.loading")}</p>
-			</AppCard>
+			</div>
 		);
 	}
 

@@ -700,11 +700,6 @@
         "total_savings_balance": "Solde total d'épargne",
         "savings_rate": "Taux d'épargne",
         "estimated_interest_pa": "Intérêts estimés p.a.",
-        "total_interest_paid": "Total des intérêts payés",
-        "net_interest_pa": "Intérêts nets p.a.",
-        "positions_breakdown": "Intérêts par collatéral",
-        "collateral": "Collatéral",
-        "avg_interest": "Intérêt moy.",
-        "total_minted_short": "Total frappé"
+        "net_interest_pa": "Intérêts nets p.a."
     }
 }

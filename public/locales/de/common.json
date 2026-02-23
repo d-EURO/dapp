@@ -701,11 +701,6 @@
         "total_savings_balance": "Gesamtes Sparguthaben",
         "savings_rate": "Sparzins",
         "estimated_interest_pa": "Geschätzte Zinsen p.a.",
-        "total_interest_paid": "Bisher ausgezahlt",
-        "net_interest_pa": "Nettozinsen p.a.",
-        "positions_breakdown": "Zinsen nach Collateral",
-        "collateral": "Besicherung",
-        "avg_interest": "Ø Zinsen",
-        "total_minted_short": "Gesamt geprägt"
+        "net_interest_pa": "Nettozinsen p.a."
     }
 }
