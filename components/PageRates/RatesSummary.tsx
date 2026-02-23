@@ -35,7 +35,7 @@ export default function RatesSummary() {
 	const savingsInterestPA = totalSavingsNum * savingsRate / 100;
 	const netInterest = loanInterestPA - savingsInterestPA;
 
-	if (!eco.loaded) {
+	if (!eco.loaded || !savingsInfo) {
 		return (
 			<AppCard>
 				<SectionTitle>{t("rates.title")}</SectionTitle>
@@ -49,7 +49,7 @@ export default function RatesSummary() {
 			<SectionTitle>{t("rates.title")}</SectionTitle>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				{/* Links: Einnahmen (Loans / Mint) */}
+				{/* Revenue: Loan Interest */}
 				<AppCard>
 					<div className="text-lg font-bold mb-2">{t("rates.loan_interest")}</div>
 					<div className="flex flex-col gap-2">
@@ -68,7 +68,7 @@ export default function RatesSummary() {
 					</div>
 				</AppCard>
 
-				{/* Rechts: Ausgaben (Savings) */}
+				{/* Expenses: Savings Interest */}
 				<AppCard>
 					<div className="text-lg font-bold mb-2">{t("rates.savings_interest")}</div>
 					<div className="flex flex-col gap-2">
@@ -84,19 +84,19 @@ export default function RatesSummary() {
 							<DisplayLabel label={t("rates.estimated_interest_pa")} />
 							<DisplayAmount className="mt-1" amount={savingsInterestPA} currency={TOKEN_SYMBOL} hideLogo />
 						</AppBox>
-						</div>
+					</div>
 				</AppCard>
 			</div>
 
-			{/* Netto-Zeile */}
-			<div className="mt-4 p-4 rounded-xl bg-card-body-primary shadow-card">
+			{/* Net Interest */}
+			<AppCard className="mt-4 p-4">
 				<div className="flex items-center justify-between">
 					<span className="text-base font-bold">{t("rates.net_interest_pa")}</span>
 					<span className={`text-lg font-bold ${netInterest >= 0 ? "text-green-600" : "text-red-600"}`}>
 						{formatCurrency(netInterest, 0, 0)} {TOKEN_SYMBOL}
 					</span>
 				</div>
-			</div>
+			</AppCard>
 		</div>
 	);
 }
