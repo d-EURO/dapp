@@ -649,7 +649,6 @@
     },
     "coverage": {
         "title": "Couverture",
-        "tvl": "Garanties",
         "total_supply": "Offre Totale",
         "positions": "Positions Collatéralisées",
         "bridges": "Ponts Stablecoins",
@@ -658,9 +657,7 @@
         "collateral_positions": "Positions Collatéralisées",
         "collateral": "Collatéral",
         "open_positions": "Positions Ouvertes",
-        "total_collateral": "Total Collatéral",
         "total_minted": "Total Frappé",
-        "collateralization": "Collatéralisation",
         "interest_avg": "Intérêt Moy.",
         "utilization": "Utilisation",
         "stablecoin_bridges": "Ponts Stablecoins",
@@ -669,19 +666,7 @@
         "limit": "Limite",
         "status": "Statut",
         "active": "Actif",
-        "expired": "Expiré",
-        "reserves_earnings": "Réserves & Revenus",
-        "reserve_breakdown": "Détail des Réserves",
-        "total_reserve": "Réserve Totale",
-        "minter_reserve": "Réserve du Frappeur",
-        "equity_reserve": "Réserve de Capital",
-        "earnings": "Revenus",
-        "profit": "Profit",
-        "loss": "Perte",
-        "unrealized_profit": "Profit Non Réalisé",
-        "net_earnings": "Revenus Nets",
-        "supply_composition": "Composition du dEURO",
-        "free_circulating": "En libre circulation"
+        "expired": "Expiré"
     },
     "minter_check": {
         "title": "Vérification des Minters",

@@ -4,10 +4,9 @@ import TableHeader from "../Table/TableHead";
 import TableRow from "../Table/TableRow";
 import TokenLogo from "../TokenLogo";
 import { SectionTitle } from "../SectionTitle";
-import { TOKEN_SYMBOL } from "@utils";
+import { TOKEN_SYMBOL, formatCurrency } from "@utils";
 import { useTranslation } from "next-i18next";
 import { formatUnits } from "viem";
-import { formatCurrency } from "../../utils/format";
 
 function formatAmount(value: bigint): string {
 	const num = parseFloat(formatUnits(value, 18));

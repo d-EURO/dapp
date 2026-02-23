@@ -5,8 +5,7 @@ import TableHeader from "../Table/TableHead";
 import TableRow from "../Table/TableRow";
 import TokenLogo from "../TokenLogo";
 import { SectionTitle } from "../SectionTitle";
-import { formatCurrency } from "../../utils/format";
-import { TOKEN_SYMBOL } from "@utils";
+import { formatCurrency, TOKEN_SYMBOL } from "@utils";
 import { useTranslation } from "next-i18next";
 
 export default function CoveragePositions() {
@@ -24,6 +23,10 @@ export default function CoveragePositions() {
 		t("coverage.interest_avg"),
 		t("coverage.utilization"),
 	];
+
+	if (!eco.loaded) {
+		return null;
+	}
 
 	if (exposures.length === 0) {
 		return null;

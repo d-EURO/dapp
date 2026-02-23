@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { useBridgeStats } from "@hooks";
 import AppCard from "../AppCard";
 import { SectionTitle } from "../SectionTitle";
 import TokenLogo from "../TokenLogo";
-import { formatCurrency, shortenAddress } from "../../utils/format";
-import { TOKEN_SYMBOL } from "@utils";
+import { formatCurrency, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { formatUnits } from "viem";
 import { useTranslation } from "next-i18next";
 import { WAGMI_CHAIN } from "../../app.config";
@@ -29,7 +28,6 @@ export default function MinterCheckDrillDown() {
 
 	const explorerUrl = WAGMI_CHAIN.blockExplorers?.default.url ?? "https://etherscan.io";
 	const deuroAddress = ADDRESS[WAGMI_CHAIN.id].decentralizedEURO;
-	const positionFactoryV2 = ADDRESS[WAGMI_CHAIN.id].positionFactoryV2;
 
 	const totalSupply = eco.stablecoinInfo?.total?.supply ?? 0;
 
@@ -43,23 +41,41 @@ export default function MinterCheckDrillDown() {
 	const pctPositions = totalSupply > 0 ? (positionsMinted / totalSupply) * 100 : 0;
 	const pctBridges = totalSupply > 0 ? (bridgeMintedNum / totalSupply) * 100 : 0;
 
-	const ONE_DEURO = 10n ** 18n;
-	const bridges = allBridges.filter((b) => b.minted >= ONE_DEURO);
+	const bridges = useMemo(() => {
+		const ONE_DEURO = 10n ** 18n;
+		return allBridges.filter((b) => b.minted >= ONE_DEURO);
+	}, [allBridges]);
 
-	// Group bridges by symbol
-	const bridgesBySymbol = bridges.reduce<Record<string, typeof bridges>>((acc, bridge) => {
-		const key = bridge.symbol;
-		if (!acc[key]) acc[key] = [];
-		acc[key].push(bridge);
-		return acc;
-	}, {});
+	const bridgeGroups = useMemo(() => {
+		const bridgesBySymbol = bridges.reduce<Record<string, typeof bridges>>((acc, bridge) => {
+			const key = bridge.symbol;
+			if (!acc[key]) acc[key] = [];
+			acc[key].push(bridge);
+			return acc;
+		}, {});
 
-	const bridgeGroups = Object.entries(bridgesBySymbol)
-		.map(([symbol, items]) => {
-			const totalMinted = items.reduce((sum, b) => sum + parseFloat(formatUnits(b.minted, 18)), 0);
-			return { symbol, items, totalMinted };
-		})
-		.sort((a, b) => b.totalMinted - a.totalMinted);
+		return Object.entries(bridgesBySymbol)
+			.map(([symbol, items]) => {
+				const totalMinted = items.reduce((sum, b) => sum + parseFloat(formatUnits(b.minted, 18)), 0);
+				return { symbol, items, totalMinted };
+			})
+			.sort((a, b) => b.totalMinted - a.totalMinted);
+	}, [bridges]);
+
+	const positionsByCollateral = useMemo(() => {
+		const map = new Map<string, typeof openPositions>();
+		for (const p of openPositions) {
+			if (BigInt(p.principal) <= 0n) continue;
+			const key = p.collateral.toLowerCase();
+			const list = map.get(key) ?? [];
+			list.push(p);
+			map.set(key, list);
+		}
+		for (const [, list] of map) {
+			list.sort((a, b) => Number(BigInt(b.principal) - BigInt(a.principal)));
+		}
+		return map;
+	}, [openPositions]);
 
 	const toggleCategory = (cat: Category) => {
 		setExpandedCategory(expandedCategory === cat ? null : cat);
@@ -82,6 +98,7 @@ export default function MinterCheckDrillDown() {
 			{/* LEVEL 0: Total Supply */}
 			<button
 				onClick={() => setIsLevel1Open(!isLevel1Open)}
+				aria-expanded={isLevel1Open}
 				className="w-full flex items-center justify-between p-4 rounded-xl bg-layout-primary hover:opacity-80 transition-opacity"
 			>
 				<div className="flex items-center gap-2">
@@ -115,6 +132,7 @@ export default function MinterCheckDrillDown() {
 						<div>
 							<button
 								onClick={() => toggleCategory("positions")}
+								aria-expanded={expandedCategory === "positions"}
 								className="w-full flex flex-col gap-1.5 p-3 rounded-lg bg-layout-primary hover:opacity-80 transition-opacity"
 							>
 								<div className="w-full flex items-center justify-between">
@@ -144,15 +162,14 @@ export default function MinterCheckDrillDown() {
 										{exposures.map((exp) => {
 											const addr = exp.collateral.address;
 											const isExpanded = expandedCollateral === addr;
-											const collateralPositions = openPositions
-												.filter((p) => p.collateral.toLowerCase() === addr.toLowerCase() && BigInt(p.principal) > 0n)
-												.sort((a, b) => Number(BigInt(b.principal) - BigInt(a.principal)));
+											const collateralPositions = positionsByCollateral.get(addr.toLowerCase()) ?? [];
 											const pctOfTotal = totalSupply > 0 ? (exp.mint.totalMinted / totalSupply) * 100 : 0;
 
 											return (
 												<div key={addr}>
 													<button
 														onClick={() => setExpandedCollateral(isExpanded ? null : addr)}
+														aria-expanded={isExpanded}
 														className="w-full flex flex-col gap-1.5 p-2 rounded-lg hover:bg-layout-primary transition-colors"
 													>
 														<div className="w-full flex items-center justify-between">
@@ -170,7 +187,7 @@ export default function MinterCheckDrillDown() {
 																/>
 															</div>
 														</div>
-														<div className="w-full h-1.5 rounded-full overflow-hidden">
+														<div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
 															<div
 																className="h-full rounded-full bg-blue-500 transition-all"
 																style={{ width: `${pctOfTotal}%` }}
@@ -184,11 +201,11 @@ export default function MinterCheckDrillDown() {
 															<div className="flex flex-col gap-1 pl-5 pb-1">
 																{collateralPositions.map((pos) => {
 																	const minted = parseFloat(formatUnits(BigInt(pos.principal), 18));
-																	const pctOfTotal = totalSupply > 0 ? (minted / totalSupply) * 100 : 0;
+																	const pctPos = totalSupply > 0 ? (minted / totalSupply) * 100 : 0;
 																	return (
 																		<a
 																			key={pos.position}
-																			href={`${explorerUrl}/readContract?m=light&a=${pos.position}&n=mainnet&v=${positionFactoryV2}#readCollapse25`}
+																			href={`${explorerUrl}/address/${pos.position}`}
 																			target="_blank"
 																			rel="noopener noreferrer"
 																			className="flex flex-col gap-1 p-2 rounded-lg hover:bg-layout-primary transition-colors text-sm"
@@ -198,13 +215,13 @@ export default function MinterCheckDrillDown() {
 																					{shortenAddress(pos.position)}
 																				</span>
 																				<span className="text-text-muted">
-																					{formatCurrency(minted, 0, 0)} {TOKEN_SYMBOL} ({pctOfTotal.toFixed(1)}%)
+																					{formatCurrency(minted, 0, 0)} {TOKEN_SYMBOL} ({pctPos.toFixed(1)}%)
 																				</span>
 																			</div>
-																			<div className="w-full h-1 rounded-full overflow-hidden">
+																			<div className="w-full h-1 rounded-full bg-slate-200 overflow-hidden">
 																				<div
 																					className="h-full rounded-full bg-blue-400 transition-all"
-																					style={{ width: `${pctOfTotal}%` }}
+																					style={{ width: `${pctPos}%` }}
 																				/>
 																			</div>
 																		</a>
@@ -225,6 +242,7 @@ export default function MinterCheckDrillDown() {
 						<div>
 							<button
 								onClick={() => toggleCategory("bridges")}
+								aria-expanded={expandedCategory === "bridges"}
 								className="w-full flex flex-col gap-1.5 p-3 rounded-lg bg-layout-primary hover:opacity-80 transition-opacity"
 							>
 								<div className="w-full flex items-center justify-between">
@@ -259,6 +277,7 @@ export default function MinterCheckDrillDown() {
 												<div key={group.symbol}>
 													<button
 														onClick={() => setExpandedBridgeSymbol(isExpanded ? null : group.symbol)}
+														aria-expanded={isExpanded}
 														className="w-full flex flex-col gap-1.5 p-2 rounded-lg hover:bg-layout-primary transition-colors"
 													>
 														<div className="w-full flex items-center justify-between">
@@ -276,7 +295,7 @@ export default function MinterCheckDrillDown() {
 																/>
 															</div>
 														</div>
-														<div className="w-full h-1.5 rounded-full overflow-hidden">
+														<div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
 															<div
 																className="h-full rounded-full bg-emerald-500 transition-all"
 																style={{ width: `${pctOfTotal}%` }}
@@ -290,7 +309,7 @@ export default function MinterCheckDrillDown() {
 															<div className="flex flex-col gap-1 pl-5 pb-1">
 																{group.items.map((bridge) => {
 																	const minted = parseFloat(formatUnits(bridge.minted, 18));
-																	const pctOfTotal = totalSupply > 0 ? (minted / totalSupply) * 100 : 0;
+																	const pctBridge = totalSupply > 0 ? (minted / totalSupply) * 100 : 0;
 																	return (
 																		<a
 																			key={bridge.bridgeAddress}
@@ -304,13 +323,13 @@ export default function MinterCheckDrillDown() {
 																					{shortenAddress(bridge.bridgeAddress)}
 																				</span>
 																				<span className="text-text-muted">
-																					{formatCurrency(minted, 0, 0)} {TOKEN_SYMBOL} ({pctOfTotal.toFixed(1)}%)
+																					{formatCurrency(minted, 0, 0)} {TOKEN_SYMBOL} ({pctBridge.toFixed(1)}%)
 																				</span>
 																			</div>
-																			<div className="w-full h-1 rounded-full overflow-hidden">
+																			<div className="w-full h-1 rounded-full bg-slate-200 overflow-hidden">
 																				<div
 																					className="h-full rounded-full bg-emerald-400 transition-all"
-																					style={{ width: `${pctOfTotal}%` }}
+																					style={{ width: `${pctBridge}%` }}
 																				/>
 																			</div>
 																		</a>

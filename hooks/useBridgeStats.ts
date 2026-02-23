@@ -21,6 +21,7 @@ export interface BridgeStatsResult {
 	bridges: BridgeStat[];
 	totalBridgeMinted: bigint;
 	isLoading: boolean;
+	isError: boolean;
 }
 
 function parseBridgeSymbol(applyMessage: string): string {
@@ -61,7 +62,7 @@ export const useBridgeStats = (): BridgeStatsResult => {
 		[bridgeMinters, chainId]
 	);
 
-	const { data, isLoading } = useReadContracts({ contracts });
+	const { data, isLoading, isError } = useReadContracts({ contracts });
 
 	const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
 
@@ -84,5 +85,5 @@ export const useBridgeStats = (): BridgeStatsResult => {
 
 	const totalBridgeMinted = bridges.reduce((sum, b) => sum + b.minted, 0n);
 
-	return { bridges, totalBridgeMinted, isLoading };
+	return { bridges, totalBridgeMinted, isLoading, isError };
 };

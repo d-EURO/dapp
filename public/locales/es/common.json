@@ -650,7 +650,6 @@
     },
     "coverage": {
         "title": "Cobertura",
-        "tvl": "Garantías",
         "total_supply": "Oferta Total",
         "positions": "Posiciones Colateralizadas",
         "bridges": "Puentes de Stablecoins",
@@ -659,9 +658,7 @@
         "collateral_positions": "Posiciones Colateralizadas",
         "collateral": "Colateral",
         "open_positions": "Posiciones Abiertas",
-        "total_collateral": "Total Colateral",
         "total_minted": "Total Acuñado",
-        "collateralization": "Colateralización",
         "interest_avg": "Interés Prom.",
         "utilization": "Utilización",
         "stablecoin_bridges": "Puentes de Stablecoins",
@@ -670,19 +667,7 @@
         "limit": "Límite",
         "status": "Estado",
         "active": "Activo",
-        "expired": "Expirado",
-        "reserves_earnings": "Reservas y Ganancias",
-        "reserve_breakdown": "Desglose de Reservas",
-        "total_reserve": "Reserva Total",
-        "minter_reserve": "Reserva del Acuñador",
-        "equity_reserve": "Reserva de Capital",
-        "earnings": "Ganancias",
-        "profit": "Ganancia",
-        "loss": "Pérdida",
-        "unrealized_profit": "Ganancia No Realizada",
-        "net_earnings": "Ganancias Netas",
-        "supply_composition": "Composición del dEURO",
-        "free_circulating": "En libre circulación"
+        "expired": "Expirado"
     },
     "minter_check": {
         "title": "Verificación de Minters",
