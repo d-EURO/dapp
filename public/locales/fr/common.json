@@ -55,7 +55,8 @@
             "expert_mode": "Mode Expert",
             "global_preferences": "Préférences Globales",
             "language": "Langue",
-            "dashboard": "Tableau de bord"
+            "dashboard": "Tableau de bord",
+            "rates": "Taux"
         },
         "txs": {
             "amount": "Montant :",
@@ -645,5 +646,45 @@
             "withdrawing": "Retrait de l'épargne en cours…",
             "successfully_withdrawn": "Retrait effectué avec succès"
         }
+    },
+    "coverage": {
+        "title": "Couverture",
+        "total_supply": "Offre Totale",
+        "positions": "Positions Collatéralisées",
+        "bridges": "Ponts Stablecoins",
+        "reserves": "Réserves",
+        "other": "Autres (Frais/Intérêts)",
+        "collateral_positions": "Positions Collatéralisées",
+        "collateral": "Collatéral",
+        "open_positions": "Positions Ouvertes",
+        "total_minted": "Total Frappé",
+        "interest_avg": "Intérêt Moy.",
+        "utilization": "Utilisation",
+        "stablecoin_bridges": "Ponts Stablecoins",
+        "stablecoin": "Stablecoin",
+        "minted": "Frappé",
+        "limit": "Limite",
+        "status": "Statut",
+        "active": "Actif",
+        "expired": "Expiré"
+    },
+    "minter_check": {
+        "title": "Vérification des Minters",
+        "description": "Chaque dEURO en circulation peut être retracé à un minter spécifique. Cette page vous permet de vérifier exactement comment tous les dEURO ont été créés. Cliquez sur une position pour la vérifier sur Etherscan.",
+        "total_supply": "Offre Totale",
+        "collateral_positions": "Positions Collatéralisées",
+        "bridge_minters": "Minters Bridge"
+    },
+    "rates": {
+        "title": "Taux d'intérêt en direct",
+        "loan_interest": "Intérêts de prêt (Revenus)",
+        "savings_interest": "Intérêts d'épargne (Dépenses)",
+        "open_positions": "Positions ouvertes",
+        "total_minted": "Total frappé",
+        "interest_pa": "Intérêts p.a.",
+        "total_savings_balance": "Solde total d'épargne",
+        "savings_rate": "Taux d'épargne",
+        "estimated_interest_pa": "Intérêts estimés p.a.",
+        "net_interest_pa": "Intérêts nets p.a."
     }
 }

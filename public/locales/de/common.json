@@ -55,7 +55,8 @@
             "expert_mode": "Expertenmodus",
             "global_preferences": "Globale Einstellungen",
             "language": "Sprache",
-            "dashboard": "Dashboard"
+            "dashboard": "Dashboard",
+            "rates": "Zinsen"
         },
         "txs": {
             "amount": "Betrag:",
@@ -646,5 +647,45 @@
             "withdrawing": "Auszahlung von Ersparnissen wird durchgeführt...",
             "successfully_withdrawn": "Erfolgreich ausgezahlt"
         }
+    },
+    "coverage": {
+        "title": "Deckung",
+        "total_supply": "Gesamtangebot",
+        "positions": "Besicherte Positionen",
+        "bridges": "Stablecoin-Bridges",
+        "reserves": "Reserven",
+        "other": "Sonstiges (Gebühren/Zinsen)",
+        "collateral_positions": "Besicherte Positionen",
+        "collateral": "Besicherung",
+        "open_positions": "Offene Positionen",
+        "total_minted": "Gesamt geprägt",
+        "interest_avg": "Ø Zinsen",
+        "utilization": "Auslastung",
+        "stablecoin_bridges": "Stablecoin-Bridges",
+        "stablecoin": "Stablecoin",
+        "minted": "Geprägt",
+        "limit": "Limit",
+        "status": "Status",
+        "active": "Aktiv",
+        "expired": "Abgelaufen"
+    },
+    "minter_check": {
+        "title": "Minter-Prüfung",
+        "description": "Jeder dEURO im Umlauf kann einem bestimmten Minter zugeordnet werden. Diese Seite zeigt, wie alle dEURO entstanden sind. Klicken Sie auf eine Position, um sie auf Etherscan zu verifizieren.",
+        "total_supply": "Gesamtangebot",
+        "collateral_positions": "Besicherte Positionen",
+        "bridge_minters": "Bridge-Minter"
+    },
+    "rates": {
+        "title": "Aktuelle Zinssätze",
+        "loan_interest": "Kreditzinsen (Einnahmen)",
+        "savings_interest": "Sparzinsen (Ausgaben)",
+        "open_positions": "Offene Positionen",
+        "total_minted": "Gesamt geprägt",
+        "interest_pa": "Zinsen p.a.",
+        "total_savings_balance": "Gesamtes Sparguthaben",
+        "savings_rate": "Sparzins",
+        "estimated_interest_pa": "Geschätzte Zinsen p.a.",
+        "net_interest_pa": "Nettozinsen p.a."
     }
 }

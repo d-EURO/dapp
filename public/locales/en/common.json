@@ -55,7 +55,8 @@
             "expert_mode": "Expert Mode",
             "global_preferences": "Global Preferences",
             "language": "Language",
-            "dashboard": "Dashboard"
+            "dashboard": "Dashboard",
+            "rates": "Rates"
         },
         "txs": {
             "amount": "Amount:",
@@ -647,5 +648,45 @@
             "withdrawing": "Withdrawing from savings...",
             "successfully_withdrawn": "Successfully withdrawn"
         }
+    },
+    "coverage": {
+        "title": "Coverage",
+        "total_supply": "Total Supply",
+        "positions": "Collateral Positions",
+        "bridges": "Stablecoin Bridges",
+        "reserves": "Reserves",
+        "other": "Other (Fees/Interest)",
+        "collateral_positions": "Collateral Positions",
+        "collateral": "Collateral",
+        "open_positions": "Open Positions",
+        "total_minted": "Total Minted",
+        "interest_avg": "Avg. Interest",
+        "utilization": "Utilization",
+        "stablecoin_bridges": "Stablecoin Bridges",
+        "stablecoin": "Stablecoin",
+        "minted": "Minted",
+        "limit": "Limit",
+        "status": "Status",
+        "active": "Active",
+        "expired": "Expired"
+    },
+    "minter_check": {
+        "title": "Minter Check",
+        "description": "Every dEURO in circulation can be traced back to a specific minter. This page lets you verify exactly how all dEURO were created. Click on any position to verify it on Etherscan.",
+        "total_supply": "Total Supply",
+        "collateral_positions": "Collateral Positions",
+        "bridge_minters": "Bridge Minters"
+    },
+    "rates": {
+        "title": "Live Interest Rates",
+        "loan_interest": "Loan Interest (Revenue)",
+        "savings_interest": "Savings Interest (Expenses)",
+        "open_positions": "Open Positions",
+        "total_minted": "Total Minted",
+        "interest_pa": "Interest p.a.",
+        "total_savings_balance": "Total Savings Balance",
+        "savings_rate": "Savings Rate",
+        "estimated_interest_pa": "Estimated Interest p.a.",
+        "net_interest_pa": "Net Interest p.a."
     }
 }

@@ -1,6 +1,8 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
 import { DEURO_API_CLIENT } from "../../app.config";
 import {
+	AnalyticsExposure,
+	DispatchAnalyticsExposure,
 	DispatchApiEcosystemCollateralPositions,
 	DispatchApiEcosystemCollateralStats,
 	DispatchApiEcosystemNativePoolShareInfo,
@@ -30,6 +32,7 @@ export const initialState: EcosystemState = {
 	depsInfo: undefined,
 	stablecoinInfo: undefined,
 	stablecoinMinters: undefined,
+	exposureData: undefined,
 };
 
 // --------------------------------------------------------------------------------
@@ -73,6 +76,11 @@ export const slice = createSlice({
 		setStablecoinMinters: (state, action: { payload: ApiMinterListing | undefined }) => {
 			state.stablecoinMinters = action.payload;
 		},
+
+		// SET Exposure Data
+		setExposureData: (state, action: { payload: AnalyticsExposure | undefined }) => {
+			state.exposureData = action.payload;
+		},
 	},
 });
 
@@ -90,6 +98,7 @@ export const fetchEcosystem =
 			| DispatchApiEcosystemNativePoolShareInfo
 			| DispatchApiEcosystemStablecoinInfo
 			| DispatchApiEcosystemStablecoinMinters
+			| DispatchAnalyticsExposure
 		>
 	) => {
 		// ---------------------------------------------------------------
@@ -113,6 +122,9 @@ export const fetchEcosystem =
 			const response5 = await DEURO_API_CLIENT.get("/ecosystem/stablecoin/minter/list");
 			dispatch(slice.actions.setStablecoinMinters(response5.data as ApiMinterListing));
 
+			const response6 = await DEURO_API_CLIENT.get("/analytics/deps/exposure");
+			dispatch(slice.actions.setExposureData(response6.data as AnalyticsExposure));
+
 			// ---------------------------------------------------------------
 			// Finalizing, loaded set to ture
 			dispatch(slice.actions.setLoaded(true));
@@ -123,6 +135,7 @@ export const fetchEcosystem =
 			dispatch(slice.actions.setDepsInfo(undefined));
 			dispatch(slice.actions.setStablecoinInfo(undefined));
 			dispatch(slice.actions.setStablecoinMinters(undefined));
+			dispatch(slice.actions.setExposureData(undefined));
 			dispatch(slice.actions.setLoaded(true));
 		}
 	};
