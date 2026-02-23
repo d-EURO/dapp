@@ -2,7 +2,6 @@ import Head from "next/head";
 import CoverageSummary from "@components/PageCoverage/CoverageSummary";
 import CoveragePositions from "@components/PageCoverage/CoveragePositions";
 import CoverageBridges from "@components/PageCoverage/CoverageBridges";
-import CoverageReserves from "@components/PageCoverage/CoverageReserves";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
@@ -19,7 +18,6 @@ export default function CoveragePage() {
 				<CoverageSummary />
 				<CoveragePositions />
 				<CoverageBridges />
-				<CoverageReserves />
 			</div>
 		</>
 	);

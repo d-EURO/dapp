@@ -8,8 +8,7 @@ import AppBox from "../AppBox";
 import DisplayLabel from "../DisplayLabel";
 import DisplayAmount from "../DisplayAmount";
 import { SectionTitle } from "../SectionTitle";
-import { formatCurrency } from "../../utils/format";
-import { TOKEN_SYMBOL } from "@utils";
+import { formatCurrency, TOKEN_SYMBOL } from "@utils";
 import { useTranslation } from "next-i18next";
 
 export default function RatesSummary() {

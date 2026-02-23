@@ -3,8 +3,7 @@ import { RootState } from "../../redux/redux.store";
 import { useBridgeStats } from "@hooks";
 import AppCard from "../AppCard";
 import { SectionTitle } from "../SectionTitle";
-import { formatCurrency } from "../../utils/format";
-import { TOKEN_SYMBOL } from "@utils";
+import { formatCurrency, TOKEN_SYMBOL } from "@utils";
 import { formatUnits } from "viem";
 import { useTranslation } from "next-i18next";
 

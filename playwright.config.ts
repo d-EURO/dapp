@@ -4,12 +4,12 @@ export default defineConfig({
 	testDir: "./tests",
 	timeout: 60000,
 	use: {
-		baseURL: "http://localhost:3002",
+		baseURL: "http://localhost:3000",
 		headless: true,
 	},
 	webServer: {
 		command: "yarn dev",
-		port: 3002,
+		port: 3000,
 		timeout: 30000,
 		reuseExistingServer: true,
 	},

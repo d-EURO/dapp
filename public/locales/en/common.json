@@ -651,7 +651,6 @@
     },
     "coverage": {
         "title": "Coverage",
-        "tvl": "Collateral",
         "total_supply": "Total Supply",
         "positions": "Collateral Positions",
         "bridges": "Stablecoin Bridges",
@@ -660,9 +659,7 @@
         "collateral_positions": "Collateral Positions",
         "collateral": "Collateral",
         "open_positions": "Open Positions",
-        "total_collateral": "Total Collateral",
         "total_minted": "Total Minted",
-        "collateralization": "Collateralization",
         "interest_avg": "Avg. Interest",
         "utilization": "Utilization",
         "stablecoin_bridges": "Stablecoin Bridges",
@@ -671,19 +668,7 @@
         "limit": "Limit",
         "status": "Status",
         "active": "Active",
-        "expired": "Expired",
-        "reserves_earnings": "Reserves & Earnings",
-        "reserve_breakdown": "Reserve Breakdown",
-        "total_reserve": "Total Reserve",
-        "minter_reserve": "Minter Reserve",
-        "equity_reserve": "Equity Reserve",
-        "earnings": "Earnings",
-        "profit": "Profit",
-        "loss": "Loss",
-        "unrealized_profit": "Unrealized Profit",
-        "net_earnings": "Net Earnings",
-        "supply_composition": "dEURO Composition",
-        "free_circulating": "Free Circulating"
+        "expired": "Expired"
     },
     "minter_check": {
         "title": "Minter Check",
