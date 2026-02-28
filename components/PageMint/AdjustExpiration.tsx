@@ -6,7 +6,7 @@ import { renderErrorTxToast } from "@components/TxToast";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { ADDRESS, PositionRollerABI, PositionV2ABI } from "@juicedollar/jusd";
 import { useRouter } from "next/router";
-import { writeContract } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { WAGMI_CONFIG } from "../../app.config";
 import { useChainId, useReadContracts } from "wagmi";
 import { Address } from "viem/accounts";
@@ -104,7 +104,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 			let txHash: `0x${string}`;
 
 			if (isNativeWrappedPosition) {
-				txHash = await writeContract(WAGMI_CONFIG, {
+				txHash = await simulateAndWrite({
 					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: ADDRESS[chainId].roller,
 					abi: PositionRollerABI,
@@ -121,7 +121,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 					value: extraNeeded,
 				});
 			} else {
-				txHash = await writeContract(WAGMI_CONFIG, {
+				txHash = await simulateAndWrite({
 					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: ADDRESS[chainId].roller,
 					abi: PositionRollerABI,
@@ -157,7 +157,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 		try {
 			setIsTxOnGoing(true);
 
-			const approvingHash = await writeContract(WAGMI_CONFIG, {
+			const approvingHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral,
 				abi: erc20Abi,
@@ -198,7 +198,7 @@ export const AdjustExpiration = ({ position }: AdjustExpirationProps) => {
 		try {
 			setIsTxOnGoing(true);
 
-			const approvingHash = await writeContract(WAGMI_CONFIG, {
+			const approvingHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.stablecoinAddress,
 				abi: erc20Abi,

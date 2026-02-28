@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { erc20Abi, formatUnits, maxUint256 } from "viem";
-import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { toast } from "react-toastify";
 import { formatCurrency, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { TxToast, renderErrorTxToast } from "@components/TxToast";
@@ -53,7 +54,7 @@ export default function SavingsInteractionSection() {
 		try {
 			setIsTxOnGoing(true);
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: juiceDollarAddress,
 				abi: erc20Abi,
@@ -142,7 +143,7 @@ export default function SavingsInteractionSection() {
 		try {
 			setIsTxOnGoing(true);
 
-			const saveHash = await writeContract(WAGMI_CONFIG, {
+			const saveHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsGatewayABI,
@@ -172,7 +173,7 @@ export default function SavingsInteractionSection() {
 					? 2n * BigInt(amount) + interestToBeCollected // 2X so we can be sure to widhtdraw all the funds
 					: BigInt(amount) + interestToBeCollected;
 
-			const withdrawHash = await writeContract(WAGMI_CONFIG, {
+			const withdrawHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsGatewayABI,

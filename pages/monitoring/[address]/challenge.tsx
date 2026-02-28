@@ -18,7 +18,8 @@ import {
 import { useNativeBalance } from "../../../hooks/useNativeBalance";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { Address } from "viem";
-import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { readContract, waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../../../utils/contractHelpers";
 import { toast } from "react-toastify";
 import { TxToast, renderErrorToast, renderErrorTxStackToast, renderErrorTxToast } from "@components/TxToast";
 import DisplayLabel from "@components/DisplayLabel";
@@ -124,7 +125,7 @@ export default function PositionChallenge() {
 		try {
 			setApproving(true);
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral as Address,
 				abi: erc20Abi,
@@ -176,7 +177,7 @@ export default function PositionChallenge() {
 		try {
 			setChallenging(true);
 
-			const challengeWriteHash = await writeContract(WAGMI_CONFIG, {
+			const challengeWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubV2ABI,

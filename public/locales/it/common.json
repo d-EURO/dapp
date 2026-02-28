@@ -78,6 +78,7 @@
 			"receive": "Ricevi:",
 			"shares": "Quote:",
 			"failed": "Transazione Fallita",
+			"simulation_failed": "La transazione fallirebbe",
 			"approving": "Approvazione...",
 			"approved": "Approvato"
 		},

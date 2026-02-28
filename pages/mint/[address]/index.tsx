@@ -6,7 +6,8 @@ import TokenInput from "@components/Input/TokenInput";
 import { useState } from "react";
 import Button from "@components/Button";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
-import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { readContract, waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../../../utils/contractHelpers";
 import { Address } from "viem";
 import { formatBigInt, formatCurrency, min, shortenAddress, TOKEN_SYMBOL, toTimestamp } from "@utils";
 import { toast } from "react-toastify";
@@ -177,7 +178,7 @@ export default function PositionBorrow({}) {
 		try {
 			setApproving(true);
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral as Address,
 				abi: erc20Abi,
@@ -221,7 +222,7 @@ export default function PositionBorrow({}) {
 			const expirationTime = toTimestamp(expirationDate);
 			let cloneWriteHash: Hash = zeroHash;
 
-			cloneWriteHash = await writeContract(WAGMI_CONFIG, {
+			cloneWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubGatewayABI,

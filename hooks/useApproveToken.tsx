@@ -1,8 +1,9 @@
 import { Address, erc20Abi } from "viem";
-import { writeContract, waitForTransactionReceipt } from "@wagmi/core";
+import { waitForTransactionReceipt } from "@wagmi/core";
 import { toast } from "react-toastify";
 import { WAGMI_CONFIG } from "../app.config";
 import { TxToast, TxToastRowType, renderErrorTxToast } from "../components/TxToast";
+import { simulateAndWrite } from "../utils/contractHelpers";
 import { mainnet, testnet } from "@config";
 
 interface ApproveParams {
@@ -16,7 +17,7 @@ interface ApproveParams {
 
 export const approveToken = async ({ tokenAddress, spender, amount, chainId, t, onSuccess }: ApproveParams): Promise<boolean> => {
 	try {
-		const hash = await writeContract(WAGMI_CONFIG, {
+		const hash = await simulateAndWrite({
 			chainId: chainId as typeof mainnet.id | typeof testnet.id,
 			address: tokenAddress,
 			abi: erc20Abi,
@@ -52,7 +53,7 @@ export const executeTx = async ({
 	successTitle,
 	rows = [],
 }: ExecuteTxParams): Promise<`0x${string}`> => {
-	const hash = await writeContract(WAGMI_CONFIG, {
+	const hash = await simulateAndWrite({
 		chainId,
 		...contractParams,
 	});

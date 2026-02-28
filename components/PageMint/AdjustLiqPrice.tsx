@@ -12,7 +12,8 @@ import { PositionQuery } from "@juicedollar/api";
 import { SolverPosition } from "../../utils/positionSolver";
 import { useAccount, useChainId } from "wagmi";
 import { PositionV2ABI } from "@juicedollar/jusd";
-import { writeContract, waitForTransactionReceipt } from "wagmi/actions";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { WAGMI_CONFIG, WAGMI_CHAIN } from "../../app.config";
 import { toast } from "react-toastify";
 import { TxToast, renderErrorTxToast } from "@components/TxToast";
@@ -88,14 +89,14 @@ export const AdjustLiqPrice = ({
 			setIsTxOnGoing(true);
 
 			const adjustHash = useReference
-				? await writeContract(WAGMI_CONFIG, {
+				? await simulateAndWrite({
 						chainId: chainId as typeof mainnet.id | typeof testnet.id,
 						address: position.position as Address,
 						abi: PositionV2ABI,
 						functionName: "adjustPriceWithReference",
 						args: [newPrice, reference.address!],
 				  })
-				: await writeContract(WAGMI_CONFIG, {
+				: await simulateAndWrite({
 						chainId: chainId as typeof mainnet.id | typeof testnet.id,
 						address: position.position as Address,
 						abi: PositionV2ABI,

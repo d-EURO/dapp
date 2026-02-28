@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { usePoolStats } from "@hooks";
 import { formatBigInt, formatCurrency, POOL_SHARE_TOKEN_SYMBOL, shortenAddress, TOKEN_SYMBOL } from "@utils";
 import { useAccount, useChainId, useReadContract } from "wagmi";
-import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { erc20Abi, formatUnits, zeroAddress } from "viem";
 import Button from "@components/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -79,7 +80,7 @@ export default function InteractionStablecoinAndPoolShares({
 		try {
 			setApproving(true);
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].juiceDollar,
 				abi: erc20Abi,
@@ -122,7 +123,7 @@ export default function InteractionStablecoinAndPoolShares({
 
 	const handleInvest = async () => {
 		try {
-			const investWriteHash = await writeContract(WAGMI_CONFIG, {
+			const investWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].frontendGateway,
 				abi: FrontendGatewayABI,
@@ -196,7 +197,7 @@ export default function InteractionStablecoinAndPoolShares({
 		try {
 			setApproving(true);
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].equity,
 				abi: EquityABI,
@@ -242,7 +243,7 @@ export default function InteractionStablecoinAndPoolShares({
 
 		try {
 			setRedeeming(true);
-			const redeemWriteHash = await writeContract(WAGMI_CONFIG, {
+			const redeemWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].frontendGateway,
 				abi: FrontendGatewayABI,

@@ -1,6 +1,7 @@
 import { ChallengesQueryItem, PositionQuery, PositionsQueryObjectArray } from "@juicedollar/api";
 import { useState } from "react";
-import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { formatBigInt, TOKEN_SYMBOL } from "@utils";
@@ -39,7 +40,7 @@ export default function MyPositionsChallengesCancel({ challenge, hidden }: Props
 		try {
 			setCancelling(true);
 
-			const cancelWriteHash = await writeContract(WAGMI_CONFIG, {
+			const cancelWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubV2ABI,

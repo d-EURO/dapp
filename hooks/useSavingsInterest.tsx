@@ -9,7 +9,8 @@ import { formatUnits, zeroAddress } from "viem";
 import { toast } from "react-toastify";
 import { RootState } from "../redux/redux.store";
 import { useFrontendCode } from "./useFrontendCode";
-import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { readContract, waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../utils/contractHelpers";
 import { WAGMI_CONFIG } from "../app.config";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
 import { gql, useQuery } from "@apollo/client";
@@ -124,7 +125,7 @@ export const useSavingsInterest = () => {
 		try {
 			setIsClaiming(true);
 
-			const writeHash = await writeContract(WAGMI_CONFIG, {
+			const writeHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDR.savingsGateway,
 				abi: SavingsGatewayABI,
@@ -173,7 +174,7 @@ export const useSavingsInterest = () => {
 		try {
 			setIsReinvesting(true);
 
-			const reinvestHash = await writeContract(WAGMI_CONFIG, {
+			const reinvestHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsGatewayABI,

@@ -12,7 +12,8 @@ import Button from "@components/Button";
 import { PositionQuery } from "@juicedollar/api";
 import { useAccount, useChainId } from "wagmi";
 import { PositionV2ABI } from "@juicedollar/jusd";
-import { writeContract, waitForTransactionReceipt, getPublicClient } from "wagmi/actions";
+import { waitForTransactionReceipt, getPublicClient } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { WAGMI_CONFIG, WAGMI_CHAIN } from "../../app.config";
 import { toast } from "react-toastify";
 import { TxToast, renderErrorTxToast } from "@components/TxToast";
@@ -217,7 +218,7 @@ export const AdjustCollateral = ({
 			setIsTxOnGoing(true);
 
 			if (isIncrease) {
-				const adjustHash = await writeContract(WAGMI_CONFIG, {
+				const adjustHash = await simulateAndWrite({
 					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: position.position as Address,
 					abi: PositionV2ABI,
@@ -256,7 +257,7 @@ export const AdjustCollateral = ({
 
 				// Case 3: call repay() first
 				if (needsSeparateRepay) {
-					const repayHash = await writeContract(WAGMI_CONFIG, {
+					const repayHash = await simulateAndWrite({
 						chainId: chainId as typeof mainnet.id | typeof testnet.id,
 						address: position.position as Address,
 						abi: PositionV2ABI,
@@ -298,7 +299,7 @@ export const AdjustCollateral = ({
 						})
 						.catch(() => 300_000n)) ?? 300_000n;
 
-				const withdrawHash = await writeContract(WAGMI_CONFIG, {
+				const withdrawHash = await simulateAndWrite({
 					chainId: chainId as typeof mainnet.id | typeof testnet.id,
 					address: position.position as Address,
 					abi: PositionV2ABI,

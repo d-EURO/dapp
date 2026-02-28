@@ -14,7 +14,8 @@ import AppBox from "@components/AppBox";
 import { useEffect, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { WAGMI_CONFIG } from "../../app.config";
-import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { ADDRESS, SavingsABI } from "@juicedollar/jusd";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
@@ -55,7 +56,7 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 		try {
 			setHandling(true);
 
-			const writeHash = await writeContract(WAGMI_CONFIG, {
+			const writeHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].savingsGateway,
 				abi: SavingsABI,

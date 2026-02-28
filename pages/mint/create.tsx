@@ -8,7 +8,8 @@ import { useState } from "react";
 import Button from "@components/Button";
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { erc20Abi } from "viem";
-import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { readContract, waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { formatBigInt, shortenAddress, TOKEN_SYMBOL, SOCIAL } from "@utils";
 import { toast } from "react-toastify";
 import { TxToast, renderErrorToast, renderErrorTxToast } from "@components/TxToast";
@@ -217,7 +218,7 @@ export default function PositionCreate({}) {
 		try {
 			setIsConfirming("approve");
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: collTokenData.address,
 				abi: erc20Abi,
@@ -259,7 +260,7 @@ export default function PositionCreate({}) {
 		try {
 			setIsConfirming("approveDeuro");
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].juiceDollar,
 				abi: erc20Abi,
@@ -302,7 +303,7 @@ export default function PositionCreate({}) {
 	const handleOpenPosition = async () => {
 		try {
 			setIsConfirming("open");
-			const openWriteHash = await writeContract(WAGMI_CONFIG, {
+			const openWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].mintingHubGateway,
 				abi: MintingHubGatewayABI,

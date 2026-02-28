@@ -7,7 +7,8 @@ import { useTranslation } from "next-i18next";
 import { zeroAddress } from "viem";
 import { ADDRESS, FrontendGatewayABI } from "@juicedollar/jusd";
 import { useChainId } from "wagmi";
-import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { readContract, waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { TxToast } from "@components/TxToast";
@@ -131,7 +132,7 @@ export const ReferralCreationForm = () => {
 				throw new Error("Referral name already taken");
 			}
 
-			const registerWriteHash = await writeContract(WAGMI_CONFIG, {
+			const registerWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDRESS[chainId].frontendGateway,
 				abi: FrontendGatewayABI,

@@ -19,8 +19,31 @@ export const renderErrorToast = (error: string | string[], t?: any) => {
 };
 
 export const renderErrorTxToast = (error: any, t?: any) => {
-	const errorLines: string[] = error.message.split("\n");
 	return renderErrorTxStackToast(error, 2, t);
+};
+
+const extractRevertReason = (error: any): string | null => {
+	const msg = error?.message || error?.shortMessage || "";
+	const match = msg.match(/reverted with reason string '([^']+)'/);
+	if (match) return match[1];
+	const customMatch = msg.match(/reverted with custom error '([^']+)'/);
+	if (customMatch) return customMatch[1];
+	if (error?.shortMessage) return error.shortMessage;
+	return null;
+};
+
+export const renderSimulationErrorToast = (error: any, t?: any) => {
+	const title = t ? t("common.txs.simulation_failed") : "Transaction Would Fail";
+	const reason = extractRevertReason(error);
+	const rows: TxToastRowType[] = reason
+		? [{ title: "", value: reason }]
+		: error?.message
+		? error.message
+				.split("\n")
+				.slice(0, 2)
+				.map((line: string) => ({ title: "", value: line }))
+		: [{ title: "", value: "Unknown error" }];
+	return <TxToast title={title} rows={rows} />;
 };
 export const renderErrorTxStackToast = (error: any, limit: number, t?: any) => {
 	const errorLines: string[] = error.message.split("\n");

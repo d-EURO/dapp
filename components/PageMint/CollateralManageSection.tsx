@@ -12,7 +12,7 @@ import { Address, erc20Abi, formatUnits, zeroAddress } from "viem";
 import { formatCurrency, shortenAddress, NATIVE_WRAPPED_SYMBOLS, normalizeTokenSymbol, TOKEN_SYMBOL } from "@utils";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { useChainId, useReadContracts } from "wagmi";
-import { writeContract } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { ADDRESS, PositionV2ABI } from "@juicedollar/jusd";
 import { WAGMI_CONFIG, WAGMI_CHAIN } from "../../app.config";
 import { toast } from "react-toastify";
@@ -180,7 +180,7 @@ export const CollateralManageSection = () => {
 		try {
 			setIsTxOnGoing(true);
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.collateral as Address,
 				abi: erc20Abi,
@@ -240,7 +240,7 @@ export const CollateralManageSection = () => {
 
 			const contractAmount = BigInt(amount) + balanceOf;
 
-			const addHash = await writeContract(WAGMI_CONFIG, {
+			const addHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.position,
 				abi: PositionV2ABI,
@@ -285,7 +285,7 @@ export const CollateralManageSection = () => {
 			setIsTxOnGoing(true);
 
 			const contractAmount = balanceOf - BigInt(amount);
-			const addHash = await writeContract(WAGMI_CONFIG, {
+			const addHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: position.position,
 				abi: PositionV2ABI,

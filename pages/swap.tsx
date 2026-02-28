@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { erc20Abi, formatUnits, maxUint256 } from "viem";
 import Button from "@components/Button";
 import { useSwapStats } from "@hooks";
-import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { simulateAndWrite } from "../utils/contractHelpers";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
@@ -189,7 +190,7 @@ export default function Swap() {
 			const stablecoinSymbol = getSelectedStablecoinSymbol();
 			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress as `0x${string}`;
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: fromContractAddress as `0x${string}`,
 				abi: erc20Abi,
@@ -235,7 +236,7 @@ export default function Swap() {
 			const stablecoinSymbol = getSelectedStablecoinSymbol();
 			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress as `0x${string}`;
 
-			const mintWriteHash = await writeContract(WAGMI_CONFIG, {
+			const mintWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: bridgeAddress,
 				abi: StablecoinBridgeABI,
@@ -285,7 +286,7 @@ export default function Swap() {
 			const stablecoinSymbol = getSelectedStablecoinSymbol();
 			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress as `0x${string}`;
 
-			const burnWriteHash = await writeContract(WAGMI_CONFIG, {
+			const burnWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: bridgeAddress,
 				abi: StablecoinBridgeABI,

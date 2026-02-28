@@ -7,7 +7,8 @@ import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { erc20Abi, maxUint256, zeroAddress } from "viem";
 import { useEffect, useState } from "react";
 import SavingsDetailsCard from "./SavingsDetailsCard";
-import { readContract, writeContract } from "wagmi/actions";
+import { readContract } from "wagmi/actions";
+import { simulateAndWrite } from "../../utils/contractHelpers";
 import { WAGMI_CONFIG } from "../../app.config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
@@ -133,7 +134,7 @@ export default function SavingsInteractionCard() {
 		try {
 			setIsApproving(true);
 
-			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
+			const approveWriteHash = await simulateAndWrite({
 				chainId: chainId as typeof mainnet.id | typeof testnet.id,
 				address: ADDR.juiceDollar,
 				abi: erc20Abi,
