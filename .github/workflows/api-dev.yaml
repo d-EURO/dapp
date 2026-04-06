@@ -7,8 +7,6 @@ on:
 
 env:
   DOCKER_TAGS: dfxswiss/deuro-dapp:beta
-  DEPLOY_HOST: ssh-dfxdev.dfxserve.com
-  DEPLOY_USER: dfxdev
   DEPLOY_SERVICE: deuro-dapp
 
 jobs:
@@ -41,16 +39,16 @@ jobs:
 
       - name: Install cloudflared
         run: |
-          curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared
+          curl -fsSL https://github.com/cloudflare/cloudflared/releases/download/2025.4.0/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared
           chmod +x /usr/local/bin/cloudflared
 
-      - name: Deploy to dfxdev
+      - name: Deploy to server
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DFXDEV_SSH_KEY }}" > ~/.ssh/deploy_key
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          echo "${{ secrets.DFXDEV_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          echo "${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           ssh -i ~/.ssh/deploy_key \
-            -o ProxyCommand="cloudflared access ssh --hostname ${{ env.DEPLOY_HOST }}" \
-            ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} \
+            -o ProxyCommand="cloudflared access ssh --hostname ${{ secrets.DEPLOY_HOST }}" \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
             "${{ env.DEPLOY_SERVICE }}"
