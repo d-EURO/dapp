@@ -36,7 +36,7 @@ export const CONFIG: ConfigEnv = {
 	api: process.env.NEXT_PUBLIC_API_URL ?? "https://api.deuro.com",
 	ponder: process.env.NEXT_PUBLIC_PONDER_URL ?? "https://ponder.deuro.com",
 	ponderFallback: process.env.NEXT_PUBLIC_PONDER_FALLBACK_URL ?? "https://dev.ponder.deuro.com/",
-	wagmiId: process.env.NEXT_PUBLIC_WAGMI_ID ?? "",
+	wagmiId: "e915436dd22f9ebb227b553076924700",
 	alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ?? "",
 	chain: process.env.NEXT_PUBLIC_CHAIN_NAME ?? "mainnet",
 	network: {
