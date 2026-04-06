@@ -45,9 +45,6 @@ jobs:
           chmod +x /usr/local/bin/cloudflared
 
       - name: Deploy to dfxdev
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DFXDEV_SSH_KEY }}" > ~/.ssh/deploy_key
