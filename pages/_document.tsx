@@ -5,6 +5,7 @@ export default function Document() {
 	return (
 		<Html lang="en">
 			<Head>
+				{/* deploy-test */}
 				<meta property="og:type" content="website" />
 				<meta property="og:url" content="https://app.deuro.com/" />
 				<meta content="dEURO - Decentralized Euro." property="og:title" />
