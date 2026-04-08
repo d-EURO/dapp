@@ -5,25 +5,16 @@ echo "=========="
 echo "dEURO dApp"
 echo "=========="
 
-# Build a single sed expression for all NEXT_PUBLIC_ env vars
-SED_ARGS=""
-printenv | grep NEXT_PUBLIC_ | while read -r line; do
-  key=$(echo "$line" | cut -d "=" -f1)
-  value=$(echo "$line" | cut -d "=" -f2-)
+# Build sed script for all NEXT_PUBLIC_ env var replacements
+SED_SCRIPT=$(mktemp)
+printenv | grep '^NEXT_PUBLIC_' | while IFS='=' read -r key value; do
+  echo "s|${key}|${value}|g" >> "$SED_SCRIPT"
   echo "Replace: $key"
-  SED_ARGS="$SED_ARGS -e s|$key|$value|g"
-done > /dev/null
-
-# Reconstruct SED_ARGS (subshell workaround)
-SED_ARGS=""
-for line in $(printenv | grep NEXT_PUBLIC_); do
-  key=$(echo "$line" | cut -d "=" -f1)
-  value=$(echo "$line" | cut -d "=" -f2-)
-  SED_ARGS="$SED_ARGS -e s|$key|$value|g"
 done
 
 echo "Replacing env vars in .next build output..."
-find /app/.next/ -type f \( -name '*.js' -o -name '*.json' -o -name '*.html' \) -exec sed -i $SED_ARGS {} +
+find /app/.next/ -type f \( -name '*.js' -o -name '*.json' -o -name '*.html' \) -exec sed -i -f "$SED_SCRIPT" {} +
+rm -f "$SED_SCRIPT"
 echo "Done."
 
 # Execute the container's main process (CMD in Dockerfile)
