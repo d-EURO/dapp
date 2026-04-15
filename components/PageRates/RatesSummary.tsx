@@ -1,8 +1,5 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
-import { ADDRESS, ERC20ABI } from "@deuro/eurocoin";
-import { useChainId, useReadContract } from "wagmi";
-import { formatUnits } from "viem";
 import AppCard from "../AppCard";
 import AppBox from "../AppBox";
 import DisplayLabel from "../DisplayLabel";
@@ -15,14 +12,6 @@ export default function RatesSummary() {
 	const { t } = useTranslation();
 	const eco = useSelector((state: RootState) => state.ecosystem);
 	const savingsInfo = useSelector((state: RootState) => state.savings.savingsInfo);
-	const chainId = useChainId();
-
-	const { data: totalSavingsRaw = 0n } = useReadContract({
-		address: ADDRESS[chainId].decentralizedEURO,
-		abi: ERC20ABI,
-		functionName: "balanceOf",
-		args: [ADDRESS[chainId].savingsGateway],
-	});
 
 	const exposures = eco.exposureData?.exposures ?? [];
 	const totalOpenPositions = exposures.reduce((sum, e) => sum + e.positions.open, 0);
@@ -30,7 +19,7 @@ export default function RatesSummary() {
 	const loanInterestPA = eco.exposureData?.general?.earningsPerAnnum ?? 0;
 
 	const savingsRate = savingsInfo ? savingsInfo.rate / 10_000 : 0;
-	const totalSavingsNum = parseFloat(formatUnits(totalSavingsRaw, 18));
+	const totalSavingsNum = savingsInfo?.totalBalance ?? 0;
 	const savingsInterestPA = totalSavingsNum * savingsRate / 100;
 	const netInterest = loanInterestPA - savingsInterestPA;
 

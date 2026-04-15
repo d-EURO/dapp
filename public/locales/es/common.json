@@ -621,6 +621,7 @@
         "available_to_deposit": "Disponible para depositar",
         "available_to_withdraw": "Disponible para retirar",
         "current_invest": "Tu inversión actual",
+        "auto_compound_interest": "Reinvertir intereses automáticamente",
         "enter_amount_to_add_savings": "Ingresar cantidad para ahorrar",
         "start_earning_interest": "Comenzar a ganar {{rate}}% en su dEURO",
         "enter_withdraw_amount": "Ingresar cantidad para retirar",

@@ -35,7 +35,7 @@ const SavingsRow = ({
 };
 
 export const MySavings = () => {
-	const { userSavingsBalance, totalEarnedInterest, interestToBeCollected, isReinvesting, isClaiming, claimInterest, handleReinvest } = useSavingsInterest();
+	const { userSavingsBalance, totalEarnedInterest, interestToBeCollected, isReinvesting, isClaiming, claimInterest, handleReinvest, canReinvest } = useSavingsInterest();
 	const { t } = useTranslation();
 
 	const savingsData = userSavingsBalance > 0n || totalEarnedInterest > 0n || interestToBeCollected > 0n;
@@ -62,7 +62,7 @@ export const MySavings = () => {
 			</div>
 			{savingsData && (
 				<div className="w-full flex-1 pt-10 flex items-end gap-4">
-					<Button className="w-full h-10 py-2.5 px-4" disabled={interestToBeCollected === 0n} isLoading={isReinvesting} onClick={handleReinvest}>
+					<Button className="w-full h-10 py-2.5 px-4" disabled={!canReinvest} isLoading={isReinvesting} onClick={handleReinvest}>
 						<FontAwesomeIcon icon={faRotateRight} />
 						{t("dashboard.reinvest")}
 					</Button>

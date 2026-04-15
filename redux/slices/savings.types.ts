@@ -1,4 +1,55 @@
-import { ApiLeadrateInfo, ApiLeadrateProposed, ApiLeadrateRate, ApiSavingsInfo, ApiSavingsUserTable, ApiSavingsUserLeaderboard } from "@deuro/api";
+import {
+	ApiLeadrateProposed as BaseApiLeadrateProposed,
+	ApiLeadrateRate,
+	ApiSavingsInfo as BaseApiSavingsInfo,
+	ApiSavingsUserLeaderboard,
+	ApiSavingsUserTable as BaseApiSavingsUserTable,
+	LeadrateProposed,
+} from "@deuro/api";
+import { Address } from "viem";
+
+export type { ApiLeadrateRate, ApiSavingsUserLeaderboard };
+
+export type SavingsVaultHistoryEntry = {
+	id: string;
+	vault: Address;
+	owner: Address;
+	assets: string;
+	blockheight: number;
+	timestamp: number;
+	txHash: string;
+};
+
+export type ApiSavingsUserTable = BaseApiSavingsUserTable & {
+	vaultSave?: SavingsVaultHistoryEntry[];
+	vaultWithdraw?: SavingsVaultHistoryEntry[];
+};
+
+export type ApiLeadrateVersionInfo = {
+	rate: number;
+	nextRate?: number;
+	nextchange?: number;
+	isProposal: boolean;
+	isPending: boolean;
+};
+
+export type ApiLeadrateInfo = {
+	v2: ApiLeadrateVersionInfo;
+	v3: ApiLeadrateVersionInfo;
+};
+
+export type LeadrateProposedWithSource = LeadrateProposed & {
+	source?: string;
+};
+
+export type ApiLeadrateProposed = Omit<BaseApiLeadrateProposed, "list"> & {
+	list: LeadrateProposedWithSource[];
+};
+
+export type ApiSavingsInfo = BaseApiSavingsInfo & {
+	rateV2?: number;
+	rateV3?: number;
+};
 
 // --------------------------------------------------------------------------------
 export type SavingsState = {

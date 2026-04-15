@@ -17,10 +17,10 @@ import NormalInput from "@components/Input/NormalInput";
 import AddressInput from "@components/Input/AddressInput";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../app.config";
-import { ADDRESS, MintingHubGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS } from "@deuro/eurocoin";
 import { useTranslation, Trans } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { useFrontendCode } from "../../hooks/useFrontendCode";
+import { getAppAddresses, MintingHubV3ABI } from "@contracts";
 
 export default function PositionCreate({}) {
 	const [minCollAmount, setMinCollAmount] = useState(0n);
@@ -45,16 +45,16 @@ export default function PositionCreate({}) {
 	const [durationError, setDurationError] = useState("");
 	const [isConfirming, setIsConfirming] = useState("");
 
-	const { frontendCode } = useFrontendCode();
 	const [userAllowance, setUserAllowance] = useState<bigint>(0n);
 	const { data } = useBlockNumber({ watch: true });
 	const account = useAccount();
 
 	const chainId = useChainId();
-	const collTokenData = useTokenData(collateralAddress);
+	const ADDR = getAppAddresses(chainId);
+	const collTokenData = useTokenData(collateralAddress, ADDR.mintingHub);
 	const userBalance = useUserBalance();
 
-	const { allowance: deuroAllowance, refetch: refetchDeuroAllowance } = useTokenData(ADDRESS[WAGMI_CHAIN.id].decentralizedEURO);
+	const { allowance: deuroAllowance, refetch: refetchDeuroAllowance } = useTokenData(ADDRESS[WAGMI_CHAIN.id].decentralizedEURO, ADDR.mintingHub);
 
 	const { t } = useTranslation();
 
@@ -69,13 +69,13 @@ export default function PositionCreate({}) {
 				address: collateralAddress as Address,
 				abi: erc20Abi,
 				functionName: "allowance",
-				args: [acc, ADDRESS[WAGMI_CHAIN.id].mintingHubGateway],
+				args: [acc, ADDR.mintingHub],
 			});
 			setUserAllowance(_allowance);
 		};
 
 		fetchAsync();
-	}, [data, account.address, collateralAddress, isConfirming]);
+	}, [ADDR.mintingHub, data, account.address, collateralAddress, isConfirming]);
 
 	useEffect(() => {
 		if (isAddress(collateralAddress)) {
@@ -220,7 +220,7 @@ export default function PositionCreate({}) {
 				address: collTokenData.address,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].mintingHubGateway, maxUint256],
+				args: [ADDR.mintingHub, maxUint256],
 			});
 
 			const toastContent = [
@@ -230,7 +230,7 @@ export default function PositionCreate({}) {
 				},
 				{
 					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].mintingHubGateway),
+					value: shortenAddress(ADDR.mintingHub),
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -261,7 +261,7 @@ export default function PositionCreate({}) {
 				address: ADDRESS[chainId].decentralizedEURO,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].mintingHubGateway, maxUint256],
+				args: [ADDR.mintingHub, maxUint256],
 			});
 
 			const toastContent = [
@@ -271,7 +271,7 @@ export default function PositionCreate({}) {
 				},
 				{
 					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].mintingHubGateway),
+					value: shortenAddress(ADDR.mintingHub),
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -300,8 +300,8 @@ export default function PositionCreate({}) {
 		try {
 			setIsConfirming("open");
 			const openWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].mintingHubGateway,
-				abi: MintingHubGatewayABI,
+				address: ADDR.mintingHub,
+				abi: MintingHubV3ABI,
 				functionName: "openPosition",
 				args: [
 					collTokenData.address,
@@ -314,7 +314,6 @@ export default function PositionCreate({}) {
 					Number(interest),
 					liqPrice,
 					Number(buffer),
-					frontendCode,
 				],
 			});
 

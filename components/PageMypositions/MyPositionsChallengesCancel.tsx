@@ -11,6 +11,7 @@ import { Address } from "viem";
 import { useAccount } from "wagmi";
 import Button from "@components/Button";
 import { ADDRESS, MintingHubV2ABI } from "@deuro/eurocoin";
+import { getAppAddresses, MintingHubV3ABI } from "@contracts";
 
 interface Props {
 	challenge: ChallengesQueryItem;
@@ -22,6 +23,7 @@ export default function MyPositionsChallengesCancel({ challenge, hidden }: Props
 	const positions: PositionsQueryObjectArray = useSelector((state: RootState) => state.positions.mapping?.map || {});
 	const account = useAccount();
 	const chainId = CONFIG_CHAIN().id;
+	const ADDR = getAppAddresses(chainId);
 	const [isHidden, setHidden] = useState<boolean>(
 		hidden == true || challenge.status !== "Active" || account.address !== challenge.challenger
 	);
@@ -39,8 +41,8 @@ export default function MyPositionsChallengesCancel({ challenge, hidden }: Props
 			setCancelling(true);
 
 			const cancelWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].mintingHubGateway,
-				abi: MintingHubV2ABI,
+				address: p.version === 3 ? ADDR.mintingHub : ADDRESS[chainId].mintingHubGateway,
+				abi: p.version === 3 ? MintingHubV3ABI : MintingHubV2ABI,
 				functionName: "bid",
 				args: [n, r, false],
 			});

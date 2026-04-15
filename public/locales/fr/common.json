@@ -620,6 +620,7 @@
         "available_to_deposit": "Disponible pour déposer",
         "available_to_withdraw": "Disponible pour retirer",
         "current_invest": "Votre investissement actuel",
+        "auto_compound_interest": "Capitaliser automatiquement les intérêts",
         "enter_amount_to_add_savings": "Saisissez le montant à ajouter à l'épargne",
         "start_earning_interest": "Commencer à gagner {{rate}}% sur votre dEURO",
         "enter_withdraw_amount": "Saisissez le montant à retirer",

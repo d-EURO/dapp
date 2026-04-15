@@ -7,8 +7,7 @@ import { useRouter } from "next/router";
 import { formatUnits } from "viem";
 import { SegmentedControlButton } from "@components/Button";
 import { useTotalSavingsQuery } from "../../hooks/useTotalSavingsQuery";
-import { ADDRESS, ERC20ABI } from "@deuro/eurocoin";
-import { useChainId, useReadContract } from "wagmi";
+import { useChainId } from "wagmi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import Link from "next/link";
@@ -16,6 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useContractUrl } from "@hooks";
 import { useTotalSavingsUsers } from "../../hooks/useTotalSavingsUsers";
+import { getAppAddresses } from "@contracts";
 
 enum Timeframe {
 	WEEK = "1W",
@@ -53,14 +53,8 @@ export default function SavingsHistoryCard() {
 	const router = useRouter();
 	const startTrades = getStartTimestampByTimeframe(timeframe);
 	const chainId = useChainId();
-	const addressSavingsGateway = useContractUrl(ADDRESS[chainId].savingsGateway);
-
-	const { data: current = 0n } = useReadContract({
-		address: ADDRESS[chainId].decentralizedEURO,
-		abi: ERC20ABI,
-		functionName: "balanceOf",
-		args: [ADDRESS[chainId].savingsGateway],
-	});
+	const addresses = getAppAddresses(chainId);
+	const addressSavings = useContractUrl(addresses.savings);
 
 	const filteredTrades = useMemo(
 		() =>
@@ -82,7 +76,7 @@ export default function SavingsHistoryCard() {
 					<div className="absolute top-[20px] left-[20px] z-10 gap-y-0.5 flex flex-col items-start">
 						<div className="text-base font-[350] leading-tight">{t("savings.total_savings_history")}</div>
 						<div className="text-base font-extrabold leading-tight">
-							<span className="text-base font-extrabold leading-tight">{formatCurrency(formatUnits(current, 18), 2, 2)}</span>{" "}
+							<span className="text-base font-extrabold leading-tight">{formatCurrency(savingsInfo?.totalBalance || 0, 2, 2)}</span>{" "}
 						</div>
 					</div>
 					<ApexChart
@@ -196,8 +190,8 @@ export default function SavingsHistoryCard() {
 				<div className="flex flex-row justify-between">
 					<div className="text-sm font-medium leading-relaxed">{t("savings.contract_address")}</div>
 					<div className="text-sm font-medium leading-tight ">
-						<Link href={addressSavingsGateway} target="_blank">
-							{shortenAddress(ADDRESS[chainId].savingsGateway)} <FontAwesomeIcon icon={faArrowUpRightFromSquare} size="xs" />
+						<Link href={addressSavings} target="_blank">
+							{shortenAddress(addresses.savings)} <FontAwesomeIcon icon={faArrowUpRightFromSquare} size="xs" />
 						</Link>
 					</div>
 				</div>

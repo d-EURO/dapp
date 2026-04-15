@@ -1,39 +1,51 @@
-import { useAccount, useChainId } from "wagmi";
+import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
-import { useBlockNumber } from "wagmi";
-import { ADDRESS, SavingsGatewayABI } from "@deuro/eurocoin";
-import { formatCurrency, getPublicViewAddress, TOKEN_SYMBOL } from "@utils";
-import { formatUnits, zeroAddress } from "viem";
-import { toast } from "react-toastify";
-import { RootState } from "../redux/redux.store";
-import { useFrontendCode } from "./useFrontendCode";
-import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { WAGMI_CONFIG } from "../app.config";
-import { renderErrorTxToast, TxToast } from "@components/TxToast";
 import { gql, useQuery } from "@apollo/client";
+import { Address, erc20Abi, formatUnits, zeroAddress } from "viem";
+import { toast } from "react-toastify";
+import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { RootState } from "../redux/redux.store";
+import { WAGMI_CONFIG } from "../app.config";
+import { useFrontendCode } from "./useFrontendCode";
+import { getPublicViewAddress, formatCurrency, TOKEN_SYMBOL } from "@utils";
+import { renderErrorTxToast, TxToast } from "@components/TxToast";
+import { getAppAddresses, isDeployed, SavingsGatewayV2ABI, SavingsV3ABI, SavingsVaultDEUROABI } from "@contracts";
 
 export const useSavingsInterest = () => {
-	const [amount, setAmount] = useState(0n);
-	const [isLoaded, setLoaded] = useState<boolean>(false);
-	const [userSavingsBalance, setUserSavingsBalance] = useState(0n);
-	const [userSavingsInterest, setUserSavingsInterest] = useState(0n);
-	const [interestToBeCollected, setInterestToBeCollected] = useState(0n);
-	const [isClaiming, setIsClaiming] = useState<boolean>(false);
-	const [isReinvesting, setIsReinvesting] = useState<boolean>(false);
-	const leadrate = useSelector((state: RootState) => state.savings.savingsInfo?.rate ?? 0);
+	const [isLoaded, setLoaded] = useState(false);
+	const [v2SavingsBalance, setV2SavingsBalance] = useState(0n);
+	const [v3SavingsBalance, setV3SavingsBalance] = useState(0n);
+	const [v2Interest, setV2Interest] = useState(0n);
+	const [v3Interest, setV3Interest] = useState(0n);
+	const [isNonCompounding, setIsNonCompounding] = useState(false);
+	const [v3ClaimableInterest, setV3ClaimableInterest] = useState(0n);
+	const [v2VaultShares, setV2VaultShares] = useState(0n);
+	const [v3VaultShares, setV3VaultShares] = useState(0n);
+	const [v2VaultAssets, setV2VaultAssets] = useState(0n);
+	const [v3VaultAssets, setV3VaultAssets] = useState(0n);
+	const [isClaiming, setIsClaiming] = useState(false);
+	const [isReinvesting, setIsReinvesting] = useState(false);
 	const [refetchSignal, setRefetchSignal] = useState(0);
+
+	const savingsInfo = useSelector((state: RootState) => state.savings.savingsInfo);
+	const leadrate = savingsInfo?.rate ?? 0;
+	const leadrateV2 = savingsInfo?.rateV2 ?? leadrate;
 
 	const { data } = useBlockNumber({ watch: true });
 	const { address } = useAccount();
 	const chainId = useChainId();
 	const router = useRouter();
 	const overwrite = getPublicViewAddress(router);
-	const account = overwrite || address || zeroAddress;
-	const ADDR = ADDRESS[chainId];
+	const account = (overwrite || address || zeroAddress) as Address;
+	const ADDR = getAppAddresses(chainId);
 
 	const { frontendCode } = useFrontendCode();
+
+	const v3Deployed = isDeployed(ADDR.savings);
+	const v2VaultDeployed = isDeployed(ADDR.savingsVaultV2);
+	const v3VaultDeployed = isDeployed(ADDR.savingsVaultV3);
 
 	const { data: leaderboardData, refetch: refetchLeaderboard } = useQuery(
 		gql`
@@ -46,50 +58,144 @@ export const useSavingsInterest = () => {
 		{
 			pollInterval: 0,
 			skip: !account || account === zeroAddress,
-		}
+		},
 	);
-	const change = BigInt(leaderboardData?.savingsUserLeaderboard?.interestReceived || 0n);
+
+	const totalEarnedInterest = BigInt(leaderboardData?.savingsUserLeaderboard?.interestReceived || 0n);
 
 	useEffect(() => {
 		if (account === zeroAddress || isClaiming) return;
 
-		const fetchAsync = async function () {
-			const [_userSavings, _userTicks] = await readContract(WAGMI_CONFIG, {
-				address: ADDR.savingsGateway,
-				abi: SavingsGatewayABI,
-				functionName: "savings",
-				args: [account as `0x${string}`],
-			});
-			setUserSavingsBalance(_userSavings);
+		(async () => {
+			let nextV2Balance = 0n;
+			let nextV2Interest = 0n;
+			let nextV3Balance = 0n;
+			let nextV3Interest = 0n;
+			let nextV3Claimable = 0n;
+			let nextIsNonCompounding = false;
+			let nextV2VaultShares = 0n;
+			let nextV2VaultAssets = 0n;
+			let nextV3VaultShares = 0n;
+			let nextV3VaultAssets = 0n;
 
-			const _current = await readContract(WAGMI_CONFIG, {
-				address: ADDR.savingsGateway,
-				abi: SavingsGatewayABI,
-				functionName: "currentTicks",
-			});
+			try {
+				const [_saved, _ticks] = await readContract(WAGMI_CONFIG, {
+					address: ADDR.savingsGateway,
+					abi: SavingsGatewayV2ABI,
+					functionName: "savings",
+					args: [account],
+				});
+				nextV2Balance = _saved;
 
-			const accruedInterest = await readContract(WAGMI_CONFIG, {
-				address: ADDR.savingsGateway,
-				abi: SavingsGatewayABI,
-				functionName: "accruedInterest",
-				args: [account as `0x${string}`],
-			});
-			setInterestToBeCollected(accruedInterest);
+				const currentTicks = await readContract(WAGMI_CONFIG, {
+					address: ADDR.savingsGateway,
+					abi: SavingsGatewayV2ABI,
+					functionName: "currentTicks",
+				});
+				nextV2Interest = await readContract(WAGMI_CONFIG, {
+					address: ADDR.savingsGateway,
+					abi: SavingsGatewayV2ABI,
+					functionName: "accruedInterest",
+					args: [account],
+				});
 
-			const _locktime = _userTicks >= _current && leadrate > 0n ? (_userTicks - _current) / BigInt(leadrate) : 0n;
-			const _tickDiff = _current - _userTicks;
-			const _interest = _userTicks == 0n || _locktime > 0 ? 0n : (_tickDiff * _userSavings) / (1_000_000n * 365n * 24n * 60n * 60n);
-
-			setUserSavingsInterest(_interest);
-
-			if (!isLoaded) {
-				setAmount(_userSavings);
-				setLoaded(true);
+				// Keep the old lock-time behaviour intact for V2 by touching currentTicks.
+				if (_ticks >= currentTicks && leadrateV2 > 0) {
+					void ((_ticks - currentTicks) / BigInt(leadrateV2));
+				}
+			} catch {
+				// Ignore V2 read failures so V3 can still render.
 			}
-		};
 
-		fetchAsync();
-	}, [data, account, ADDR, isLoaded, leadrate, isClaiming, refetchSignal]);
+			if (v3Deployed) {
+				try {
+					const [_saved] = await readContract(WAGMI_CONFIG, {
+						address: ADDR.savings,
+						abi: SavingsV3ABI,
+						functionName: "savings",
+						args: [account],
+					});
+					nextV3Balance = _saved;
+					nextV3Interest = await readContract(WAGMI_CONFIG, {
+						address: ADDR.savings,
+						abi: SavingsV3ABI,
+						functionName: "accruedInterest",
+						args: [account],
+					});
+					nextIsNonCompounding = await readContract(WAGMI_CONFIG, {
+						address: ADDR.savings,
+						abi: SavingsV3ABI,
+						functionName: "nonCompounding",
+						args: [account],
+					});
+					nextV3Claimable = await readContract(WAGMI_CONFIG, {
+						address: ADDR.savings,
+						abi: SavingsV3ABI,
+						functionName: "claimableInterest",
+						args: [account],
+					});
+				} catch {
+					// Ignore V3 read failures so legacy balances can still render.
+				}
+			}
+
+			if (v2VaultDeployed) {
+				try {
+					nextV2VaultShares = await readContract(WAGMI_CONFIG, {
+						address: ADDR.savingsVaultV2,
+						abi: erc20Abi,
+						functionName: "balanceOf",
+						args: [account],
+					});
+
+					if (nextV2VaultShares > 0n) {
+						nextV2VaultAssets = await readContract(WAGMI_CONFIG, {
+							address: ADDR.savingsVaultV2,
+							abi: SavingsVaultDEUROABI,
+							functionName: "convertToAssets",
+							args: [nextV2VaultShares],
+						});
+					}
+				} catch {
+					// Ignore V2 vault read failures.
+				}
+			}
+
+			if (v3VaultDeployed) {
+				try {
+					nextV3VaultShares = await readContract(WAGMI_CONFIG, {
+						address: ADDR.savingsVaultV3,
+						abi: erc20Abi,
+						functionName: "balanceOf",
+						args: [account],
+					});
+
+					if (nextV3VaultShares > 0n) {
+						nextV3VaultAssets = await readContract(WAGMI_CONFIG, {
+							address: ADDR.savingsVaultV3,
+							abi: SavingsVaultDEUROABI,
+							functionName: "convertToAssets",
+							args: [nextV3VaultShares],
+						});
+					}
+				} catch {
+					// Ignore V3 vault read failures.
+				}
+			}
+
+			setV2SavingsBalance(nextV2Balance);
+			setV2Interest(nextV2Interest);
+			setV3SavingsBalance(nextV3Balance);
+			setV3Interest(nextV3Interest);
+			setIsNonCompounding(nextIsNonCompounding);
+			setV3ClaimableInterest(nextV3Claimable);
+			setV2VaultShares(nextV2VaultShares);
+			setV2VaultAssets(nextV2VaultAssets);
+			setV3VaultShares(nextV3VaultShares);
+			setV3VaultAssets(nextV3VaultAssets);
+			setLoaded(true);
+		})();
+	}, [data, account, ADDR.savingsGateway, ADDR.savings, ADDR.savingsVaultV2, ADDR.savingsVaultV3, isClaiming, leadrateV2, refetchSignal, v2VaultDeployed, v3Deployed, v3VaultDeployed]);
 
 	useEffect(() => {
 		setLoaded(false);
@@ -97,7 +203,7 @@ export const useSavingsInterest = () => {
 
 	const refetchInterest = async () => {
 		setRefetchSignal((prev) => prev + 1);
-		refetchLeaderboard();
+		await refetchLeaderboard();
 	};
 
 	const claimInterest = async () => {
@@ -106,44 +212,69 @@ export const useSavingsInterest = () => {
 		try {
 			setIsClaiming(true);
 
-			const writeHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDR.savingsGateway,
-				abi: SavingsGatewayABI,
-				functionName: "adjust",
-				args: [userSavingsBalance, frontendCode],
-			});
+			if (v2Interest > 0n && v2SavingsBalance > 0n) {
+				const v2Hash = await writeContract(WAGMI_CONFIG, {
+					address: ADDR.savingsGateway,
+					abi: SavingsGatewayV2ABI,
+					functionName: "adjust",
+					args: [v2SavingsBalance, frontendCode],
+				});
 
-			const toastContent = [
-				{
-					title: `Saved amount: `,
-					value: `${formatCurrency(formatUnits(amount, 18))} ${TOKEN_SYMBOL}`,
-				},
-				{
-					title: `Claim Interest: `,
-					value: `${formatCurrency(formatUnits(interestToBeCollected, 18))} ${TOKEN_SYMBOL}`,
-				},
-				{
-					title: "Transaction: ",
-					hash: writeHash,
-				},
-			];
+				const v2ToastContent = [
+					{
+						title: "Claim Interest: ",
+						value: `${formatCurrency(formatUnits(v2Interest, 18))} ${TOKEN_SYMBOL}`,
+					},
+					{
+						title: "Transaction: ",
+						hash: v2Hash,
+					},
+				];
 
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: writeHash, confirmations: 2 }), {
-				pending: {
-					render: <TxToast title={`Claiming Interest...`} rows={toastContent} />,
-				},
-				success: {
-					render: <TxToast title="Successfully claimed" rows={toastContent} />,
-				},
-			});
+				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: v2Hash, confirmations: 2 }), {
+					pending: { render: <TxToast title="Claiming V2 interest..." rows={v2ToastContent} /> },
+					success: { render: <TxToast title="V2 interest claimed" rows={v2ToastContent} /> },
+				});
+			}
 
-			setUserSavingsInterest(0n);
-			refetchInterest();
-			refetchLeaderboard();
+			if (v3Deployed && (v3Interest > 0n || v3ClaimableInterest > 0n)) {
+				const v3Amount = v3Interest + v3ClaimableInterest;
+				const v3Hash = isNonCompounding
+					? await writeContract(WAGMI_CONFIG, {
+							address: ADDR.savings,
+							abi: SavingsV3ABI,
+							functionName: "claimInterest",
+							args: [address],
+						})
+					: await writeContract(WAGMI_CONFIG, {
+							address: ADDR.savings,
+							abi: SavingsV3ABI,
+							functionName: "refreshBalance",
+							args: [address],
+						});
+
+				const v3ToastContent = [
+					{
+						title: "Claim Interest: ",
+						value: `${formatCurrency(formatUnits(v3Amount, 18))} ${TOKEN_SYMBOL}`,
+					},
+					{
+						title: "Transaction: ",
+						hash: v3Hash,
+					},
+				];
+
+				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: v3Hash, confirmations: 2 }), {
+					pending: { render: <TxToast title="Claiming interest..." rows={v3ToastContent} /> },
+					success: { render: <TxToast title="Successfully claimed" rows={v3ToastContent} /> },
+				});
+			}
+
+			await refetchInterest();
 		} catch (error) {
-			toast.error(renderErrorTxToast(error)); // TODO: add error translation
+			toast.error(renderErrorTxToast(error));
 		} finally {
-			if (setLoaded != undefined) setLoaded(false);
+			setLoaded(false);
 			setIsClaiming(false);
 		}
 	};
@@ -154,33 +285,57 @@ export const useSavingsInterest = () => {
 		try {
 			setIsReinvesting(true);
 
-		const reinvestHash = await writeContract(WAGMI_CONFIG, {
-			address: ADDRESS[chainId].savingsGateway,
-			abi: SavingsGatewayABI,
-			functionName: "refreshBalance",
-			args: [address]
-		});
+			if (v2Interest > 0n) {
+				const v2Hash = await writeContract(WAGMI_CONFIG, {
+					address: ADDR.savingsGateway,
+					abi: SavingsGatewayV2ABI,
+					functionName: "refreshBalance",
+					args: [address],
+				});
 
-		const toastContent = [
-			{
-				title: `Reinvested amount: `,
-				value: `${formatCurrency(formatUnits(interestToBeCollected, 18))} ${TOKEN_SYMBOL}`,
-			},
-			{
-				title: "Transaction: ",
-				hash: reinvestHash,
-			},
-		];
+				const v2ToastContent = [
+					{
+						title: "Reinvested amount: ",
+						value: `${formatCurrency(formatUnits(v2Interest, 18))} ${TOKEN_SYMBOL}`,
+					},
+					{
+						title: "Transaction: ",
+						hash: v2Hash,
+					},
+				];
 
-		await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: reinvestHash, confirmations: 2 }), {
-			pending: {
-				render: <TxToast title={`Reinvesting...`} rows={toastContent} />,
-			},
-			success: {
-				render: <TxToast title="Successfully reinvested" rows={toastContent} />,
-			},
-		});
+				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: v2Hash, confirmations: 2 }), {
+					pending: { render: <TxToast title="Reinvesting V2 interest..." rows={v2ToastContent} /> },
+					success: { render: <TxToast title="V2 interest reinvested" rows={v2ToastContent} /> },
+				});
+			}
 
+			if (v3Deployed && !isNonCompounding && v3Interest > 0n) {
+				const v3Hash = await writeContract(WAGMI_CONFIG, {
+					address: ADDR.savings,
+					abi: SavingsV3ABI,
+					functionName: "refreshBalance",
+					args: [address],
+				});
+
+				const v3ToastContent = [
+					{
+						title: "Reinvested amount: ",
+						value: `${formatCurrency(formatUnits(v3Interest, 18))} ${TOKEN_SYMBOL}`,
+					},
+					{
+						title: "Transaction: ",
+						hash: v3Hash,
+					},
+				];
+
+				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: v3Hash, confirmations: 2 }), {
+					pending: { render: <TxToast title="Reinvesting..." rows={v3ToastContent} /> },
+					success: { render: <TxToast title="Successfully reinvested" rows={v3ToastContent} /> },
+				});
+			}
+
+			await refetchInterest();
 		} catch (error) {
 			toast.error(renderErrorTxToast(error));
 		} finally {
@@ -188,15 +343,30 @@ export const useSavingsInterest = () => {
 		}
 	};
 
-	const hasSavingsData = userSavingsBalance > 0n || userSavingsInterest > 0n || change > 0n;
+	const userSavingsBalance = v2SavingsBalance + v3SavingsBalance + v2VaultAssets + v3VaultAssets;
+	const interestToBeCollected = v2Interest + v3Interest + v3ClaimableInterest;
+	const canReinvest = v2Interest > 0n || (!isNonCompounding && v3Interest > 0n);
+	const hasSavingsData = userSavingsBalance > 0n || totalEarnedInterest > 0n || interestToBeCollected > 0n;
 
 	return {
+		isLoaded,
 		isClaiming,
 		isReinvesting,
 		hasSavingsData,
+		canReinvest,
+		isNonCompounding,
+		totalEarnedInterest,
 		interestToBeCollected,
-		totalEarnedInterest: change,
 		userSavingsBalance,
+		v2SavingsBalance,
+		v3SavingsBalance,
+		v2Interest,
+		v3Interest,
+		v3ClaimableInterest,
+		v2VaultShares,
+		v2VaultAssets,
+		v3VaultShares,
+		v3VaultAssets,
 		claimInterest,
 		refetchInterest,
 		handleReinvest,

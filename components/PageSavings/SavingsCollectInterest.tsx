@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRotateRight } from "@fortawesome/free-solid-svg-icons";
 
 export default function SavingsCollectInterest() {
-	const { isClaiming, interestToBeCollected, claimInterest, isReinvesting, handleReinvest } = useSavingsInterest();
+	const { isClaiming, interestToBeCollected, claimInterest, isReinvesting, handleReinvest, canReinvest } = useSavingsInterest();
 	const { t } = useTranslation();
 
 	return (
@@ -28,7 +28,7 @@ export default function SavingsCollectInterest() {
 					</div>
 				</div>
 				<div className="flex flex-row gap-x-2.5">
-					<Button className="h-9 !py-1.5 gap-x-1.5 justify-start !w-fit" disabled={!interestToBeCollected} isLoading={isReinvesting} onClick={handleReinvest}>
+					<Button className="h-9 !py-1.5 gap-x-1.5 justify-start !w-fit" disabled={!canReinvest} isLoading={isReinvesting} onClick={handleReinvest}>
 						<FontAwesomeIcon icon={faArrowRotateRight} />
 						<span className="font-medium">{t("savings.reinvest")}</span>
 					</Button>

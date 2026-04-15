@@ -13,7 +13,7 @@ interface TransactionHistoryData {
 	id: string;
 	created: number;
 	type: string;
-	rate: number;
+	rate: number | null;
 	amount: string;
 	txHash: string;
 }
@@ -26,7 +26,7 @@ const HystoryRow = ({ item }: { item: TransactionHistoryData }) => {
 		<>
 			<TxLabelSimple className="text-left font-medium text-sm/5" label={dateStr} tx={item.txHash as Hash} showLink />
 			<div className="text-right font-medium text-sm/5">{item.type}</div>
-			<div className="text-right font-medium text-sm/5">{formatCurrency(item.rate / 10_000)} %</div>
+			<div className="text-right font-medium text-sm/5">{item.rate === null ? "-" : `${formatCurrency(item.rate / 10_000)} %`}</div>
 			<div className="text-right font-medium text-sm/5">{formatCurrency(formatUnits(BigInt(item.amount), 18))}</div>
 		</>
 	);
@@ -42,6 +42,8 @@ export function TransactionHistoryPanel() {
 	const withdraw = savingsUserTable?.withdraw || [];
 	const save = savingsUserTable?.save || [];
 	const interest = savingsUserTable?.interest || [];
+	const vaultWithdraw = savingsUserTable?.vaultWithdraw || [];
+	const vaultSave = savingsUserTable?.vaultSave || [];
 
 	const handleTabOnChange = function (e: string) {
 		if (tab === e) {
@@ -56,6 +58,22 @@ export function TransactionHistoryPanel() {
 		...withdraw.map((r) => ({ ...r, type: t("savings.withdraw"), id: `withdraw-${r.txHash}` })),
 		...save.map((r) => ({ ...r, type: t("savings.deposit"), id: `deposit-${r.txHash}` })),
 		...interest.map((r) => ({ ...r, type: t("savings.claimed_interest"), id: `interest-${r.txHash}` })),
+		...vaultWithdraw.map((r) => ({
+			id: `vault-withdraw-${r.id}`,
+			created: r.timestamp,
+			type: t("savings.withdraw"),
+			rate: null,
+			amount: r.assets,
+			txHash: r.txHash,
+		})),
+		...vaultSave.map((r) => ({
+			id: `vault-deposit-${r.id}`,
+			created: r.timestamp,
+			type: t("savings.deposit"),
+			rate: null,
+			amount: r.assets,
+			txHash: r.txHash,
+		})),
 	];
 
 	const operationsGroupedByTx = operationsHistory.reduce((acc: Record<string, TransactionHistoryData[]>, curr) => {
@@ -128,7 +146,7 @@ function sortTransactionHistory(params: {
 	} else if (tab === headers[1]) {
 		transactionHistory.sort((a, b) => a.type.localeCompare(b.type));
 	} else if (tab === headers[2]) {
-		transactionHistory.sort((a, b) => a.rate - b.rate);
+		transactionHistory.sort((a, b) => (a.rate ?? -1) - (b.rate ?? -1));
 	} else if (tab === headers[3]) {
 		transactionHistory.sort((a, b) => Number(b.amount) - Number(a.amount));
 	}

@@ -1,6 +1,12 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit";
 import { DEURO_API_CLIENT } from "../../app.config";
 import {
+	ApiLeadrateInfo,
+	ApiLeadrateProposed,
+	ApiLeadrateRate,
+	ApiSavingsInfo,
+	ApiSavingsUserLeaderboard,
+	ApiSavingsUserTable,
 	DispatchApiLeadrateInfo,
 	DispatchApiLeadrateProposed,
 	DispatchApiLeadrateRate,
@@ -10,7 +16,6 @@ import {
 	SavingsState,
 	DispatchApiSavingsLeaderboard,
 } from "./savings.types";
-import { ApiLeadrateInfo, ApiLeadrateProposed, ApiLeadrateRate, ApiSavingsInfo, ApiSavingsUserTable, ApiSavingsUserLeaderboard } from "@deuro/api";
 import { Address, zeroAddress } from "viem";
 import { logApiError } from "../../utils/errorLogger";
 
