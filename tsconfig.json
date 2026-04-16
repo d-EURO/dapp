@@ -17,7 +17,6 @@
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"paths": {
-			"@deuro/api": ["../api/index.ts"],
 			"@components/*": ["./components/*"],
 			"@hooks": ["./hooks"],
 			"@utils": ["./utils"],

@@ -7,7 +7,7 @@ import {
 	ZERO_FRONTEND_CODE,
 } from "@utils";
 import { useRouter } from "next/router";
-import { FrontendGatewayABI } from "@deuro/eurocoin";
+import { FrontendGatewayV2ABI } from "@deuro/eurocoin";
 import { zeroAddress } from "viem";
 import { ADDRESS } from "@deuro/eurocoin";
 import { readContract } from "wagmi/actions";
@@ -38,7 +38,7 @@ export const FrontendCodeProvider: React.FC<{ children: React.ReactNode }> = ({ 
 					const code = getFrontendCodeFromReferralName(marketingParam);
 					const [, owner] = await readContract(WAGMI_CONFIG, {
 						address: ADDRESS[chainId].frontendGateway,
-						abi: FrontendGatewayABI,
+						abi: FrontendGatewayV2ABI,
 						functionName: "frontendCodes",
 						args: [code],
 					});
@@ -56,7 +56,7 @@ export const FrontendCodeProvider: React.FC<{ children: React.ReactNode }> = ({ 
 				try {
 					const lastUsedCode = await readContract(WAGMI_CONFIG, {
 						address: ADDRESS[chainId].frontendGateway,
-						abi: FrontendGatewayABI,
+						abi: FrontendGatewayV2ABI,
 						functionName: "lastUsedFrontendCode",
 						args: [address],
 					});

@@ -5,7 +5,7 @@ import { useTranslation } from "next-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { renderErrorTxToast } from "@components/TxToast";
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { ADDRESS, PositionRollerABI, PositionV2ABI } from "@deuro/eurocoin";
+import { PositionRollerV2ABI, PositionRollerV3ABI, PositionV2ABI, PositionV3ABI } from "@deuro/eurocoin";
 import { useRouter } from "next/router";
 import { writeContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
@@ -20,6 +20,7 @@ import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import Button from "@components/Button";
 import { erc20Abi, maxUint256 } from "viem";
 import Link from "next/link";
+import { getAppAddresses } from "@contracts";
 import { useContractUrl } from "../../hooks/useContractUrl";
 import { getLoanDetailsByCollateralAndLiqPrice } from "../../utils/loanCalculations";
 
@@ -28,12 +29,16 @@ export const ExpirationManageSection = () => {
 	const [isTxOnGoing, setIsTxOnGoing] = useState(false);
 	const { t } = useTranslation();
 	const chainId = useChainId();
+	const ADDR = getAppAddresses(chainId);
 
 	const router = useRouter();
 	const { address: positionAddress } = router.query;
 
 	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
 	const position = positions.find((p) => p.position == positionAddress);
+	const positionAbi = position?.version === 3 ? PositionV3ABI : PositionV2ABI;
+	const rollerAbi = position?.version === 3 ? PositionRollerV3ABI : PositionRollerV2ABI;
+	const rollerAddress = position?.version === 3 ? ADDR.rollerV3 : ADDR.rollerV2;
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 
 	const challenges = useSelector((state: RootState) => state.challenges.list?.list || []);
@@ -43,6 +48,8 @@ export const ExpirationManageSection = () => {
 		if (!position) return [];
 		const now = new Date().getTime() / 1000;
 		return positions
+			// Keep expiration rolls within the same hub generation; cross-version migration is a separate flow.
+			.filter((p) => p.version === position.version)
 			.filter((p) => p.collateral.toLowerCase() === position.collateral.toLowerCase())
 			.filter((p) => !challengedPositions.includes(p.position))
 			.filter((p) => now > toTimestamp(toDate(p.cooldown)))
@@ -60,19 +67,19 @@ export const ExpirationManageSection = () => {
 				symbol: position.collateralSymbol,
 				address: position.collateral,
 				name: position.collateralSymbol,
-				allowance: [ADDRESS[chainId].roller],
+				allowance: [rollerAddress],
 			},
 			{
 				symbol: position.deuroSymbol,
 				address: position.deuro,
 				name: position.deuroSymbol,
-				allowance: [ADDRESS[chainId].roller],
+				allowance: [rollerAddress],
 			},
 		] : []
 	);
 
-	const collateralAllowance = position ? balancesByAddress[position.collateral]?.allowance?.[ADDRESS[chainId].roller] : undefined;
-	const deuroAllowance = position ? balancesByAddress[position.deuro]?.allowance?.[ADDRESS[chainId].roller] : undefined;
+	const collateralAllowance = position ? balancesByAddress[position.collateral]?.allowance?.[rollerAddress] : undefined;
+	const deuroAllowance = position ? balancesByAddress[position.deuro]?.allowance?.[rollerAddress] : undefined;
 	const deuroBalance = position ? balancesByAddress[position.deuro]?.balanceOf : 0n;
 
 	const url = useContractUrl(position?.position || "");
@@ -83,13 +90,13 @@ export const ExpirationManageSection = () => {
 			{
 				chainId,
 				address: position.position,
-				abi: PositionV2ABI,
+				abi: positionAbi,
 				functionName: "principal",
 			},
 			{
 				chainId,
 				address: position.position,
-				abi: PositionV2ABI,
+				abi: positionAbi,
 				functionName: "getDebt",
 			},
 		] : [],
@@ -121,8 +128,8 @@ export const ExpirationManageSection = () => {
 			setIsTxOnGoing(true);
 
 			const extendingHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].roller,
-				abi: PositionRollerABI,
+				address: rollerAddress,
+				abi: rollerAbi,
 				functionName: "rollFullyWithExpiration",
 				args: [positionAddress as Address, targetPosition?.position as Address, toTimestamp(expirationDate as Date)],
 			});
@@ -161,7 +168,7 @@ export const ExpirationManageSection = () => {
 				address: position.collateral,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].roller, maxUint256],
+				args: [rollerAddress, maxUint256],
 			});
 
 			const toastContent = [
@@ -196,7 +203,7 @@ export const ExpirationManageSection = () => {
 				address: position.deuro,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].roller, maxUint256],
+				args: [rollerAddress, maxUint256],
 			});
 
 			const toastContent = [

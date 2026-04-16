@@ -3,20 +3,21 @@ import Button from "@components/Button";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import GuardToMinVotingPower from "@components/Guards/GuardToMinVotingPower";
 import TableRow from "../Table/TableRow";
-import { SavingsABI } from "@deuro/eurocoin";
+import { SavingsV3ABI } from "@deuro/eurocoin";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { Hash, zeroAddress } from "viem";
 import { CONFIG_CHAIN, GET_SAVINGS_V3_ADDRESS, WAGMI_CONFIG } from "../../app.config";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
-import { ApiLeadrateInfo, LeadrateProposedWithSource } from "../../redux/slices/savings.types";
+import { ApiLeadrateInfo } from "../../redux/slices/savings.types";
+import { LeadrateProposed } from "@deuro/api";
 import { formatCurrency } from "../../utils/format";
 
 interface Props {
 	headers: string[];
 	info: ApiLeadrateInfo;
-	proposal: LeadrateProposedWithSource;
+	proposal: LeadrateProposed;
 	currentProposal: boolean;
 	tab: string;
 }
@@ -46,7 +47,7 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
 				address: savingsV3Address,
-				abi: SavingsABI,
+				abi: SavingsV3ABI,
 				functionName: "applyChange",
 				args: [],
 			});
@@ -91,7 +92,7 @@ export default function GovernanceLeadrateRow({ headers, info, proposal, current
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
 				address: savingsV3Address,
-				abi: SavingsABI,
+				abi: SavingsV3ABI,
 				functionName: "proposeChange",
 				args: [versionInfo.rate, []],
 			});

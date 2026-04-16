@@ -5,7 +5,7 @@ import TableRowEmpty from "../Table/TableRowEmpty";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { useState } from "react";
-import { LeadrateProposedWithSource } from "../../redux/slices/savings.types";
+import { LeadrateProposed } from "@deuro/api";
 import GovernanceLeadrateRow from "./GovernanceLeadrateRow";
 import { useTranslation } from "next-i18next";
 
@@ -21,7 +21,7 @@ export default function GovernanceLeadrateTable() {
 	if (!info || !proposals || !rates) return null;
 
 	const currentProposal = proposals.list.length > 0 ? proposals.list[0] : undefined;
-	const sorted: LeadrateProposedWithSource[] = proposals.list.slice(0, 5);
+	const sorted: LeadrateProposed[] = proposals.list.slice(0, 5);
 
 	const handleTabOnChange = function (e: string) {
 		if (tab === e) {

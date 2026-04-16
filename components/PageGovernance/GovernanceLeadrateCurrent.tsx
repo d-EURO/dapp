@@ -4,7 +4,7 @@ import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import GuardToMinVotingPower from "@components/Guards/GuardToMinVotingPower";
 import { BigNumberInput } from "@components/Input/BigNumberInput";
 import { renderErrorTxToast, TxToast } from "@components/TxToast";
-import { SavingsABI } from "@deuro/eurocoin";
+import { SavingsV3ABI } from "@deuro/eurocoin";
 import { useEffect, useState } from "react";
 import { useTranslation } from "next-i18next";
 import { useSelector } from "react-redux";
@@ -14,7 +14,6 @@ import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { zeroAddress } from "viem";
 import { CONFIG_CHAIN, GET_SAVINGS_V3_ADDRESS, WAGMI_CONFIG } from "../../app.config";
 import { RootState } from "../../redux/redux.store";
-import { ApiLeadrateInfo } from "../../redux/slices/savings.types";
 import { formatCurrency } from "../../utils/format";
 
 interface Props {}
@@ -25,7 +24,7 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 
 	const account = useAccount();
 	const chainId = CONFIG_CHAIN().id;
-	const info = useSelector((state: RootState) => state.savings.leadrateInfo) as ApiLeadrateInfo | undefined;
+	const info = useSelector((state: RootState) => state.savings.leadrateInfo);
 	const v3 = info?.v3;
 	const [newRate, setNewRate] = useState<number>(v3?.rate || 0);
 	const [isDisabled, setDisabled] = useState<boolean>(true);
@@ -53,7 +52,7 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
 				address: savingsV3Address,
-				abi: SavingsABI,
+				abi: SavingsV3ABI,
 				functionName: "proposeChange",
 				args: [newRate, []],
 			});

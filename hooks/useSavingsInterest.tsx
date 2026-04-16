@@ -1,12 +1,10 @@
 import { useAccount, useBlockNumber, useChainId } from "wagmi";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import { gql, useQuery } from "@apollo/client";
 import { Address, erc20Abi, formatUnits, zeroAddress } from "viem";
 import { toast } from "react-toastify";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { RootState } from "../redux/redux.store";
 import { WAGMI_CONFIG } from "../app.config";
 import { useFrontendCode } from "./useFrontendCode";
 import { getPublicViewAddress, formatCurrency, TOKEN_SYMBOL } from "@utils";
@@ -28,10 +26,6 @@ export const useSavingsInterest = () => {
 	const [isClaiming, setIsClaiming] = useState(false);
 	const [isReinvesting, setIsReinvesting] = useState(false);
 	const [refetchSignal, setRefetchSignal] = useState(0);
-
-	const savingsInfo = useSelector((state: RootState) => state.savings.savingsInfo);
-	const leadrate = savingsInfo?.rate ?? 0;
-	const leadrateV2 = savingsInfo?.rateV2 ?? leadrate;
 
 	const { data } = useBlockNumber({ watch: true });
 	const { address } = useAccount();
@@ -79,7 +73,7 @@ export const useSavingsInterest = () => {
 			let nextV3VaultAssets = 0n;
 
 			try {
-				const [_saved, _ticks] = await readContract(WAGMI_CONFIG, {
+				const [_saved] = await readContract(WAGMI_CONFIG, {
 					address: ADDR.savingsGateway,
 					abi: SavingsGatewayV2ABI,
 					functionName: "savings",
@@ -87,22 +81,12 @@ export const useSavingsInterest = () => {
 				});
 				nextV2Balance = _saved;
 
-				const currentTicks = await readContract(WAGMI_CONFIG, {
-					address: ADDR.savingsGateway,
-					abi: SavingsGatewayV2ABI,
-					functionName: "currentTicks",
-				});
 				nextV2Interest = await readContract(WAGMI_CONFIG, {
 					address: ADDR.savingsGateway,
 					abi: SavingsGatewayV2ABI,
 					functionName: "accruedInterest",
 					args: [account],
 				});
-
-				// Keep the old lock-time behaviour intact for V2 by touching currentTicks.
-				if (_ticks >= currentTicks && leadrateV2 > 0) {
-					void ((_ticks - currentTicks) / BigInt(leadrateV2));
-				}
 			} catch {
 				// Ignore V2 read failures so V3 can still render.
 			}
@@ -195,7 +179,7 @@ export const useSavingsInterest = () => {
 			setV3VaultAssets(nextV3VaultAssets);
 			setLoaded(true);
 		})();
-	}, [data, account, ADDR.savingsGateway, ADDR.savings, ADDR.savingsVaultV2, ADDR.savingsVaultV3, isClaiming, leadrateV2, refetchSignal, v2VaultDeployed, v3Deployed, v3VaultDeployed]);
+	}, [data, account, ADDR.savingsGateway, ADDR.savings, ADDR.savingsVaultV2, ADDR.savingsVaultV3, isClaiming, refetchSignal, v2VaultDeployed, v3Deployed, v3VaultDeployed]);
 
 	useEffect(() => {
 		setLoaded(false);

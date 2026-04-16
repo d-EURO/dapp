@@ -13,13 +13,13 @@ import { PositionQuery } from "@deuro/api";
 import { SelectCollateralModal } from "./SelectCollateralModal";
 import { BorrowingDEUROModal } from "@components/PageMint/BorrowingDEUROModal";
 import { InputTitle } from "@components/Input/InputTitle";
-import { formatBigInt, formatCurrency, formatDate, shortenAddress, toDate, TOKEN_SYMBOL, toTimestamp } from "@utils";
+import { formatBigInt, formatCurrency, formatDate, shortenAddress, toDate, TOKEN_SYMBOL, toTimestamp, WHITELISTED_POSITIONS } from "@utils";
 import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { RootState, store } from "../../redux/redux.store";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { useTranslation } from "next-i18next";
 import { useAccount, useBlock, useChainId } from "wagmi";
-import { POSITION_NOT_BLACKLISTED, WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG } from "../../app.config";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { TxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
@@ -91,7 +91,7 @@ export default function PositionCreate({}) {
 	const elegiblePositions = useMemo(() => {
 		const blockTimestamp = latestBlock?.timestamp || new Date().getTime() / 1000;
 		return positions
-			.filter((p) => POSITION_NOT_BLACKLISTED(p.position))
+			.filter((p) => WHITELISTED_POSITIONS.includes(p.position))
 			.filter((p) => BigInt(p.availableForClones) > 0n)
 			.filter((p) => !p.closed && !p.denied)
 			.filter((p) => blockTimestamp > toTimestamp(toDate(p.cooldown)))
@@ -123,7 +123,12 @@ export default function PositionCreate({}) {
 			});
 		});
 
-		const tokens = Array.from(uniqueTokens.values()).sort((a, b) => a.symbol.localeCompare(b.symbol));
+		const tokens = Array.from(uniqueTokens.values()).sort((a, b) => {
+			const posA = WHITELISTED_POSITIONS.findIndex((position) => position.toLowerCase() === a.position.toLowerCase());
+			const posB = WHITELISTED_POSITIONS.findIndex((position) => position.toLowerCase() === b.position.toLowerCase());
+			if (posA === -1 || posB === -1) return 0;
+			return posA - posB;
+		});
 
 		// Check if WETH is in the list and add ETH option
 		const wethToken = tokens.find((t) => t.symbol.toLowerCase() === "weth");
