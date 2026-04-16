@@ -626,17 +626,16 @@ export default function PositionCreate({}) {
 														? "border-input-borderFocus bg-card-content-secondary"
 														: "border-borders-dividerLight hover:border-input-borderHover"
 												}`}
-											>
-												<div className="flex items-center justify-between gap-3">
-													<div className="text-sm font-semibold leading-none">
-														{`v${position.version}`} · {shortenAddress(position.position)}
+												>
+													<div className="flex items-center justify-between gap-3">
+														<div className="text-sm font-semibold leading-none">
+															{`v${position.version}`} · {shortenAddress(position.position)}
+														</div>
 													</div>
-													<div className="text-xs font-medium leading-none">{availableForClones} {TOKEN_SYMBOL}</div>
-												</div>
-												<div className="mt-2 flex items-center justify-between gap-3 text-xs text-text-muted3">
-													<div>{t("mint.available")}: {availableForClones} {TOKEN_SYMBOL}</div>
-													<div>{t("mint.maturity")}: {formatDate(position.expiration)}</div>
-												</div>
+													<div className="mt-2 flex items-center justify-between gap-3 text-xs text-text-muted3">
+														<div>{t("mint.available")}: {availableForClones} {TOKEN_SYMBOL}</div>
+														<div>{t("mint.maturity")}: {formatDate(position.expiration)}</div>
+													</div>
 											</button>
 										);
 									})}
