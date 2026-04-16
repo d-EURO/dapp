@@ -7,20 +7,55 @@ import DisplayAmount from "../DisplayAmount";
 import { SectionTitle } from "../SectionTitle";
 import { formatCurrency, TOKEN_SYMBOL } from "@utils";
 import { useTranslation } from "next-i18next";
+import { erc20Abi, formatUnits } from "viem";
+import { useChainId, useReadContracts } from "wagmi";
+import { getAppAddresses, isDeployed } from "@contracts";
 
 export default function RatesSummary() {
 	const { t } = useTranslation();
 	const eco = useSelector((state: RootState) => state.ecosystem);
 	const savingsInfo = useSelector((state: RootState) => state.savings.savingsInfo);
+	const chainId = useChainId();
+	const ADDR = getAppAddresses(chainId);
 
 	const exposures = eco.exposureData?.exposures ?? [];
 	const totalOpenPositions = exposures.reduce((sum, e) => sum + e.positions.open, 0);
 	const totalMinted = exposures.reduce((sum, e) => sum + e.mint.totalMinted, 0);
 	const loanInterestPA = eco.exposureData?.general?.earningsPerAnnum ?? 0;
 
-	const savingsRate = savingsInfo ? savingsInfo.rate / 10_000 : 0;
-	const totalSavingsNum = savingsInfo?.totalBalance ?? 0;
-	const savingsInterestPA = totalSavingsNum * savingsRate / 100;
+	const { data: savingsBalances } = useReadContracts({
+		contracts: [
+			{
+				address: ADDR.decentralizedEURO,
+				abi: erc20Abi,
+				functionName: "balanceOf",
+				args: [ADDR.savingsGateway],
+			},
+			...(isDeployed(ADDR.savings)
+				? [
+						{
+							address: ADDR.decentralizedEURO,
+							abi: erc20Abi,
+							functionName: "balanceOf",
+							args: [ADDR.savings],
+						},
+				  ]
+				: []),
+		],
+	});
+
+	const v2SavingsRaw = (savingsBalances?.[0]?.result as bigint | undefined) ?? 0n;
+	const v3SavingsRaw = isDeployed(ADDR.savings) ? ((savingsBalances?.[1]?.result as bigint | undefined) ?? 0n) : 0n;
+	const v2SavingsNum = parseFloat(formatUnits(v2SavingsRaw, 18));
+	const v3SavingsNum = parseFloat(formatUnits(v3SavingsRaw, 18));
+	const v2SavingsRate = (savingsInfo?.rateV2 ?? 0) / 10_000;
+	const v3SavingsRate = (savingsInfo?.rateV3 ?? savingsInfo?.rate ?? 0) / 10_000;
+	const hasSavingsBalances = Boolean(savingsBalances?.length);
+	const totalSavingsNum = hasSavingsBalances ? v2SavingsNum + v3SavingsNum : savingsInfo?.totalBalance || 0;
+	const savingsInterestPA = hasSavingsBalances
+		? (v2SavingsNum * v2SavingsRate) / 100 + (v3SavingsNum * v3SavingsRate) / 100
+		: (totalSavingsNum * ((savingsInfo?.rate ?? 0) / 10_000)) / 100;
+	const savingsRate = totalSavingsNum > 0 ? (savingsInterestPA / totalSavingsNum) * 100 : v3SavingsRate || v2SavingsRate;
 	const netInterest = loanInterestPA - savingsInterestPA;
 
 	if (!eco.loaded || !savingsInfo) {

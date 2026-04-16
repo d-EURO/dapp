@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Address, erc20Abi, formatUnits, zeroAddress } from "viem";
 import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
@@ -13,13 +13,13 @@ import { PositionQuery } from "@deuro/api";
 import { SelectCollateralModal } from "./SelectCollateralModal";
 import { BorrowingDEUROModal } from "@components/PageMint/BorrowingDEUROModal";
 import { InputTitle } from "@components/Input/InputTitle";
-import { formatBigInt, formatCurrency, shortenAddress, toDate, TOKEN_SYMBOL, toTimestamp, WHITELISTED_POSITIONS } from "@utils";
+import { formatBigInt, formatCurrency, formatDate, shortenAddress, toDate, TOKEN_SYMBOL, toTimestamp } from "@utils";
 import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { RootState, store } from "../../redux/redux.store";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { useTranslation } from "next-i18next";
 import { useAccount, useBlock, useChainId } from "wagmi";
-import { WAGMI_CONFIG } from "../../app.config";
+import { POSITION_NOT_BLACKLISTED, WAGMI_CONFIG } from "../../app.config";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { TxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
@@ -34,6 +34,32 @@ import { MaxButton } from "@components/Input/MaxButton";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { getAppAddresses, MintingHubGatewayV2ABI, MintingHubV3ABI } from "@contracts";
+
+const getMaxCollateralFromMintLimit = (availableForClones: bigint, liqPrice: bigint) => {
+	if (!availableForClones || liqPrice === 0n) return 0n;
+	return (availableForClones * BigInt(1e18)) / liqPrice;
+};
+
+const getMaxCollateralAmount = (balance: bigint, availableForClones: bigint, liqPrice: bigint) => {
+	const maxFromLimit = getMaxCollateralFromMintLimit(availableForClones, liqPrice);
+	return maxFromLimit > 0n && balance > maxFromLimit ? maxFromLimit : balance;
+};
+
+const compareParentPositions = (a: PositionQuery, b: PositionQuery) => {
+	if (a.version !== b.version) return b.version - a.version;
+
+	const availableA = BigInt(a.availableForClones);
+	const availableB = BigInt(b.availableForClones);
+	if (availableA !== availableB) return availableA < availableB ? 1 : -1;
+
+	if (a.expiration !== b.expiration) return b.expiration - a.expiration;
+
+	const priceA = BigInt(a.price);
+	const priceB = BigInt(b.price);
+	if (priceA !== priceB) return priceA < priceB ? 1 : -1;
+
+	return a.position.localeCompare(b.position);
+};
 
 export default function PositionCreate({}) {
 	const [selectedCollateral, setSelectedCollateral] = useState<TokenBalance | null | undefined>(null);
@@ -62,26 +88,27 @@ export default function PositionCreate({}) {
 	const { query } = router;
 	const ADDR = getAppAddresses(chainId);
 
-	const getMaxCollateralFromMintLimit = (availableForClones: bigint, liqPrice: bigint) => {
-		if (!availableForClones || liqPrice === 0n) return 0n;
-		return (availableForClones * BigInt(1e18)) / liqPrice;
-	};
-
-	const getMaxCollateralAmount = (balance: bigint, availableForClones: bigint, liqPrice: bigint) => {
-		const maxFromLimit = getMaxCollateralFromMintLimit(availableForClones, liqPrice);
-		return maxFromLimit > 0n && balance > maxFromLimit ? maxFromLimit : balance;
-	};
-
 	const elegiblePositions = useMemo(() => {
 		const blockTimestamp = latestBlock?.timestamp || new Date().getTime() / 1000;
 		return positions
-			.filter((p) => WHITELISTED_POSITIONS.includes(p.position))
+			.filter((p) => POSITION_NOT_BLACKLISTED(p.position))
 			.filter((p) => BigInt(p.availableForClones) > 0n)
-			.filter((p) => !p.closed)
+			.filter((p) => !p.closed && !p.denied)
 			.filter((p) => blockTimestamp > toTimestamp(toDate(p.cooldown)))
 			.filter((p) => blockTimestamp < toTimestamp(toDate(p.expiration)))
 			.filter((p) => !challengedPositions.includes(p.position));
 	}, [positions, latestBlock, challengedPositions]);
+
+	const getParentCandidatesForToken = useCallback((token: Pick<TokenBalance, "address" | "symbol"> | null | undefined) => {
+		if (!token) return [];
+
+		const matchingPositions =
+			token.address === zeroAddress
+				? elegiblePositions.filter((p) => p.version === 3 && p.collateralSymbol.toLowerCase() === "weth")
+				: elegiblePositions.filter((p) => p.collateral.toLowerCase() === token.address.toLowerCase());
+
+		return [...matchingPositions].sort(compareParentPositions);
+	}, [elegiblePositions]);
 
 	const collateralTokenList = useMemo(() => {
 		const uniqueTokens = new Map();
@@ -96,12 +123,7 @@ export default function PositionCreate({}) {
 			});
 		});
 
-		const tokens = Array.from(uniqueTokens.values()).sort((a, b) => {
-			const posA = WHITELISTED_POSITIONS.findIndex((p) => p.toLowerCase() === a.position.toLowerCase());
-			const posB = WHITELISTED_POSITIONS.findIndex((p) => p.toLowerCase() === b.position.toLowerCase());
-			if (posA === -1 || posB === -1) return 0;
-			return posA - posB;
-		});
+		const tokens = Array.from(uniqueTokens.values()).sort((a, b) => a.symbol.localeCompare(b.symbol));
 
 		// Check if WETH is in the list and add ETH option
 		const wethToken = tokens.find((t) => t.symbol.toLowerCase() === "weth");
@@ -120,31 +142,14 @@ export default function PositionCreate({}) {
 		}
 
 		return tokens;
-	}, [ADDR.mintingHub, ADDR.mintingHubGateway, elegiblePositions, isApproving]);
+	}, [ADDR.mintingHub, ADDR.mintingHubGateway, elegiblePositions]);
 
 	const { balances, balancesByAddress, refetchBalances } = useWalletERC20Balances(collateralTokenList);
 	const { t } = useTranslation();
-
-	useEffect(() => {
-		if (collateralTokenList.length > 0 && !selectedCollateral) {
-			if (query?.collateral) {
-				// If collateral is specified in URL, use it
-				const queryCollateral = Array.isArray(query.collateral) ? query.collateral[0] : query.collateral;
-				const collateralToken = collateralTokenList.find((b) => b.symbol.toLowerCase() === queryCollateral?.toLowerCase());
-				if (collateralToken) {
-					handleOnSelectedToken(collateralToken);
-				}
-			} else {
-				// If no collateral specified, prefer ETH if available, otherwise first token
-				const ethToken = collateralTokenList.find((b) => b.symbol === 'ETH');
-				if (ethToken) {
-					handleOnSelectedToken(ethToken);
-				} else if (collateralTokenList.length > 0) {
-					handleOnSelectedToken(collateralTokenList[0]);
-				}
-			}
-		}
-	}, [query?.collateral, collateralTokenList.length, selectedCollateral]);
+	const selectedParentPositions = useMemo(() => {
+		if (!selectedCollateral) return [];
+		return getParentCandidatesForToken(selectedCollateral);
+	}, [getParentCandidatesForToken, selectedCollateral]);
 
 	// Collateral input validation with minting limit check
 	useEffect(() => {
@@ -184,7 +189,7 @@ export default function PositionCreate({}) {
 			});
 			setCollateralError(limitExceeded);
 		}
-	}, [collateralAmount, balancesByAddress, address, selectedPosition, liquidationPrice]);
+	}, [collateralAmount, balancesByAddress, address, selectedCollateral, selectedPosition, liquidationPrice, t]);
 
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
@@ -220,8 +225,7 @@ export default function PositionCreate({}) {
 		2
 	)?.toString();
 
-	const handleOnSelectedToken = (token: TokenBalance) => {
-		if (!token) return;
+	const syncSelectedTokenAndPosition = useCallback((token: TokenBalance, position: PositionQuery) => {
 		setSelectedCollateral(token);
 		const currentQuery = { ...router.query, collateral: token.symbol };
 		router.replace({
@@ -229,37 +233,78 @@ export default function PositionCreate({}) {
 			query: currentQuery,
 		});
 
-		// For ETH, we need to find the WETH position since ETH uses WETH internally
-		const isETH = token.symbol === 'ETH';
-		const selectedPosition = isETH
-			? elegiblePositions.find((p) => p.version === 3 && p.collateralSymbol.toLowerCase() === 'weth')
-			: elegiblePositions.find((p) => p.collateral.toLowerCase() == token.address.toLowerCase());
-		if (!selectedPosition) return;
-		const liqPrice = BigInt(selectedPosition.price);
+		const liqPrice = BigInt(position.price);
 
-		setSelectedPosition(selectedPosition);
+		setSelectedPosition(position);
 
 		// Calculate max collateral respecting minting limit
 		// For ETH, we use the special zero address balance, for others use normal address
 		const tokenBalance = balancesByAddress[token.address]?.balanceOf || 0n;
-		const maxAmount = getMaxCollateralAmount(tokenBalance, BigInt(selectedPosition.availableForClones), liqPrice);
-		const defaultAmount =
-			maxAmount > BigInt(selectedPosition.minimumCollateral) ? maxAmount.toString() : selectedPosition.minimumCollateral;
+		const maxAmount = getMaxCollateralAmount(tokenBalance, BigInt(position.availableForClones), liqPrice);
+		const defaultAmount = maxAmount > BigInt(position.minimumCollateral) ? maxAmount.toString() : position.minimumCollateral;
 
 		setCollateralAmount(defaultAmount);
-		setExpirationDate(toDate(selectedPosition.expiration));
+		setExpirationDate(toDate(position.expiration));
 		setLiquidationPrice(liqPrice.toString());
 
-		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(
-			selectedPosition,
-			BigInt(maxAmount),
-			liqPrice,
-			toDate(selectedPosition.expiration)
-		);
+		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(position, BigInt(maxAmount), liqPrice, toDate(position.expiration));
 
 		setLoanDetails(loanDetails);
 		setBorrowedAmount(loanDetails.amountToSendToWallet.toString());
-	};
+	}, [balancesByAddress, router]);
+
+	const handleOnSelectedToken = useCallback((token: TokenBalance) => {
+		if (!token) return;
+
+		const defaultPosition = getParentCandidatesForToken(token)[0];
+		if (!defaultPosition) return;
+
+		syncSelectedTokenAndPosition(token, defaultPosition);
+	}, [getParentCandidatesForToken, syncSelectedTokenAndPosition]);
+
+	const handleOnSelectedParentPosition = useCallback((position: PositionQuery) => {
+		if (!selectedCollateral) return;
+		syncSelectedTokenAndPosition(selectedCollateral, position);
+	}, [selectedCollateral, syncSelectedTokenAndPosition]);
+
+	useEffect(() => {
+		if (collateralTokenList.length > 0 && !selectedCollateral) {
+			if (query?.collateral) {
+				// If collateral is specified in URL, use it
+				const queryCollateral = Array.isArray(query.collateral) ? query.collateral[0] : query.collateral;
+				const collateralToken = collateralTokenList.find((b) => b.symbol.toLowerCase() === queryCollateral?.toLowerCase());
+				if (collateralToken) {
+					handleOnSelectedToken(collateralToken);
+				}
+			} else {
+				// If no collateral specified, prefer ETH if available, otherwise first token
+				const ethToken = collateralTokenList.find((b) => b.symbol === 'ETH');
+				if (ethToken) {
+					handleOnSelectedToken(ethToken);
+				} else if (collateralTokenList.length > 0) {
+					handleOnSelectedToken(collateralTokenList[0]);
+				}
+			}
+		}
+	}, [query?.collateral, collateralTokenList, selectedCollateral, handleOnSelectedToken]);
+
+	useEffect(() => {
+		if (!selectedCollateral) return;
+		if (selectedParentPositions.length === 0) {
+			setSelectedPosition(null);
+			return;
+		}
+
+		const matchingSelectedPosition = selectedPosition
+			? selectedParentPositions.find((position) => position.position.toLowerCase() === selectedPosition.position.toLowerCase())
+			: undefined;
+
+		if (!matchingSelectedPosition) {
+			syncSelectedTokenAndPosition(selectedCollateral, selectedParentPositions[0]);
+		} else if (matchingSelectedPosition !== selectedPosition) {
+			setSelectedPosition(matchingSelectedPosition);
+		}
+	}, [selectedCollateral, selectedParentPositions, selectedPosition, syncSelectedTokenAndPosition]);
 
 	const onAmountCollateralChange = (value: string) => {
 		setCollateralAmount(value);
@@ -303,7 +348,7 @@ export default function PositionCreate({}) {
 		);
 		setLoanDetails(loanDetails);
 		setBorrowedAmount(loanDetails.amountToSendToWallet.toString());
-	}, [expirationDate]);
+	}, [collateralAmount, expirationDate, liquidationPrice, selectedPosition]);
 
 	const handleMaxExpirationDate = () => {
 		if (selectedPosition?.expiration) {
@@ -563,6 +608,41 @@ export default function PositionCreate({}) {
 							options={balances}
 							onTokenSelect={handleOnSelectedToken}
 						/>
+						{selectedParentPositions.length > 1 && selectedPosition && (
+							<div className="self-stretch flex-col justify-start items-start gap-2 flex mt-2">
+								<div className="text-input-label text-xs font-medium leading-none">{t("mint.parent_position")}</div>
+								<div className="self-stretch grid gap-2">
+									{selectedParentPositions.map((position) => {
+										const isSelected = selectedPosition.position.toLowerCase() === position.position.toLowerCase();
+										const availableForClones = formatCurrency(formatUnits(BigInt(position.availableForClones), 18), 2, 2);
+
+										return (
+											<button
+												type="button"
+												key={position.position}
+												onClick={() => handleOnSelectedParentPosition(position)}
+												className={`self-stretch rounded-xl border p-3 text-left transition-colors ${
+													isSelected
+														? "border-input-borderFocus bg-card-content-secondary"
+														: "border-borders-dividerLight hover:border-input-borderHover"
+												}`}
+											>
+												<div className="flex items-center justify-between gap-3">
+													<div className="text-sm font-semibold leading-none">
+														{`v${position.version}`} · {shortenAddress(position.position)}
+													</div>
+													<div className="text-xs font-medium leading-none">{availableForClones} {TOKEN_SYMBOL}</div>
+												</div>
+												<div className="mt-2 flex items-center justify-between gap-3 text-xs text-text-muted3">
+													<div>{t("mint.available")}: {availableForClones} {TOKEN_SYMBOL}</div>
+													<div>{t("mint.maturity")}: {formatDate(position.expiration)}</div>
+												</div>
+											</button>
+										);
+									})}
+								</div>
+							</div>
+						)}
 					</div>
 					<div className="self-stretch flex-col justify-start items-center gap-1 flex">
 						<InputTitle icon={faCircleQuestion}>{t("mint.select_liquidation_price")}</InputTitle>
@@ -601,7 +681,7 @@ export default function PositionCreate({}) {
 							collateralPriceDeuro={collateralPriceDeuro}
 							extraRows={
 								<div className="py-1.5 flex justify-between">
-									<span className="text-base leading-tight">{t("mint.original_position")}</span>
+									<span className="text-base leading-tight">{t("mint.parent_position")}</span>
 									<Link
 										className="underline text-right text-sm font-extrabold leading-none tracking-tight"
 										href={`/monitoring/${selectedPosition?.position}`}
