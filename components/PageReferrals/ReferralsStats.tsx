@@ -40,7 +40,7 @@ export const ReferralsStats = () => {
 
 	useEffect(() => {
 		fetchReferralsStats();
-	}, [myFrontendCode]);
+	}, [myFrontendCode, chainId]);
 
 	const handleClaim = async () => {
 		if (!myFrontendCode) return;

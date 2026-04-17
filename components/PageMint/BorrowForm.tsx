@@ -485,12 +485,12 @@ export default function PositionCreate({}) {
 
 			// Validate inputs
 			if (BigInt(collateralAmount) <= 0n) {
-				toast.error("Collateral amount must be greater than 0");
+				toast.error(t("mint.collateral_amount_zero"));
 				return;
 			}
 
 			if (userBalance < BigInt(collateralAmount)) {
-				toast.error("Insufficient ETH balance");
+				toast.error(t("mint.insufficient_balance", { symbol: "ETH" }));
 				return;
 			}
 

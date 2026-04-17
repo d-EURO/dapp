@@ -163,7 +163,7 @@ export const BorrowedManageSection = () => {
 	if (!position) {
 		return (
 			<div className="flex justify-center items-center h-64">
-				<span className="text-text-muted2">Loading position data...</span>
+				<span className="text-text-muted2">{t("mint.loading_position_data")}</span>
 			</div>
 		);
 	}

@@ -330,7 +330,7 @@ export const ExpirationManageSection = () => {
 	if (!position || !loanDetails) {
 		return (
 			<div className="flex justify-center items-center h-64">
-				<span className="text-text-muted2">Loading position data...</span>
+				<span className="text-text-muted2">{t("mint.loading_position_data")}</span>
 			</div>
 		);
 	}
@@ -565,19 +565,19 @@ export const ExpirationManageSection = () => {
 					</div>
 					{priceAdjustmentCost > 0n && (
 						<div className="flex justify-between text-sm">
-							<span className="text-text-muted2">Price adjustment</span>
+							<span className="text-text-muted2">{t("mint.price_adjustment")}</span>
 							<span className="font-medium text-amber-600">{formatAmount(priceAdjustmentCost)} {position.deuroSymbol}</span>
 						</div>
 					)}
 					<div className="border-t border-gray-300 pt-2 flex justify-between text-sm">
-						<span className="font-bold text-text-title">Total cost</span>
+						<span className="font-bold text-text-title">{t("mint.total_cost")}</span>
 						<span className="font-bold text-text-title">
 							{formatAmount(totalCost)} {position.deuroSymbol}
 						</span>
 					</div>
 					{rollParams && rollParams.extraCollateral > 0n && (
 						<div className="flex justify-between text-sm">
-							<span className="text-text-muted2">Extra collateral needed</span>
+							<span className="text-text-muted2">{t("mint.extra_collateral_needed")}</span>
 							<span className="font-medium text-text-title">
 								{formatAmount(rollParams.extraCollateral, position.collateralDecimals)} {collateralSymbol}
 							</span>
@@ -622,7 +622,7 @@ export const ExpirationManageSection = () => {
 
 			{!isOwner ? (
 				<Button className="text-lg leading-snug !font-extrabold" disabled>
-					Not your position
+					{t("mint.not_your_position")}
 				</Button>
 			) : !isNativeWrappedPosition && !collateralAllowance ? (
 				<Button
