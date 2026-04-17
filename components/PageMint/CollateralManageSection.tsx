@@ -13,7 +13,7 @@ import { formatCurrency, shortenAddress } from "@utils";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { useChainId, useReadContracts } from "wagmi";
 import { writeContract } from "wagmi/actions";
-import { PositionV2ABI } from "@deuro/eurocoin";
+import { PositionV2ABI, PositionV3ABI } from "@deuro/eurocoin";
 import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { waitForTransactionReceipt } from "wagmi/actions";
@@ -38,6 +38,7 @@ export const CollateralManageSection = () => {
 	const { address: addressQuery } = router.query;
 	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
 	const position = positions.find((p) => p.position == addressQuery);
+	const positionAbi = position?.version === 3 ? PositionV3ABI : PositionV2ABI;
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const { balancesByAddress, refetchBalances } = useWalletERC20Balances(
 		position ? [
@@ -53,18 +54,18 @@ export const CollateralManageSection = () => {
 
 	const { data, refetch: refetchReadContracts } = useReadContracts({
 		contracts: position ? [
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "principal",
-			},
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "price",
-			},
+				{
+					chainId,
+					address: position.position,
+					abi: positionAbi,
+					functionName: "principal",
+				},
+				{
+					chainId,
+					address: position.position,
+					abi: positionAbi,
+					functionName: "price",
+				},
 			{
 				chainId,
 				abi: erc20Abi,
@@ -72,18 +73,18 @@ export const CollateralManageSection = () => {
 				functionName: "balanceOf",
 				args: [position.position],
 			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "getDebt",
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "getCollateralRequirement",
-			},
+				{
+					chainId,
+					abi: positionAbi,
+					address: position.position,
+					functionName: "getDebt",
+				},
+				{
+					chainId,
+					abi: positionAbi,
+					address: position.position,
+					functionName: "getCollateralRequirement",
+				},
 		] : [],
 	});
 
@@ -139,7 +140,7 @@ export const CollateralManageSection = () => {
 	if (!position) {
 		return (
 			<div className="flex justify-center items-center h-64">
-				<span className="text-text-muted2">Loading position data...</span>
+				<span className="text-text-muted2">{t("mint.loading_position_data")}</span>
 			</div>
 		);
 	}
@@ -211,12 +212,12 @@ export const CollateralManageSection = () => {
 
 			const contractAmount = BigInt(amount) + balanceOf;
 
-			const addHash = await writeContract(WAGMI_CONFIG, {
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "adjust",
-				args: [principal, contractAmount, price],
-			});
+				const addHash = await writeContract(WAGMI_CONFIG, {
+					address: position.position,
+					abi: positionAbi,
+					functionName: "adjust",
+					args: position.version === 3 ? [principal, contractAmount, price, false] : [principal, contractAmount, price],
+				});
 
 			const toastContent = [
 				{
@@ -252,12 +253,12 @@ export const CollateralManageSection = () => {
 			setIsTxOnGoing(true);
 
 			const contractAmount = balanceOf - BigInt(amount);
-			const addHash = await writeContract(WAGMI_CONFIG, {
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "adjust",
-				args: [principal, contractAmount, price],
-			});
+				const addHash = await writeContract(WAGMI_CONFIG, {
+					address: position.position,
+					abi: positionAbi,
+					functionName: "adjust",
+					args: position.version === 3 ? [principal, contractAmount, price, false] : [principal, contractAmount, price],
+				});
 
 			const toastContent = [
 				{

@@ -1,50 +1,46 @@
-import { Address, formatUnits, zeroAddress } from "viem";
-import TableRow from "../Table/TableRow";
-import { formatCurrency, shortenAddress } from "../../utils/format";
-import { useDelegationQuery } from "@hooks";
-import { AddressLabelSimple } from "@components/AddressLabel";
+import AppCard from "@components/AppCard";
+import Button from "@components/Button";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import GuardToMinVotingPower from "@components/Guards/GuardToMinVotingPower";
-import Button from "@components/Button";
-import NormalInput from "@components/Input/NormalInput";
-import AppCard from "@components/AppCard";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/redux.store";
-import AppBox from "@components/AppBox";
-import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
-import { CONFIG_CHAIN, WAGMI_CONFIG } from "../../app.config";
-import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { ADDRESS, SavingsABI } from "@deuro/eurocoin";
-import { renderErrorTxToast, TxToast } from "@components/TxToast";
-import { toast } from "react-toastify";
-import { useTranslation } from "next-i18next";
 import { BigNumberInput } from "@components/Input/BigNumberInput";
+import { renderErrorTxToast, TxToast } from "@components/TxToast";
+import { SavingsV3ABI } from "@deuro/eurocoin";
+import { useEffect, useState } from "react";
+import { useTranslation } from "next-i18next";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { useAccount } from "wagmi";
+import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
+import { zeroAddress } from "viem";
+import { CONFIG_CHAIN, GET_SAVINGS_V3_ADDRESS, WAGMI_CONFIG } from "../../app.config";
+import { RootState } from "../../redux/redux.store";
+import { formatCurrency } from "../../utils/format";
 
 interface Props {}
 
 export default function GovernanceLeadrateCurrent({}: Props) {
 	const [isHandling, setHandling] = useState<boolean>(false);
+	const [isHidden, setHidden] = useState<boolean>(false);
+
 	const account = useAccount();
 	const chainId = CONFIG_CHAIN().id;
 	const info = useSelector((state: RootState) => state.savings.leadrateInfo);
-	const [newRate, setNewRate] = useState<number>(info?.rate || 0);
-	const [isHidden, setHidden] = useState<boolean>(false);
+	const v3 = info?.v3;
+	const [newRate, setNewRate] = useState<number>(v3?.rate || 0);
 	const [isDisabled, setDisabled] = useState<boolean>(true);
 	const { t } = useTranslation();
+	const savingsV3Address = GET_SAVINGS_V3_ADDRESS(chainId);
 
 	useEffect(() => {
-		if (newRate != info?.rate) setDisabled(false);
-		else setDisabled(true);
-	}, [newRate, info?.rate]);
+		setDisabled(newRate === (v3?.rate || 0));
+	}, [newRate, v3?.rate]);
 
-	if (!info) return null;
+	if (!info || !v3 || savingsV3Address === zeroAddress) return null;
 
 	const changeNewRate = (value: string) => {
-		if (!value || value?.length == 0) return;
+		if (!value || value.length === 0) return;
 		const n = parseFloat(value);
-		if (typeof n != "number") setNewRate(0);
-		else setNewRate(n);
+		setNewRate(Number.isNaN(n) ? 0 : n);
 	};
 
 	const handleOnClick = async function (e: any) {
@@ -55,8 +51,8 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 			setHandling(true);
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].savingsGateway,
-				abi: SavingsABI,
+				address: savingsV3Address,
+				abi: SavingsV3ABI,
 				functionName: "proposeChange",
 				args: [newRate, []],
 			});
@@ -64,7 +60,7 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 			const toastContent = [
 				{
 					title: t("governance.txs.from"),
-					value: `${formatCurrency(info.rate / 10000)}%`,
+					value: `${formatCurrency(v3.rate / 10000)}%`,
 				},
 				{
 					title: t("governance.txs.proposing_to"),
@@ -87,7 +83,7 @@ export default function GovernanceLeadrateCurrent({}: Props) {
 
 			setHidden(true);
 		} catch (error) {
-			toast.error(renderErrorTxToast(error)); // TODO: add error toast
+			toast.error(renderErrorTxToast(error));
 		} finally {
 			setHandling(false);
 		}

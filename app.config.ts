@@ -6,7 +6,8 @@ import { cookieStorage, createConfig, createStorage, http } from "@wagmi/core";
 import { injected, coinbaseWallet, walletConnect } from "@wagmi/connectors";
 import { mainnet, polygon, Chain } from "@wagmi/core/chains";
 import axios from "axios";
-import { Address } from "viem";
+import { Address, zeroAddress } from "viem";
+import { getAppAddresses, isDeployed } from "@contracts";
 
 export type ConfigEnv = {
 	landing: string;
@@ -189,4 +190,9 @@ export const POSITION_NOT_BLACKLISTED = (addr: Address): boolean => {
 		return p.toLowerCase() === addr.toLowerCase();
 	});
 	return r.length == 0;
+};
+
+export const GET_SAVINGS_V3_ADDRESS = (chainId: number): Address => {
+	const address = getAppAddresses(chainId).savings;
+	return isDeployed(address) ? address : zeroAddress;
 };

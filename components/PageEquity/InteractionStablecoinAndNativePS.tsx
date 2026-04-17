@@ -13,7 +13,7 @@ import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
-import { ADDRESS, DecentralizedEUROABI, EquityABI, FrontendGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, DecentralizedEUROABI, EquityABI, FrontendGatewayV2ABI } from "@deuro/eurocoin";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { useTranslation } from "next-i18next";
 import { TokenInputSelectOutlined } from "@components/Input/TokenInputSelectOutlined";
@@ -121,7 +121,7 @@ export default function InteractionStablecoinAndNativePS({
 		try {
 			const investWriteHash = await writeContract(WAGMI_CONFIG, {
 				address: ADDRESS[chainId].frontendGateway,
-				abi: FrontendGatewayABI,
+				abi: FrontendGatewayV2ABI,
 				functionName: "invest",
 				args: [amount, result, frontendCode],
 			});
@@ -246,7 +246,7 @@ export default function InteractionStablecoinAndNativePS({
 			setRedeeming(true);
 			const redeemWriteHash = await writeContract(WAGMI_CONFIG, {
 				address: ADDRESS[chainId].frontendGateway,
-				abi: FrontendGatewayABI,
+				abi: FrontendGatewayV2ABI,
 				functionName: "redeem",
 				args: [account, amount, deuroResult, frontendCode],
 			});

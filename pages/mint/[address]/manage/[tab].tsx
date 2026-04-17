@@ -12,6 +12,9 @@ import { PriceManageSection } from "@components/PageMint/PriceManageSection";
 import { toQueryString } from "@utils";
 import { getCarryOnQueryParams } from "@utils";
 import AppCard from "@components/AppCard";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../../redux/redux.store";
+import { useAccount } from "wagmi";
 
 enum Tab {
 	Collateral = "collateral",
@@ -41,6 +44,9 @@ export default function PositionManage() {
 	const [activeButton, setActiveButton] = useState("");
 	const carryOnQueryParams = getCarryOnQueryParams(router);
 	const { t } = useTranslation();
+	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
+	const position = typeof address === "string" ? positions.find((item) => item.position.toLowerCase() === address.toLowerCase()) : undefined;
+	const { address: walletAddress } = useAccount();
 
 	const tabs = useMemo(
 		() => [
@@ -69,6 +75,17 @@ export default function PositionManage() {
 			setActiveButton((tab as Tab) || Tab.Collateral);
 		}
 	}, [router.isReady, tab]);
+
+	useEffect(() => {
+		if (!router.isReady || !position || !walletAddress) return;
+		if (position.owner.toLowerCase() !== walletAddress.toLowerCase()) {
+			router.replace(`/mint/${position.position}/${toQueryString(carryOnQueryParams)}`);
+		}
+	}, [carryOnQueryParams, position, router, walletAddress]);
+
+	if (position && walletAddress && position.owner.toLowerCase() !== walletAddress.toLowerCase()) {
+		return null;
+	}
 
 	const handleClick = (id: string) => {
 		setActiveButton(id);

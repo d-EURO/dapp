@@ -1,16 +1,16 @@
-import { erc20Abi, getAddress, isAddress, zeroAddress } from "viem";
-import { useAccount, useReadContracts } from "wagmi";
+import { erc20Abi, getAddress, isAddress, zeroAddress, type Address } from "viem";
+import { useAccount, useChainId, useReadContracts } from "wagmi";
 import { decodeBigIntCall } from "../utils/format";
-import { WAGMI_CHAIN } from "../app.config";
-import { ADDRESS } from "@deuro/eurocoin";
+import { getAppAddresses } from "@contracts";
 
-export const useTokenData = (addr: string) => {
+export const useTokenData = (addr: string, spender?: Address) => {
 	if (!isAddress(addr)) addr = zeroAddress;
 	const tokenAddress = getAddress(addr);
 	const { address } = useAccount();
+	const chainId = useChainId();
 
 	const account = address || zeroAddress;
-	const mintingHub = ADDRESS[WAGMI_CHAIN.id].mintingHubGateway;
+	const mintingHub = spender || getAppAddresses(chainId).mintingHub;
 	const { data, refetch } = useReadContracts({
 		contracts: [
 			{

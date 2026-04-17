@@ -11,7 +11,7 @@ import { TxToast, renderErrorTxToast } from "@components/TxToast";
 import { toast } from "react-toastify";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { WAGMI_CONFIG } from "../../app.config";
-import { ADDRESS, EquityABI, DEPSWrapperABI, FrontendGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, EquityABI, DEPSWrapperABI, FrontendGatewayV2ABI } from "@deuro/eurocoin";
 import { useTranslation } from "next-i18next";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { TokenBalance } from "../../hooks/useWalletBalances";
@@ -155,7 +155,7 @@ export default function InteractionPoolShareTokenRedeem({
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
 				address: ADDRESS[chainId].frontendGateway,
-				abi: FrontendGatewayABI,
+				abi: FrontendGatewayV2ABI,
 				functionName: "unwrapAndSell",
 				args: [amount, frontendCode],
 			});
