@@ -34,6 +34,7 @@ import { MaxButton } from "@components/Input/MaxButton";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { getAppAddresses, MintingHubGatewayV2ABI, MintingHubV3ABI } from "@contracts";
+import { useFrontendCode } from "../../hooks/useFrontendCode";
 
 const getMaxCollateralFromMintLimit = (availableForClones: bigint, liqPrice: bigint) => {
 	if (!availableForClones || liqPrice === 0n) return 0n;
@@ -87,6 +88,7 @@ export default function PositionCreate({}) {
 	const router = useRouter();
 	const { query } = router;
 	const ADDR = getAppAddresses(chainId);
+	const { frontendCode } = useFrontendCode();
 
 	const elegiblePositions = useMemo(() => {
 		const blockTimestamp = latestBlock?.timestamp || new Date().getTime() / 1000;
@@ -383,7 +385,14 @@ export default function PositionCreate({}) {
 								toTimestamp(expirationDate),
 								BigInt(liquidationPrice),
 						  ]
-						: [address, selectedPosition.position, BigInt(collateralAmount), loanDetails.loanAmount, toTimestamp(expirationDate)],
+						: [
+								address,
+								selectedPosition.position,
+								BigInt(collateralAmount),
+								loanDetails.loanAmount,
+								toTimestamp(expirationDate),
+								frontendCode,
+						  ],
 			});
 
 			const toastContent = [

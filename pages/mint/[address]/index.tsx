@@ -21,6 +21,7 @@ import { ADDRESS } from "@deuro/eurocoin";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import { getAppAddresses, MintingHubGatewayV2ABI, MintingHubV3ABI } from "@contracts";
+import { useFrontendCode } from "../../../hooks/useFrontendCode";
 
 export default function PositionBorrow({}) {
 	const [amount, setAmount] = useState(0n);
@@ -47,6 +48,7 @@ export default function PositionBorrow({}) {
 
 	const { t } = useTranslation();
 	const ADDR = getAppAddresses(chainId);
+	const { frontendCode } = useFrontendCode();
 
 	// ---------------------------------------------------------------------------
 	useEffect(() => {
@@ -214,7 +216,7 @@ export default function PositionBorrow({}) {
 				args:
 					position.version === 3
 						? [account.address, position.position, requiredColl, amount, expirationTime, 0n]
-						: [account.address, position.position, requiredColl, amount, expirationTime],
+						: [account.address, position.position, requiredColl, amount, expirationTime, frontendCode],
 			});
 
 			const toastContent = [

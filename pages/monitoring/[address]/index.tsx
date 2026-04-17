@@ -20,6 +20,7 @@ import Button, { SecondaryLinkButton } from "@components/Button";
 import { ADDRESS, DecentralizedEUROABI } from "@deuro/eurocoin";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
+import { useAccount } from "wagmi";
 
 export default function PositionDetail() {
 	const [reserve, setReserve] = useState<bigint>(0n);
@@ -37,6 +38,7 @@ export default function PositionDetail() {
 	const ownerLink = useContractUrl(position?.owner || zeroAddress);
 	const navigate = useNavigation();
 	const { t } = useTranslation();
+	const { address: walletAddress } = useAccount();
 
 	useEffect(() => {
 		if (!position) return;
@@ -58,6 +60,7 @@ export default function PositionDetail() {
 	if (!position) return;
 
 	const maturity: number = (position.expiration * 1000 - Date.now()) / 1000 / 60 / 60 / 24;
+	const isOwner = !!walletAddress && position.owner.toLowerCase() === walletAddress.toLowerCase();
 
 	const isSubjectToCooldown = () => {
 		const now = BigInt(Math.floor(Date.now() / 1000));
@@ -153,26 +156,26 @@ export default function PositionDetail() {
 								<b>{position.closed ? t("common.closed") : formatDate(position.expiration)}</b>
 							</AppBox>
 						</div>
-						<div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-							<SecondaryLinkButton
-								className="h-10 order-1 md:order-2"
-								href={`/monitoring/${position.position}/${maturity <= 0 ? "forceSell" : "challenge"}`}
-							>
-								{maturity <= 0 ? t("monitoring.force_sell") : t("monitoring.challenge")}
-							</SecondaryLinkButton>
-							<SecondaryLinkButton
-								className="h-10 order-2 md:order-3"
-								href={`/mint/${position.position}/`}
-							>
-								{t("mint.clone")}
-							</SecondaryLinkButton>
-							<Button
-								className="h-10 col-span-2 md:col-span-1 md:col-start-1 order-3 md:order-1"
-								onClick={() => navigate.push(`/mint/${position.position}/manage/collateral${toQueryString(getCarryOnQueryParams(router))}`)}
-							>
-								{t("dashboard.manage")}
-							</Button>
-						</div>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+								{isOwner ? (
+									<Button
+										className="h-10"
+										onClick={() => navigate.push(`/mint/${position.position}/manage${toQueryString(getCarryOnQueryParams(router))}`)}
+									>
+										{t("dashboard.manage")}
+									</Button>
+								) : (
+									<SecondaryLinkButton className="h-10" href={`/mint/${position.position}/`}>
+										{t("mint.clone")}
+									</SecondaryLinkButton>
+								)}
+								<SecondaryLinkButton
+									className="h-10"
+									href={`/monitoring/${position.position}/${maturity <= 0 ? "forceSell" : "challenge"}`}
+								>
+									{maturity <= 0 ? t("monitoring.force_sell") : t("monitoring.challenge")}
+								</SecondaryLinkButton>
+							</div>
 					</div>
 					<div>
 						{isSubjectToCooldown() && (
