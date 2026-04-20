@@ -10,6 +10,7 @@ export const isDeployed = (address?: string): address is Address => !!address &&
 export {
 	MintingHubGatewayV2ABI,
 	MintingHubV3ABI,
+	PositionV2ABI,
 	SavingsGatewayV2ABI,
 	SavingsV3ABI,
 	SavingsVaultDEUROABI,
