@@ -88,7 +88,7 @@ export default function PositionBorrow({}) {
 		};
 
 		fetchAsync();
-	}, [data, account.address, position]);
+	}, [data, account.address, position, ADDR.mintingHub]);
 
 	// ---------------------------------------------------------------------------
 	// dont continue if position not loaded correctly
@@ -96,7 +96,7 @@ export default function PositionBorrow({}) {
 
 	const price: number = parseFloat(formatUnits(BigInt(position.price), 36 - position.collateralDecimals));
 	const collateralPriceDeuro: number = prices[position.collateral.toLowerCase() as Address]?.price?.eur || 1;
-	const interest: number = (position.annualInterestPPM / 10 ** 6) + (position.fixedAnnualRatePPM / 10 ** 6);
+	const interest: number = position.annualInterestPPM / 10 ** 6;
 	const reserve: number = position.reserveContribution / 10 ** 6;
 	const effectiveLTV: number = (price * (1 - reserve)) / collateralPriceDeuro;
 	const effectiveInterest: number = interest / (1 - reserve);

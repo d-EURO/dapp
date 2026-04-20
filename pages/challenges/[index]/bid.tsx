@@ -90,7 +90,7 @@ export default function ChallengePlaceBid() {
 		};
 
 		fetchAsync();
-	}, [data, position, challenge, account.address]);
+	}, [data, position, challenge, account.address, ADDR.decentralizedEURO, ADDR.mintingHub, ADDR.mintingHubGateway]);
 
 	useEffect(() => {
 		if (isInit) return;
