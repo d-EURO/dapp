@@ -71,7 +71,7 @@ export default function MonitoringForceSell() {
 		};
 
 		fetchAsync();
-	}, [data, position, account.address]);
+	}, [data, position, account.address, ADDR.decentralizedEURO, ADDR.mintingHub, ADDR.mintingHubGateway]);
 
 	useEffect(() => {
 		if (isInit) return;

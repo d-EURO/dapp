@@ -77,7 +77,7 @@ export default function PositionChallenge() {
 		};
 
 		fetchAsync();
-	}, [data, account.address, position]);
+	}, [data, account.address, position, ADDR.mintingHub]);
 
 	useEffect(() => {
 		if (isNavigating && position?.position) {

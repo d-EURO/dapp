@@ -93,7 +93,7 @@ export default function PositionCreate({}) {
 			setInitialCollAmountError("");
 			setCollTokenAddrError("");
 		}
-	}, [collateralAddress, collTokenData]);
+	}, [collateralAddress, collTokenData, t]);
 
 	const onChangeProposalFee = (value: string) => {
 		const valueBigInt = BigInt(value);
@@ -167,9 +167,9 @@ export default function PositionCreate({}) {
 	};
 
 	function checkCollateralAmount(coll: bigint, price: bigint) {
-		if (coll * price < 10n ** 36n) {
-			setLiqPriceError(t("mint.error.liquidation_value_too_low", { amount: 5000, symbol: TOKEN_SYMBOL }));
-			setMinCollAmountError(t("mint.error.collateral_value_too_low", { amount: 5000, symbol: TOKEN_SYMBOL }));
+		if (coll * price < 500n * 10n ** 36n) {
+			setLiqPriceError(t("mint.error.liquidation_value_too_low", { amount: 500, symbol: TOKEN_SYMBOL }));
+			setMinCollAmountError(t("mint.error.collateral_value_too_low", { amount: 500, symbol: TOKEN_SYMBOL }));
 		} else {
 			setLiqPriceError("");
 			setMinCollAmountError("");
@@ -486,7 +486,7 @@ export default function PositionCreate({}) {
 							error={liqPriceError}
 							digit={36n - collTokenData.decimals}
 							hideMaxLabel={minCollAmount == 0n}
-							max={minCollAmount == 0n ? 0n : (5000n * 10n ** 36n + minCollAmount - 1n) / minCollAmount}
+							max={minCollAmount == 0n ? 0n : (500n * 10n ** 36n + minCollAmount - 1n) / minCollAmount}
 							value={liqPrice.toString()}
 							onChange={onChangeLiqPrice}
 							placeholder={t("common.price")}
