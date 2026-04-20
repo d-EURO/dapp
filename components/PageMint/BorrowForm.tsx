@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { Address, erc20Abi, formatUnits, zeroAddress } from "viem";
+import { Address, decodeEventLog, erc20Abi, formatUnits, type Log, type TransactionReceipt, zeroAddress } from "viem";
 import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
 import AppCard from "@components/AppCard";
 import Button from "@components/Button";
@@ -33,7 +33,7 @@ import {
 import { MaxButton } from "@components/Input/MaxButton";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { getAppAddresses, MintingHubGatewayV2ABI, MintingHubV3ABI } from "@contracts";
+import { getAppAddresses, MintingHubGatewayV2ABI, MintingHubV3ABI, PositionV2ABI } from "@contracts";
 import { useFrontendCode } from "../../hooks/useFrontendCode";
 
 const getMaxCollateralFromMintLimit = (availableForClones: bigint, liqPrice: bigint) => {
@@ -323,7 +323,6 @@ export default function PositionCreate({}) {
 	};
 
 	const onLiquidationPriceChange = (value: string) => {
-		if (selectedPosition?.version !== 3) return;
 		setLiquidationPrice(value);
 
 		if (!selectedPosition) return;
@@ -361,6 +360,25 @@ export default function PositionCreate({}) {
 		if (selectedPosition?.expiration) {
 			setExpirationDate(toDate(selectedPosition.expiration));
 		}
+	};
+
+	const parseCloneEventLogs = (logs: Log[]): Address | null => {
+		const hubAddr = ADDR.mintingHubGateway.toLowerCase();
+		const cloneEventLog = logs.find((log) => log.address.toLowerCase() === hubAddr);
+		if (!cloneEventLog) return null;
+		try {
+			const decoded = decodeEventLog({
+				abi: MintingHubGatewayV2ABI,
+				data: cloneEventLog.data,
+				topics: cloneEventLog.topics,
+			});
+			if (decoded.eventName === "PositionOpened") {
+				return (decoded.args as { position: Address }).position;
+			}
+		} catch {
+			return null;
+		}
+		return null;
 	};
 
 	const handleOnClonePosition = async () => {
@@ -413,7 +431,33 @@ export default function PositionCreate({}) {
 				},
 			];
 
-			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: cloneWriteHash, confirmations: 1 }), {
+			// For V2, the clone call cannot accept a custom liquidation price — inherit parent's.
+			// If the user picked a different price on the slider, follow up with Position.adjustPrice.
+			// Slider is capped at parent.price so only decreases are possible — no 3-day cooldown.
+			let txHash: `0x${string}` = cloneWriteHash;
+			const receipt: TransactionReceipt = await waitForTransactionReceipt(WAGMI_CONFIG, {
+				hash: cloneWriteHash,
+				confirmations: 1,
+			});
+
+			if (
+				selectedPosition.version !== 3 &&
+				BigInt(liquidationPrice) !== BigInt(selectedPosition.price)
+			) {
+				const newPositionAddress = parseCloneEventLogs(receipt.logs);
+				if (newPositionAddress) {
+					const adjustPriceHash = await writeContract(WAGMI_CONFIG, {
+						address: newPositionAddress,
+						abi: PositionV2ABI,
+						functionName: "adjustPrice",
+						// +0.01% buffer covers one block of accrued interest between the two txs
+						args: [(BigInt(liquidationPrice) * 10001n) / 10000n],
+					});
+					txHash = adjustPriceHash;
+				}
+			}
+
+			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: txHash, confirmations: 1 }), {
 				pending: {
 					render: <TxToast title={t("mint.txs.minting", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
 				},
@@ -668,7 +712,6 @@ export default function PositionCreate({}) {
 							isError={isLiquidationPriceTooHigh}
 							errorMessage={t("mint.liquidation_price_too_high")}
 							usdPrice={usdLiquidationPrice}
-							disabled={selectedPosition?.version !== 3}
 						/>
 					</div>
 					<div className="self-stretch flex-col justify-start items-center gap-1.5 flex">
