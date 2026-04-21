@@ -22,6 +22,7 @@ import { useRouter as useNavigation } from "next/navigation";
 import { ADDRESS, MintingHubV2ABI } from "@deuro/eurocoin";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
+import { getAppAddresses, MintingHubV3ABI } from "@contracts";
 
 
 export default function PositionChallenge() {
@@ -41,6 +42,7 @@ export default function PositionChallenge() {
 
 	const chainId = useChainId();
 	const addressQuery: Address = router.query.address as Address;
+	const ADDR = getAppAddresses(chainId);
 
 	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
 	const position = positions.find((p) => p.position == addressQuery);
@@ -56,6 +58,7 @@ export default function PositionChallenge() {
 		if (!position || !position.collateral) return;
 
 		const fetchAsync = async function () {
+			const hubAddress = position.version === 3 ? ADDR.mintingHub : ADDRESS[WAGMI_CHAIN.id].mintingHubGateway;
 			const _balanceColl = await readContract(WAGMI_CONFIG, {
 				address: position.collateral,
 				abi: erc20Abi,
@@ -68,13 +71,13 @@ export default function PositionChallenge() {
 				address: position.collateral,
 				abi: erc20Abi,
 				functionName: "allowance",
-				args: [acc, ADDRESS[WAGMI_CHAIN.id].mintingHubGateway],
+				args: [acc, hubAddress],
 			});
 			setUserAllowance(_allowanceColl);
 		};
 
 		fetchAsync();
-	}, [data, account.address, position]);
+	}, [data, account.address, position, ADDR.mintingHub]);
 
 	useEffect(() => {
 		if (isNavigating && position?.position) {
@@ -114,7 +117,7 @@ export default function PositionChallenge() {
 				address: position.collateral as Address,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].mintingHubGateway, amount],
+				args: [position.version === 3 ? ADDR.mintingHub : ADDRESS[chainId].mintingHubGateway, amount],
 			});
 
 			const toastContent = [
@@ -124,7 +127,7 @@ export default function PositionChallenge() {
 				},
 				{
 					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].mintingHubGateway),
+					value: shortenAddress(position.version === 3 ? ADDR.mintingHub : ADDRESS[chainId].mintingHubGateway),
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -152,8 +155,8 @@ export default function PositionChallenge() {
 			setChallenging(true);
 
 			const challengeWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].mintingHubGateway,
-				abi: MintingHubV2ABI,
+				address: position.version === 3 ? ADDR.mintingHub : ADDRESS[chainId].mintingHubGateway,
+				abi: position.version === 3 ? MintingHubV3ABI : MintingHubV2ABI,
 				functionName: "challenge",
 				args: [position.position, amount, BigInt(position.price)],
 			});

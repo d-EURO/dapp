@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { formatUnits, maxUint256, erc20Abi, Hash, zeroHash } from "viem";
+import { formatUnits, maxUint256, erc20Abi } from "viem";
 import TokenInput from "@components/Input/TokenInput";
 import { useState } from "react";
 import Button from "@components/Button";
@@ -17,9 +17,10 @@ import { WAGMI_CHAIN, WAGMI_CONFIG } from "../../../app.config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/redux.store";
 import Link from "next/link";
-import { ADDRESS, MintingHubGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS } from "@deuro/eurocoin";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
+import { getAppAddresses, MintingHubGatewayV2ABI, MintingHubV3ABI } from "@contracts";
 import { useFrontendCode } from "../../../hooks/useFrontendCode";
 
 export default function PositionBorrow({}) {
@@ -45,8 +46,9 @@ export default function PositionBorrow({}) {
 	const position = positions.find((p) => p.position == addressQuery);
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 
-	const { frontendCode } = useFrontendCode();
 	const { t } = useTranslation();
+	const ADDR = getAppAddresses(chainId);
+	const { frontendCode } = useFrontendCode();
 
 	// ---------------------------------------------------------------------------
 	useEffect(() => {
@@ -80,13 +82,13 @@ export default function PositionBorrow({}) {
 				address: position.collateral,
 				abi: erc20Abi,
 				functionName: "allowance",
-				args: [acc, ADDRESS[WAGMI_CHAIN.id].mintingHubGateway],
+				args: [acc, position.version === 3 ? ADDR.mintingHub : ADDRESS[WAGMI_CHAIN.id].mintingHubGateway],
 			});
 			setUserAllowance(_allowance);
 		};
 
 		fetchAsync();
-	}, [data, account.address, position]);
+	}, [data, account.address, position, ADDR.mintingHub]);
 
 	// ---------------------------------------------------------------------------
 	// dont continue if position not loaded correctly
@@ -94,7 +96,7 @@ export default function PositionBorrow({}) {
 
 	const price: number = parseFloat(formatUnits(BigInt(position.price), 36 - position.collateralDecimals));
 	const collateralPriceDeuro: number = prices[position.collateral.toLowerCase() as Address]?.price?.eur || 1;
-	const interest: number = (position.annualInterestPPM / 10 ** 6) + (position.fixedAnnualRatePPM / 10 ** 6);
+	const interest: number = position.annualInterestPPM / 10 ** 6;
 	const reserve: number = position.reserveContribution / 10 ** 6;
 	const effectiveLTV: number = (price * (1 - reserve)) / collateralPriceDeuro;
 	const effectiveInterest: number = interest / (1 - reserve);
@@ -168,7 +170,7 @@ export default function PositionBorrow({}) {
 				address: position.collateral as Address,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].mintingHubGateway, maxUint256],
+				args: [position.version === 3 ? ADDR.mintingHub : ADDRESS[chainId].mintingHubGateway, maxUint256],
 			});
 
 			const toastContent = [
@@ -178,7 +180,7 @@ export default function PositionBorrow({}) {
 				},
 				{
 					title: t('common.txs.spender'),
-					value: shortenAddress(ADDRESS[chainId].mintingHubGateway),
+					value: shortenAddress(position.version === 3 ? ADDR.mintingHub : ADDRESS[chainId].mintingHubGateway),
 				},
 				{
 					title: t('common.txs.transaction'),
@@ -202,16 +204,19 @@ export default function PositionBorrow({}) {
 	};
 
 	const handleClone = async () => {
+		if (!account.address) return;
+
 		try {
 			setCloning(true);
 			const expirationTime = toTimestamp(expirationDate);
-			let cloneWriteHash: Hash = zeroHash;
-
-			cloneWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].mintingHubGateway,
-				abi: MintingHubGatewayABI,
+			const cloneWriteHash = await writeContract(WAGMI_CONFIG, {
+				address: position.version === 3 ? ADDR.mintingHub : ADDR.mintingHubGateway,
+				abi: position.version === 3 ? MintingHubV3ABI : MintingHubGatewayV2ABI,
 				functionName: "clone",
-				args: [position.position, requiredColl, amount, expirationTime, frontendCode],
+				args:
+					position.version === 3
+						? [account.address, position.position, requiredColl, amount, expirationTime, 0n]
+						: [account.address, position.position, requiredColl, amount, expirationTime, frontendCode],
 			});
 
 			const toastContent = [
@@ -277,26 +282,26 @@ export default function PositionBorrow({}) {
 						</div>
 						<div className="mx-auto mt-8 w-72 max-w-full flex-col">
 							<GuardToAllowedChainBtn label={amount > userAllowance ? t('common.approve') : t('mint.mint')}>
-								{requiredColl > userAllowance ? (
-									<Button
-										disabled={amount == 0n || requiredColl > userBalance || !!error}
-										isLoading={isApproving}
-										onClick={() => handleApprove()}
-									>
+									{requiredColl > userAllowance ? (
+										<Button
+											disabled={amount == 0n || requiredColl > userBalance || !!error}
+											isLoading={isApproving}
+											onClick={() => handleApprove()}
+										>
 										{t('common.approve')}
 									</Button>
-								) : (
-									<Button
-										disabled={amount == 0n || requiredColl > userBalance || !!error}
-										isLoading={isCloning}
-										onClick={() => handleClone()}
-									>
-										{t('mint.mint')}
-									</Button>
-								)}
-								<p className="text-text-warning">{errorDate}</p>
-								<p className="text-text-warning">{error}</p>
-							</GuardToAllowedChainBtn>
+									) : (
+										<Button
+											disabled={amount == 0n || requiredColl > userBalance || !!error}
+											isLoading={isCloning}
+											onClick={() => handleClone()}
+										>
+											{t('mint.mint')}
+										</Button>
+									)}
+									<p className="text-text-warning">{errorDate}</p>
+									<p className="text-text-warning">{error}</p>
+								</GuardToAllowedChainBtn>
 						</div>
 					</div>
 					<div>

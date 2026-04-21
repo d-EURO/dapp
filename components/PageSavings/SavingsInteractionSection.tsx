@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { erc20Abi, formatUnits, maxUint256 } from "viem";
+import { erc20Abi, formatUnits, maxUint256, parseUnits } from "viem";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { toast } from "react-toastify";
 import { formatCurrency, shortenAddress, TOKEN_SYMBOL } from "@utils";
@@ -13,50 +13,78 @@ import { NormalInputOutlined } from "@components/Input/NormalInputOutlined";
 import Button from "@components/Button";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { useAccount, useChainId } from "wagmi";
-import { ADDRESS, SavingsGatewayABI } from "@deuro/eurocoin";
 import { useSavingsInterest } from "../../hooks/useSavingsInterest";
 import { useTranslation } from "next-i18next";
-import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
+import { getAppAddresses, isDeployed, SavingsGatewayV2ABI, SavingsV3ABI, SavingsVaultDEUROABI } from "@contracts";
+import { useFrontendCode } from "../../hooks/useFrontendCode";
+
+const DUST_THRESHOLD = parseUnits("0.01", 18);
 
 export default function SavingsInteractionSection() {
-	const { userSavingsBalance, interestToBeCollected, refetchInterest } = useSavingsInterest();
+	const {
+		userSavingsBalance,
+		v2SavingsBalance,
+		v3SavingsBalance,
+		v2Interest,
+		v2VaultShares,
+		v2VaultAssets,
+		v3VaultShares,
+		v3VaultAssets,
+		isNonCompounding,
+		isLoaded,
+		refetchInterest,
+	} = useSavingsInterest();
 	const [amount, setAmount] = useState("");
 	const [buttonLabel, setButtonLabel] = useState("");
 	const [isDeposit, setIsDeposit] = useState(true);
 	const [isTxOnGoing, setIsTxOnGoing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [compoundOverride, setCompoundOverride] = useState<boolean | null>(null);
+	const compound = compoundOverride !== null ? compoundOverride : !isNonCompounding;
 	const rate = useSelector((state: RootState) => state.savings.savingsInfo?.rate);
 	const { t } = useTranslation();
-	const { frontendCode } = useFrontendCode();
 	const account = useAccount();
 	const chainId = useChainId();
+	const ADDR = getAppAddresses(chainId);
+	const { frontendCode } = useFrontendCode();
+	const depositTarget = compound ? ADDR.savingsVaultV3 : ADDR.savings;
+	const v3Deployed = isDeployed(ADDR.savings);
+	const v2VaultDeployed = isDeployed(ADDR.savingsVaultV2);
+	const v3VaultDeployed = isDeployed(ADDR.savingsVaultV3);
+	const allowanceTargets = [ADDR.savingsVaultV3, ADDR.savings].filter(isDeployed);
+	const withdrawableBalance =
+		(v2SavingsBalance >= DUST_THRESHOLD ? v2SavingsBalance : 0n) +
+		(v2VaultAssets >= DUST_THRESHOLD ? v2VaultAssets : 0n) +
+		(v3SavingsBalance >= DUST_THRESHOLD ? v3SavingsBalance : 0n) +
+		(v3VaultAssets >= DUST_THRESHOLD ? v3VaultAssets : 0n);
 
-	const dEuroAddress = ADDRESS[chainId].decentralizedEURO;
-	const savingsGatewayAddress = ADDRESS[chainId].savingsGateway;
 	const { balancesByAddress, refetchBalances } = useWalletERC20Balances([
 		{
-			address: dEuroAddress,
+			address: ADDR.decentralizedEURO,
 			symbol: TOKEN_SYMBOL,
 			name: TOKEN_SYMBOL,
-			allowance: [savingsGatewayAddress],
+			allowance: allowanceTargets,
 		},
 	]);
 
-	const deuroWalletDetails = balancesByAddress?.[dEuroAddress];
+	const deuroWalletDetails = balancesByAddress?.[ADDR.decentralizedEURO];
 	const userBalance = deuroWalletDetails?.balanceOf || 0n;
-	const userAllowance = deuroWalletDetails?.allowance?.[savingsGatewayAddress] || 0n;
+	const userAllowance = isDeployed(depositTarget) ? deuroWalletDetails?.allowance?.[depositTarget] || 0n : 0n;
 
 	const handleApprove = async () => {
+		if (compound && !v3VaultDeployed) return;
+		if (!compound && !v3Deployed) return;
+
 		try {
 			setIsTxOnGoing(true);
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: dEuroAddress,
+				address: ADDR.decentralizedEURO,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].savingsGateway, maxUint256],
+				args: [depositTarget, maxUint256],
 			});
 
 			const toastContent = [
@@ -66,7 +94,7 @@ export default function SavingsInteractionSection() {
 				},
 				{
 					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].savingsGateway),
+					value: shortenAddress(depositTarget),
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -82,27 +110,28 @@ export default function SavingsInteractionSection() {
 					render: <TxToast title={t("common.txs.success", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
 				},
 			});
-			refetchBalances();
+
+			await refetchBalances();
 		} catch (error) {
-			toast.error(renderErrorTxToast(error)); // TODO: add error translation
+			toast.error(renderErrorTxToast(error));
 		} finally {
 			setIsTxOnGoing(false);
 		}
 	};
 
-	const showToastForWithdraw = async ({ hash }: { hash: `0x${string}` }) => {
+	const showToastForWithdraw = async ({ hash, withdrawAmount }: { hash: `0x${string}`; withdrawAmount: bigint }) => {
 		const toastContent = [
 			{
 				title: `${t("savings.txs.withdraw")}`,
-				value: `${formatCurrency(formatUnits(BigInt(amount), 18))} ${TOKEN_SYMBOL}`,
+				value: `${formatCurrency(formatUnits(withdrawAmount, 18))} ${TOKEN_SYMBOL}`,
 			},
 			{
 				title: `${t("common.txs.transaction")}`,
-				hash: hash,
+				hash,
 			},
 		];
 
-		await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: hash, confirmations: 1 }), {
+		await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash, confirmations: 1 }), {
 			pending: {
 				render: <TxToast title={t("savings.txs.withdrawing")} rows={toastContent} />,
 			},
@@ -120,11 +149,11 @@ export default function SavingsInteractionSection() {
 			},
 			{
 				title: `${t("common.txs.transaction")}`,
-				hash: hash,
+				hash,
 			},
 		];
 
-		await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: hash, confirmations: 1 }), {
+		await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash, confirmations: 1 }), {
 			pending: {
 				render: <TxToast title={t("savings.txs.increasing_savings")} rows={toastContent} />,
 			},
@@ -136,16 +165,25 @@ export default function SavingsInteractionSection() {
 
 	const handleSave = async () => {
 		if (!account.address) return;
+		if (compound && !v3VaultDeployed) return;
+		if (!compound && !v3Deployed) return;
 
 		try {
 			setIsTxOnGoing(true);
 
-			const saveHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].savingsGateway,
-				abi: SavingsGatewayABI,
-				functionName: "save",
-				args: [BigInt(amount), frontendCode],
-			});
+			const saveHash = compound
+				? await writeContract(WAGMI_CONFIG, {
+						address: ADDR.savingsVaultV3!,
+						abi: SavingsVaultDEUROABI,
+						functionName: "deposit",
+						args: [BigInt(amount), account.address],
+				  })
+				: await writeContract(WAGMI_CONFIG, {
+						address: ADDR.savings!,
+						abi: SavingsV3ABI,
+						functionName: "save",
+						args: [BigInt(amount), false],
+				  });
 
 			await showToastForDeposit({ hash: saveHash });
 			await refetchInterest();
@@ -158,25 +196,91 @@ export default function SavingsInteractionSection() {
 		}
 	};
 
+	useEffect(() => {
+		setCompoundOverride(null);
+	}, [isNonCompounding]);
+
 	const handleWithdraw = async () => {
 		if (!account.address) return;
 
 		try {
 			setIsTxOnGoing(true);
+			let remaining = BigInt(amount);
 
-			const adjustedAmount =
-				amount === userSavingsBalance.toString()
-					? 2n * BigInt(amount) + interestToBeCollected // 2X so we can be sure to widhtdraw all the funds
-					: BigInt(amount) + interestToBeCollected;
+			if (v2SavingsBalance >= DUST_THRESHOLD && remaining > 0n) {
+				const withdrawAmount = remaining > v2SavingsBalance ? v2SavingsBalance : remaining;
+				const accruedAmount = remaining > v2SavingsBalance ? v2SavingsBalance + v2Interest : remaining + v2Interest;
+				const adjustedAmount = remaining >= v2SavingsBalance ? 2n * accruedAmount : accruedAmount;
 
-			const withdrawHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].savingsGateway,
-				abi: SavingsGatewayABI,
-				functionName: "withdraw",
-				args: [account.address, adjustedAmount, frontendCode],
-			});
+				const v2Hash = await writeContract(WAGMI_CONFIG, {
+					address: ADDR.savingsGateway,
+					abi: SavingsGatewayV2ABI,
+					functionName: "withdraw",
+					args: [account.address, adjustedAmount, frontendCode],
+				});
 
-			await showToastForWithdraw({ hash: withdrawHash });
+				await showToastForWithdraw({ hash: v2Hash, withdrawAmount });
+				remaining = remaining > v2SavingsBalance ? remaining - v2SavingsBalance : 0n;
+			}
+
+			if (v2VaultDeployed && v2VaultAssets >= DUST_THRESHOLD && remaining > 0n) {
+				if (remaining > v2VaultAssets) {
+					const v2Hash = await writeContract(WAGMI_CONFIG, {
+						address: ADDR.savingsVaultV2!,
+						abi: SavingsVaultDEUROABI,
+						functionName: "redeem",
+						args: [v2VaultShares, account.address, account.address],
+					});
+					await showToastForWithdraw({ hash: v2Hash, withdrawAmount: v2VaultAssets });
+					remaining = remaining - v2VaultAssets;
+				} else {
+					const v2Hash = await writeContract(WAGMI_CONFIG, {
+						address: ADDR.savingsVaultV2!,
+						abi: SavingsVaultDEUROABI,
+						functionName: "withdraw",
+						args: [remaining, account.address, account.address],
+					});
+					await showToastForWithdraw({ hash: v2Hash, withdrawAmount: remaining });
+					remaining = 0n;
+				}
+			}
+
+			if (v3Deployed && v3SavingsBalance >= DUST_THRESHOLD && remaining > 0n) {
+				const withdrawAmount = remaining > v3SavingsBalance ? v3SavingsBalance : remaining;
+				const contractAmount = remaining >= v3SavingsBalance ? 2n * v3SavingsBalance : remaining;
+
+				const v3Hash = await writeContract(WAGMI_CONFIG, {
+					address: ADDR.savings!,
+					abi: SavingsV3ABI,
+					functionName: "withdraw",
+					args: [account.address, contractAmount],
+				});
+
+				await showToastForWithdraw({ hash: v3Hash, withdrawAmount });
+				remaining = remaining > v3SavingsBalance ? remaining - v3SavingsBalance : 0n;
+			}
+
+			if (v3VaultDeployed && v3VaultAssets >= DUST_THRESHOLD && remaining > 0n) {
+				const isFullDrain = BigInt(amount) >= withdrawableBalance;
+				if (isFullDrain) {
+					const v3Hash = await writeContract(WAGMI_CONFIG, {
+						address: ADDR.savingsVaultV3!,
+						abi: SavingsVaultDEUROABI,
+						functionName: "redeem",
+						args: [v3VaultShares, account.address, account.address],
+					});
+					await showToastForWithdraw({ hash: v3Hash, withdrawAmount: remaining });
+				} else {
+					const v3Hash = await writeContract(WAGMI_CONFIG, {
+						address: ADDR.savingsVaultV3!,
+						abi: SavingsVaultDEUROABI,
+						functionName: "withdraw",
+						args: [remaining, account.address, account.address],
+					});
+					await showToastForWithdraw({ hash: v3Hash, withdrawAmount: remaining });
+				}
+			}
+
 			await refetchInterest();
 			await refetchBalances();
 			setAmount("");
@@ -187,7 +291,6 @@ export default function SavingsInteractionSection() {
 		}
 	};
 
-	// Deposit validation
 	useEffect(() => {
 		if (!isDeposit) return;
 
@@ -200,13 +303,15 @@ export default function SavingsInteractionSection() {
 		if (BigInt(amount) > userBalance) {
 			setError(t("savings.error.insufficient_balance"));
 			setButtonLabel(t("savings.enter_amount_to_add_savings"));
+		} else if ((compound && !v3VaultDeployed) || (!compound && !v3Deployed)) {
+			setError(t("common.error.wrong_network"));
+			setButtonLabel(t("savings.enter_amount_to_add_savings"));
 		} else {
 			setError(null);
 			setButtonLabel(t("savings.start_earning_interest", { rate: rate !== undefined ? `${rate / 10_000}` : "-" }));
 		}
-	}, [amount, rate, isDeposit, userBalance]);
+	}, [amount, rate, isDeposit, userBalance, compound, v3Deployed, v3VaultDeployed, t]);
 
-	// Withdraw validation
 	useEffect(() => {
 		if (isDeposit) return;
 
@@ -216,14 +321,15 @@ export default function SavingsInteractionSection() {
 			return;
 		}
 
-		if (BigInt(amount) > userSavingsBalance) {
+		if (BigInt(amount) > withdrawableBalance) {
 			setError(t("savings.error.greater_than_savings"));
 			setButtonLabel(t("savings.enter_withdraw_amount"));
-		} else {
-			setError(null);
-			setButtonLabel(t("savings.withdraw_to_my_wallet"));
+			return;
 		}
-	}, [amount, isDeposit, userSavingsBalance]);
+
+		setError(null);
+		setButtonLabel(t("savings.withdraw_to_my_wallet"));
+	}, [amount, isDeposit, withdrawableBalance, t]);
 
 	return (
 		<>
@@ -258,10 +364,10 @@ export default function SavingsInteractionSection() {
 					</div>
 				</div>
 				<div className="w-full">
-					<NormalInputOutlined
-						showTokenLogo={false}
-						value={amount.toString()}
-						onChange={setAmount}
+						<NormalInputOutlined
+							showTokenLogo={false}
+							value={amount.toString()}
+							onChange={setAmount}
 						decimals={18}
 						unit={TOKEN_SYMBOL}
 						isError={!!error}
@@ -272,32 +378,55 @@ export default function SavingsInteractionSection() {
 								</span>
 								<button
 									className="text-text-labelButton font-extrabold"
-									onClick={() => setAmount(isDeposit ? userBalance.toString() : userSavingsBalance.toString())}
+									onClick={() => setAmount(isDeposit ? userBalance.toString() : withdrawableBalance.toString())}
 								>
-									{formatCurrency(formatUnits(isDeposit ? userBalance : userSavingsBalance, 18))} {TOKEN_SYMBOL}
-								</button>
-							</div>
-						}
-					/>
-					{error && <div className="ml-1 text-text-warning text-sm">{error}</div>}
+									{formatCurrency(formatUnits(isDeposit ? userBalance : withdrawableBalance, 18))} {TOKEN_SYMBOL}
+									</button>
+								</div>
+							}
+						/>
+						{error && <div className="ml-1 text-text-warning text-sm">{error}</div>}
+						{isDeposit && (!account.address || isLoaded) && (
+							<label className="mt-1 ml-1 inline-flex items-center gap-x-2 cursor-pointer select-none">
+								<input
+									type="checkbox"
+									checked={compound}
+									onChange={(e) => setCompoundOverride(e.target.checked)}
+									className="sr-only peer"
+								/>
+								<div className="w-4 h-4 rounded border border-gray-400 bg-white peer-checked:bg-[#0D4E9C] peer-checked:border-[#0D4E9C] flex items-center justify-center shrink-0">
+									{compound && (
+										<svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+											<path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+										</svg>
+									)}
+								</div>
+								<span className="text-sm font-medium text-text-muted2">{t("savings.auto_compound_interest")}</span>
+							</label>
+						)}
+					</div>
+					<div className="w-full py-1.5">
+						{isDeposit && userAllowance < BigInt(amount) ? (
+							<Button
+								className="text-lg leading-snug !font-extrabold"
+								onClick={handleApprove}
+								isLoading={isTxOnGoing}
+								disabled={!amount || !BigInt(amount) || (compound && !v3VaultDeployed) || (!compound && !v3Deployed)}
+							>
+								{t("common.approve")}
+							</Button>
+						) : (
+							<Button
+								className="text-lg leading-snug !font-extrabold"
+								onClick={isDeposit ? handleSave : handleWithdraw}
+								isLoading={isTxOnGoing}
+								disabled={!!error || !amount || !BigInt(amount) || (isDeposit && compound && !v3VaultDeployed) || (isDeposit && !compound && !v3Deployed)}
+							>
+								{buttonLabel}
+							</Button>
+						)}
+					</div>
 				</div>
-				<div className="w-full py-1.5">
-					{userAllowance < BigInt(amount) ? (
-						<Button className="text-lg leading-snug !font-extrabold" onClick={handleApprove} isLoading={isTxOnGoing}>
-							{t("common.approve")}
-						</Button>
-					) : (
-						<Button
-							className="text-lg leading-snug !font-extrabold"
-							onClick={isDeposit ? handleSave : handleWithdraw}
-							isLoading={isTxOnGoing}
-							disabled={!!error || !amount || !BigInt(amount)}
-						>
-							{buttonLabel}
-						</Button>
-					)}
-				</div>
-			</div>
 		</>
 	);
 }

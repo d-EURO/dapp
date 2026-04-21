@@ -5,7 +5,7 @@ import { faCheck, faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "next-i18next";
 import { zeroAddress } from "viem";
-import { ADDRESS, FrontendGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, FrontendGatewayV2ABI } from "@deuro/eurocoin";
 import { useChainId } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
@@ -96,7 +96,7 @@ export const ReferralCreationForm = () => {
 					const frontendCode = getFrontendCodeFromReferralName(value);
 					const [, owner] = await readContract(WAGMI_CONFIG, {
 						address: ADDRESS[chainId].frontendGateway,
-						abi: FrontendGatewayABI,
+						abi: FrontendGatewayV2ABI,
 						functionName: "frontendCodes",
 						args: [frontendCode],
 					});
@@ -117,7 +117,7 @@ export const ReferralCreationForm = () => {
 			const frontendCode = getFrontendCodeFromReferralName(name);
 			const [, owner] = await readContract(WAGMI_CONFIG, {
 				address: ADDRESS[chainId].frontendGateway,
-				abi: FrontendGatewayABI,
+				abi: FrontendGatewayV2ABI,
 				functionName: "frontendCodes",
 				args: [frontendCode],
 			});
@@ -129,7 +129,7 @@ export const ReferralCreationForm = () => {
 
 			const registerWriteHash = await writeContract(WAGMI_CONFIG, {
 				address: ADDRESS[chainId].frontendGateway,
-				abi: FrontendGatewayABI,
+				abi: FrontendGatewayV2ABI,
 				functionName: "registerFrontendCode",
 				args: [frontendCode],
 			});

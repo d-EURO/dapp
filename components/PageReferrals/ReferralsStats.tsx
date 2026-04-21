@@ -3,7 +3,7 @@ import { useMyReferrals } from "@hooks";
 import { useChainId } from "wagmi";
 import { readContract, waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { useTranslation } from "next-i18next";
-import { ADDRESS, FrontendGatewayABI } from "@deuro/eurocoin";
+import { ADDRESS, FrontendGatewayV2ABI } from "@deuro/eurocoin";
 import { formatUnits, zeroAddress } from "viem";
 import { WAGMI_CONFIG } from "../../app.config";
 import { formatCurrency, TOKEN_SYMBOL } from "@utils";
@@ -25,7 +25,7 @@ export const ReferralsStats = () => {
 		try {
 			const [balance, owner] = await readContract(WAGMI_CONFIG, {
 				address: ADDRESS[chainId].frontendGateway,
-				abi: FrontendGatewayABI,
+				abi: FrontendGatewayV2ABI,
 				functionName: "frontendCodes",
 				args: [myFrontendCode],
 			});
@@ -40,7 +40,7 @@ export const ReferralsStats = () => {
 
 	useEffect(() => {
 		fetchReferralsStats();
-	}, [myFrontendCode]);
+	}, [myFrontendCode, chainId]);
 
 	const handleClaim = async () => {
 		if (!myFrontendCode) return;
@@ -49,7 +49,7 @@ export const ReferralsStats = () => {
 		try {
 			const tx = await writeContract(WAGMI_CONFIG, {
 				address: ADDRESS[chainId].frontendGateway,
-				abi: FrontendGatewayABI,
+				abi: FrontendGatewayV2ABI,
 				functionName: "withdrawRewards",
 				args: [myFrontendCode],
 			});

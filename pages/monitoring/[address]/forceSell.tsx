@@ -23,6 +23,7 @@ import { useRouter as useNavigation } from "next/navigation";
 import { ADDRESS, DecentralizedEUROABI, MintingHubV2ABI } from "@deuro/eurocoin";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
+import { getAppAddresses, MintingHubV3ABI } from "@contracts";
 
 export default function MonitoringForceSell() {
 	const [isInit, setInit] = useState(false);
@@ -40,13 +41,13 @@ export default function MonitoringForceSell() {
 	const { t } = useTranslation();
 
 	const chainId = useChainId();
+	const ADDR = getAppAddresses(chainId);
 	const queryAddress: Address = (String(router.query.address) as Address) || zeroAddress;
 	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
 	const position = positions.find((p) => p.position.toLowerCase() == queryAddress.toLowerCase());
 
 	useEffect(() => {
 		const acc: Address | undefined = account.address;
-		const ADDR = ADDRESS[WAGMI_CHAIN.id];
 		if (position === undefined) return;
 
 		const fetchAsync = async function () {
@@ -61,8 +62,8 @@ export default function MonitoringForceSell() {
 			}
 
 			const _price = await readContract(WAGMI_CONFIG, {
-				address: ADDR.mintingHubGateway,
-				abi: MintingHubV2ABI,
+				address: position.version === 3 ? ADDR.mintingHub : ADDR.mintingHubGateway,
+				abi: position.version === 3 ? MintingHubV3ABI : MintingHubV2ABI,
 				functionName: "expiredPurchasePrice",
 				args: [position.position],
 			});
@@ -70,7 +71,7 @@ export default function MonitoringForceSell() {
 		};
 
 		fetchAsync();
-	}, [data, position, account.address]);
+	}, [data, position, account.address, ADDR.decentralizedEURO, ADDR.mintingHub, ADDR.mintingHubGateway]);
 
 	useEffect(() => {
 		if (isInit) return;
@@ -117,8 +118,8 @@ export default function MonitoringForceSell() {
 			setBidding(true);
 
 			const bidWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].mintingHubGateway,
-				abi: MintingHubV2ABI,
+				address: position.version === 3 ? ADDR.mintingHub : ADDRESS[chainId].mintingHubGateway,
+				abi: position.version === 3 ? MintingHubV3ABI : MintingHubV2ABI,
 				functionName: "buyExpiredCollateral",
 				args: [position.position, amount],
 			});

@@ -11,7 +11,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/redux.store";
 import { useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { Address, formatUnits, maxUint256, zeroAddress } from "viem";
-import { PositionV2ABI } from "@deuro/eurocoin";
+import { PositionV2ABI, PositionV3ABI } from "@deuro/eurocoin";
 import { erc20Abi } from "viem";
 import { useAccount, useChainId } from "wagmi";
 import { useReadContracts } from "wagmi";
@@ -42,6 +42,7 @@ export const BorrowedManageSection = () => {
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const positions = useSelector((state: RootState) => state.positions.list?.list || []);
 	const position = positions.find((p) => p.position == addressQuery);
+	const positionAbi = position?.version === 3 ? PositionV3ABI : PositionV2ABI;
 
 	const { balancesByAddress, refetchBalances } = useWalletERC20Balances(
 		position ? [
@@ -57,18 +58,18 @@ export const BorrowedManageSection = () => {
 	
 	const { data, refetch: refetchReadContracts } = useReadContracts({
 		contracts: position ? [
-			{
-				chainId,
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "principal",
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "price",
-			},
+				{
+					chainId,
+					address: position.position,
+					abi: positionAbi,
+					functionName: "principal",
+				},
+				{
+					chainId,
+					abi: positionAbi,
+					address: position.position,
+					functionName: "price",
+				},
 			{
 				chainId,
 				abi: erc20Abi,
@@ -76,24 +77,24 @@ export const BorrowedManageSection = () => {
 				functionName: "balanceOf",
 				args: [position.position],
 			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "getInterest",
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "getDebt",
-			},
-			{
-				chainId,
-				abi: PositionV2ABI,
-				address: position.position,
-				functionName: "fixedAnnualRatePPM",
-			},
+				{
+					chainId,
+					abi: positionAbi,
+					address: position.position,
+					functionName: "getInterest",
+				},
+				{
+					chainId,
+					abi: positionAbi,
+					address: position.position,
+					functionName: "getDebt",
+				},
+				{
+					chainId,
+					abi: positionAbi,
+					address: position.position,
+					functionName: "fixedAnnualRatePPM",
+				},
 		] : [],
 	});
 
@@ -162,7 +163,7 @@ export const BorrowedManageSection = () => {
 	if (!position) {
 		return (
 			<div className="flex justify-center items-center h-64">
-				<span className="text-text-muted2">Loading position data...</span>
+				<span className="text-text-muted2">{t("mint.loading_position_data")}</span>
 			</div>
 		);
 	}
@@ -186,12 +187,12 @@ export const BorrowedManageSection = () => {
 
 			const { loanAmount } = getLoanDetailsByCollateralAndYouGetAmount(position, balanceOf, BigInt(amount));
 
-			const borrowMoreHash = await writeContract(WAGMI_CONFIG, {
-				address: position.position,
-				abi: PositionV2ABI,
-				functionName: "mint",
-				args: [userAddress as Address, loanAmount],
-			});
+				const borrowMoreHash = await writeContract(WAGMI_CONFIG, {
+					address: position.position,
+					abi: positionAbi,
+					functionName: "mint",
+					args: [userAddress as Address, loanAmount],
+				});
 
 			const toastContent = [
 				{
@@ -271,13 +272,13 @@ export const BorrowedManageSection = () => {
 			let payBackHash: `0x${string}` = zeroAddress as `0x${string}`;
 
 			if (amount.toString() === debt.toString()) {
-				payBackHash = await writeContract(WAGMI_CONFIG, {
-					address: position.position,
-					abi: PositionV2ABI,
-					functionName: "adjust",
-					args: [BigInt(0), BigInt(0), BigInt(position.price)],
-				});
-			} else {
+					payBackHash = await writeContract(WAGMI_CONFIG, {
+						address: position.position,
+						abi: positionAbi,
+						functionName: "adjust",
+						args: position.version === 3 ? [BigInt(0), BigInt(0), BigInt(position.price), false] : [BigInt(0), BigInt(0), BigInt(position.price)],
+					});
+				} else {
 				const userInputAmount = BigInt(amount);
 				const currentInterest = interest;
 				
@@ -290,12 +291,12 @@ export const BorrowedManageSection = () => {
 					fixedAnnualRatePPM: fixedAnnualRatePPM
 				});
 				
-				payBackHash = await writeContract(WAGMI_CONFIG, {
-					address: position.position,
-					abi: PositionV2ABI,
-					functionName: "repay",
-					args: [optimalRepayAmount],
-				});
+					payBackHash = await writeContract(WAGMI_CONFIG, {
+						address: position.position,
+						abi: positionAbi,
+						functionName: "repay",
+						args: [optimalRepayAmount],
+					});
 			}
 
 			const toastContent = [

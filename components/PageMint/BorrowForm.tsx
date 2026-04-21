@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { Address, erc20Abi, formatUnits, TransactionReceipt, Log, decodeEventLog, zeroAddress } from "viem";
+import { Address, decodeEventLog, erc20Abi, formatUnits, type Log, type TransactionReceipt, zeroAddress } from "viem";
 import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
 import AppCard from "@components/AppCard";
 import Button from "@components/Button";
@@ -13,12 +13,11 @@ import { PositionQuery } from "@deuro/api";
 import { SelectCollateralModal } from "./SelectCollateralModal";
 import { BorrowingDEUROModal } from "@components/PageMint/BorrowingDEUROModal";
 import { InputTitle } from "@components/Input/InputTitle";
-import { formatBigInt, formatCurrency, shortenAddress, toDate, TOKEN_SYMBOL, toTimestamp, WHITELISTED_POSITIONS } from "@utils";
+import { formatBigInt, formatCurrency, formatDate, shortenAddress, toDate, TOKEN_SYMBOL, toTimestamp, WHITELISTED_POSITIONS } from "@utils";
 import { TokenBalance, useWalletERC20Balances } from "../../hooks/useWalletBalances";
 import { RootState, store } from "../../redux/redux.store";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { useTranslation } from "next-i18next";
-import { ADDRESS, MintingHubGatewayABI, PositionV2ABI, CoinLendingGatewayABI } from "@deuro/eurocoin";
 import { useAccount, useBlock, useChainId } from "wagmi";
 import { WAGMI_CONFIG } from "../../app.config";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -31,11 +30,37 @@ import {
 	getLoanDetailsByCollateralAndYouGetAmount,
 	getLoanDetailsByCollateralAndStartingLiqPrice,
 } from "../../utils/loanCalculations";
-import { useFrontendCode } from "../../hooks/useFrontendCode";
 import { MaxButton } from "@components/Input/MaxButton";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { WETH_ABI, getWETHAddress } from "../../utils/wethHelpers";
+import { getAppAddresses, MintingHubGatewayV2ABI, MintingHubV3ABI, PositionV2ABI } from "@contracts";
+import { useFrontendCode } from "../../hooks/useFrontendCode";
+
+const getMaxCollateralFromMintLimit = (availableForClones: bigint, liqPrice: bigint) => {
+	if (!availableForClones || liqPrice === 0n) return 0n;
+	return (availableForClones * BigInt(1e18)) / liqPrice;
+};
+
+const getMaxCollateralAmount = (balance: bigint, availableForClones: bigint, liqPrice: bigint) => {
+	const maxFromLimit = getMaxCollateralFromMintLimit(availableForClones, liqPrice);
+	return maxFromLimit > 0n && balance > maxFromLimit ? maxFromLimit : balance;
+};
+
+const compareParentPositions = (a: PositionQuery, b: PositionQuery) => {
+	if (a.version !== b.version) return b.version - a.version;
+
+	const availableA = BigInt(a.availableForClones);
+	const availableB = BigInt(b.availableForClones);
+	if (availableA !== availableB) return availableA < availableB ? 1 : -1;
+
+	if (a.expiration !== b.expiration) return b.expiration - a.expiration;
+
+	const priceA = BigInt(a.price);
+	const priceB = BigInt(b.price);
+	if (priceA !== priceB) return priceA < priceB ? 1 : -1;
+
+	return a.position.localeCompare(b.position);
+};
 
 export default function PositionCreate({}) {
 	const [selectedCollateral, setSelectedCollateral] = useState<TokenBalance | null | undefined>(null);
@@ -62,27 +87,30 @@ export default function PositionCreate({}) {
 	const { address } = useAccount();
 	const router = useRouter();
 	const { query } = router;
-
-	const getMaxCollateralFromMintLimit = (availableForClones: bigint, liqPrice: bigint) => {
-		if (!availableForClones || liqPrice === 0n) return 0n;
-		return (availableForClones * BigInt(1e18)) / liqPrice;
-	};
-
-	const getMaxCollateralAmount = (balance: bigint, availableForClones: bigint, liqPrice: bigint) => {
-		const maxFromLimit = getMaxCollateralFromMintLimit(availableForClones, liqPrice);
-		return maxFromLimit > 0n && balance > maxFromLimit ? maxFromLimit : balance;
-	};
+	const ADDR = getAppAddresses(chainId);
+	const { frontendCode } = useFrontendCode();
 
 	const elegiblePositions = useMemo(() => {
 		const blockTimestamp = latestBlock?.timestamp || new Date().getTime() / 1000;
 		return positions
 			.filter((p) => WHITELISTED_POSITIONS.includes(p.position))
 			.filter((p) => BigInt(p.availableForClones) > 0n)
-			.filter((p) => !p.closed)
+			.filter((p) => !p.closed && !p.denied)
 			.filter((p) => blockTimestamp > toTimestamp(toDate(p.cooldown)))
 			.filter((p) => blockTimestamp < toTimestamp(toDate(p.expiration)))
 			.filter((p) => !challengedPositions.includes(p.position));
 	}, [positions, latestBlock, challengedPositions]);
+
+	const getParentCandidatesForToken = useCallback((token: Pick<TokenBalance, "address" | "symbol"> | null | undefined) => {
+		if (!token) return [];
+
+		const matchingPositions =
+			token.address === zeroAddress
+				? elegiblePositions.filter((p) => p.version === 3 && p.collateralSymbol.toLowerCase() === "weth")
+				: elegiblePositions.filter((p) => p.collateral.toLowerCase() === token.address.toLowerCase());
+
+		return [...matchingPositions].sort(compareParentPositions);
+	}, [elegiblePositions]);
 
 	const collateralTokenList = useMemo(() => {
 		const uniqueTokens = new Map();
@@ -91,61 +119,44 @@ export default function PositionCreate({}) {
 				symbol: p.collateralSymbol,
 				address: p.collateral,
 				name: p.collateralName,
-				allowance: [ADDRESS[chainId].mintingHubGateway],
+				allowance: [ADDR.mintingHub, ADDR.mintingHubGateway],
 				decimals: p.collateralDecimals,
 				position: p.position,
 			});
 		});
 
 		const tokens = Array.from(uniqueTokens.values()).sort((a, b) => {
-			const posA = WHITELISTED_POSITIONS.findIndex((p) => p.toLowerCase() === a.position.toLowerCase());
-			const posB = WHITELISTED_POSITIONS.findIndex((p) => p.toLowerCase() === b.position.toLowerCase());
+			const posA = WHITELISTED_POSITIONS.findIndex((position) => position.toLowerCase() === a.position.toLowerCase());
+			const posB = WHITELISTED_POSITIONS.findIndex((position) => position.toLowerCase() === b.position.toLowerCase());
 			if (posA === -1 || posB === -1) return 0;
 			return posA - posB;
 		});
 
 		// Check if WETH is in the list and add ETH option
-		const wethToken = tokens.find(t => t.symbol.toLowerCase() === 'weth');
-		if (wethToken) {
+		const wethToken = tokens.find((t) => t.symbol.toLowerCase() === "weth");
+		const hasNativeEthPath = elegiblePositions.some((p) => p.version === 3 && p.collateralSymbol.toLowerCase() === "weth");
+		if (wethToken && hasNativeEthPath) {
 			// Add ETH as the first option when WETH is available
 			// Use a special ETH address (0x0) to distinguish it from WETH
 			const ethToken = {
 				...wethToken,
-				symbol: 'ETH',
-				name: 'Ethereum',
-				address: '0x0000000000000000000000000000000000000000' as Address, // Use zero address for ETH
-				isNative: true,  // Flag to identify native ETH
+				symbol: "ETH",
+				name: "Ethereum",
+				address: "0x0000000000000000000000000000000000000000" as Address, // Use zero address for ETH
+				isNative: true, // Flag to identify native ETH
 			};
 			tokens.unshift(ethToken);
 		}
 
 		return tokens;
-	}, [elegiblePositions, isApproving]);
+	}, [ADDR.mintingHub, ADDR.mintingHubGateway, elegiblePositions]);
 
 	const { balances, balancesByAddress, refetchBalances } = useWalletERC20Balances(collateralTokenList);
-	const { frontendCode } = useFrontendCode();
 	const { t } = useTranslation();
-
-	useEffect(() => {
-		if (collateralTokenList.length > 0 && !selectedCollateral) {
-			if (query?.collateral) {
-				// If collateral is specified in URL, use it
-				const queryCollateral = Array.isArray(query.collateral) ? query.collateral[0] : query.collateral;
-				const collateralToken = collateralTokenList.find((b) => b.symbol.toLowerCase() === queryCollateral?.toLowerCase());
-				if (collateralToken) {
-					handleOnSelectedToken(collateralToken);
-				}
-			} else {
-				// If no collateral specified, prefer ETH if available, otherwise first token
-				const ethToken = collateralTokenList.find((b) => b.symbol === 'ETH');
-				if (ethToken) {
-					handleOnSelectedToken(ethToken);
-				} else if (collateralTokenList.length > 0) {
-					handleOnSelectedToken(collateralTokenList[0]);
-				}
-			}
-		}
-	}, [query?.collateral, collateralTokenList.length, selectedCollateral]);
+	const selectedParentPositions = useMemo(() => {
+		if (!selectedCollateral) return [];
+		return getParentCandidatesForToken(selectedCollateral);
+	}, [getParentCandidatesForToken, selectedCollateral]);
 
 	// Collateral input validation with minting limit check
 	useEffect(() => {
@@ -185,7 +196,7 @@ export default function PositionCreate({}) {
 			});
 			setCollateralError(limitExceeded);
 		}
-	}, [collateralAmount, balancesByAddress, address, selectedPosition, liquidationPrice]);
+	}, [collateralAmount, balancesByAddress, address, selectedCollateral, selectedPosition, liquidationPrice, t]);
 
 	const prices = useSelector((state: RootState) => state.prices.coingecko || {});
 	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
@@ -206,16 +217,13 @@ export default function PositionCreate({}) {
 	const isLiquidationPriceTooHigh = selectedPosition ? BigInt(liquidationPrice) > maxLiquidationPrice : false;
 	// For ETH, we check ETH balance directly. For other tokens, use the normal ERC20 balance
 	const isETH = selectedCollateral?.symbol === 'ETH';
+	const approvalTarget = selectedPosition?.version === 3 ? ADDR.mintingHub : ADDR.mintingHubGateway;
 	const collateralUserBalance = isETH
 		? balances.find((b) => b.symbol === 'ETH')
 		: balances.find((b) => b.address == selectedCollateral?.address);
 
 	// For ETH, we check WETH allowance after wrapping. Initially it's 0.
-	const wethAddress = getWETHAddress(chainId);
-	const wethBalance = balances.find((b) => b.address.toLowerCase() === wethAddress?.toLowerCase());
-	const userAllowance = isETH
-		? (wethBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n)
-		: (collateralUserBalance?.allowance?.[ADDRESS[chainId].mintingHubGateway] || 0n);
+	const userAllowance = isETH ? 0n : (approvalTarget ? collateralUserBalance?.allowance?.[approvalTarget] || 0n : 0n);
 	const userBalance = collateralUserBalance?.balanceOf || 0n;
 	const selectedBalance = Boolean(selectedCollateral) ? balancesByAddress[selectedCollateral?.address as Address] : null;
 	const usdLiquidationPrice = formatCurrency(
@@ -224,8 +232,7 @@ export default function PositionCreate({}) {
 		2
 	)?.toString();
 
-	const handleOnSelectedToken = (token: TokenBalance) => {
-		if (!token) return;
+	const syncSelectedTokenAndPosition = useCallback((token: TokenBalance, position: PositionQuery) => {
 		setSelectedCollateral(token);
 		const currentQuery = { ...router.query, collateral: token.symbol };
 		router.replace({
@@ -233,37 +240,78 @@ export default function PositionCreate({}) {
 			query: currentQuery,
 		});
 
-		// For ETH, we need to find the WETH position since ETH uses WETH internally
-		const isETH = token.symbol === 'ETH';
-		const selectedPosition = isETH
-			? elegiblePositions.find((p) => p.collateralSymbol.toLowerCase() === 'weth')
-			: elegiblePositions.find((p) => p.collateral.toLowerCase() == token.address.toLowerCase());
-		if (!selectedPosition) return;
-		const liqPrice = BigInt(selectedPosition.price);
+		const liqPrice = BigInt(position.price);
 
-		setSelectedPosition(selectedPosition);
+		setSelectedPosition(position);
 
 		// Calculate max collateral respecting minting limit
 		// For ETH, we use the special zero address balance, for others use normal address
 		const tokenBalance = balancesByAddress[token.address]?.balanceOf || 0n;
-		const maxAmount = getMaxCollateralAmount(tokenBalance, BigInt(selectedPosition.availableForClones), liqPrice);
-		const defaultAmount =
-			maxAmount > BigInt(selectedPosition.minimumCollateral) ? maxAmount.toString() : selectedPosition.minimumCollateral;
+		const maxAmount = getMaxCollateralAmount(tokenBalance, BigInt(position.availableForClones), liqPrice);
+		const defaultAmount = maxAmount > BigInt(position.minimumCollateral) ? maxAmount.toString() : position.minimumCollateral;
 
 		setCollateralAmount(defaultAmount);
-		setExpirationDate(toDate(selectedPosition.expiration));
+		setExpirationDate(toDate(position.expiration));
 		setLiquidationPrice(liqPrice.toString());
 
-		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(
-			selectedPosition,
-			BigInt(maxAmount),
-			liqPrice,
-			toDate(selectedPosition.expiration)
-		);
+		const loanDetails = getLoanDetailsByCollateralAndStartingLiqPrice(position, BigInt(maxAmount), liqPrice, toDate(position.expiration));
 
 		setLoanDetails(loanDetails);
 		setBorrowedAmount(loanDetails.amountToSendToWallet.toString());
-	};
+	}, [balancesByAddress, router]);
+
+	const handleOnSelectedToken = useCallback((token: TokenBalance) => {
+		if (!token) return;
+
+		const defaultPosition = getParentCandidatesForToken(token)[0];
+		if (!defaultPosition) return;
+
+		syncSelectedTokenAndPosition(token, defaultPosition);
+	}, [getParentCandidatesForToken, syncSelectedTokenAndPosition]);
+
+	const handleOnSelectedParentPosition = useCallback((position: PositionQuery) => {
+		if (!selectedCollateral) return;
+		syncSelectedTokenAndPosition(selectedCollateral, position);
+	}, [selectedCollateral, syncSelectedTokenAndPosition]);
+
+	useEffect(() => {
+		if (collateralTokenList.length > 0 && !selectedCollateral) {
+			if (query?.collateral) {
+				// If collateral is specified in URL, use it
+				const queryCollateral = Array.isArray(query.collateral) ? query.collateral[0] : query.collateral;
+				const collateralToken = collateralTokenList.find((b) => b.symbol.toLowerCase() === queryCollateral?.toLowerCase());
+				if (collateralToken) {
+					handleOnSelectedToken(collateralToken);
+				}
+			} else {
+				// If no collateral specified, prefer ETH if available, otherwise first token
+				const ethToken = collateralTokenList.find((b) => b.symbol === 'ETH');
+				if (ethToken) {
+					handleOnSelectedToken(ethToken);
+				} else if (collateralTokenList.length > 0) {
+					handleOnSelectedToken(collateralTokenList[0]);
+				}
+			}
+		}
+	}, [query?.collateral, collateralTokenList, selectedCollateral, handleOnSelectedToken]);
+
+	useEffect(() => {
+		if (!selectedCollateral) return;
+		if (selectedParentPositions.length === 0) {
+			setSelectedPosition(null);
+			return;
+		}
+
+		const matchingSelectedPosition = selectedPosition
+			? selectedParentPositions.find((position) => position.position.toLowerCase() === selectedPosition.position.toLowerCase())
+			: undefined;
+
+		if (!matchingSelectedPosition) {
+			syncSelectedTokenAndPosition(selectedCollateral, selectedParentPositions[0]);
+		} else if (matchingSelectedPosition !== selectedPosition) {
+			setSelectedPosition(matchingSelectedPosition);
+		}
+	}, [selectedCollateral, selectedParentPositions, selectedPosition, syncSelectedTokenAndPosition]);
 
 	const onAmountCollateralChange = (value: string) => {
 		setCollateralAmount(value);
@@ -306,7 +354,7 @@ export default function PositionCreate({}) {
 		);
 		setLoanDetails(loanDetails);
 		setBorrowedAmount(loanDetails.amountToSendToWallet.toString());
-	}, [expirationDate]);
+	}, [collateralAmount, expirationDate, liquidationPrice, selectedPosition]);
 
 	const handleMaxExpirationDate = () => {
 		if (selectedPosition?.expiration) {
@@ -314,29 +362,56 @@ export default function PositionCreate({}) {
 		}
 	};
 
+	const parseCloneEventLogs = (logs: Log[]): Address | null => {
+		const hubAddr = ADDR.mintingHubGateway.toLowerCase();
+		const cloneEventLog = logs.find((log) => log.address.toLowerCase() === hubAddr);
+		if (!cloneEventLog) return null;
+		try {
+			const decoded = decodeEventLog({
+				abi: MintingHubGatewayV2ABI,
+				data: cloneEventLog.data,
+				topics: cloneEventLog.topics,
+			});
+			if (decoded.eventName === "PositionOpened") {
+				return (decoded.args as { position: Address }).position;
+			}
+		} catch {
+			return null;
+		}
+		return null;
+	};
+
 	const handleOnClonePosition = async () => {
 		try {
-			if (!selectedPosition || !loanDetails || !expirationDate) return;
+			if (!selectedPosition || !loanDetails || !expirationDate || !address) return;
 
 			setIsOpenBorrowingDEUROModal(true);
 			setIsCloneLoading(true);
 			setIsCloneSuccess(false);
 
-			let txHash = null;
-
 			const cloneWriteHash = await writeContract(WAGMI_CONFIG, {
-				address: ADDRESS[chainId].mintingHubGateway,
-				abi: MintingHubGatewayABI,
+				address: selectedPosition.version === 3 ? ADDR.mintingHub : ADDR.mintingHubGateway,
+				abi: selectedPosition.version === 3 ? MintingHubV3ABI : MintingHubGatewayV2ABI,
 				functionName: "clone",
-				args: [
-					selectedPosition.position,
-					BigInt(collateralAmount),
-					loanDetails.loanAmount,
-					toTimestamp(expirationDate),
-					frontendCode,
-				],
+				args:
+					selectedPosition.version === 3
+						? [
+								address,
+								selectedPosition.position,
+								BigInt(collateralAmount),
+								loanDetails.loanAmount,
+								toTimestamp(expirationDate),
+								BigInt(liquidationPrice),
+						  ]
+						: [
+								address,
+								selectedPosition.position,
+								BigInt(collateralAmount),
+								loanDetails.loanAmount,
+								toTimestamp(expirationDate),
+								frontendCode,
+						  ],
 			});
-			txHash = cloneWriteHash;
 
 			const toastContent = [
 				{
@@ -356,17 +431,30 @@ export default function PositionCreate({}) {
 				},
 			];
 
-			const receipt: TransactionReceipt = await waitForTransactionReceipt(WAGMI_CONFIG, { hash: cloneWriteHash, confirmations: 1 });
+			// For V2, the clone call cannot accept a custom liquidation price — inherit parent's.
+			// If the user picked a different price on the slider, follow up with Position.adjustPrice.
+			// Slider is capped at parent.price so only decreases are possible — no 3-day cooldown.
+			let txHash: `0x${string}` = cloneWriteHash;
+			const receipt: TransactionReceipt = await waitForTransactionReceipt(WAGMI_CONFIG, {
+				hash: cloneWriteHash,
+				confirmations: 1,
+			});
 
-			if (BigInt(liquidationPrice) !== BigInt(selectedPosition?.price)) {
+			if (
+				selectedPosition.version !== 3 &&
+				BigInt(liquidationPrice) !== BigInt(selectedPosition.price)
+			) {
 				const newPositionAddress = parseCloneEventLogs(receipt.logs);
-				const adjustPriceHash = await writeContract(WAGMI_CONFIG, {
-					address: newPositionAddress as Address,
-					abi: PositionV2ABI,
-					functionName: "adjustPrice",
-					args: [(BigInt(liquidationPrice) * 10001n) / 10000n], // added 0.001% to account for interest in the block before signing this
-				});
-				txHash = adjustPriceHash;
+				if (newPositionAddress) {
+					const adjustPriceHash = await writeContract(WAGMI_CONFIG, {
+						address: newPositionAddress,
+						abi: PositionV2ABI,
+						functionName: "adjustPrice",
+						// +0.01% buffer covers one block of accrued interest between the two txs
+						args: [(BigInt(liquidationPrice) * 10001n) / 10000n],
+					});
+					txHash = adjustPriceHash;
+				}
 			}
 
 			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: txHash, confirmations: 1 }), {
@@ -390,28 +478,6 @@ export default function PositionCreate({}) {
 		}
 	};
 
-	const parseCloneEventLogs = (logs: Log[]) => {
-		try {
-			const cloneEventLog = logs.find((log) => log.address.toLowerCase() === ADDRESS[chainId].mintingHubGateway.toLowerCase());
-
-			if (cloneEventLog) {
-				const decodedLog = decodeEventLog({
-					abi: MintingHubGatewayABI,
-					data: cloneEventLog.data,
-					topics: cloneEventLog.topics,
-				});
-
-				if (decodedLog.eventName === "PositionOpened") {
-					return decodedLog.args.position as Address;
-				}
-			}
-
-			return null;
-		} catch (error) {
-			return null;
-		}
-	};
-
 	const handleApprove = async () => {
 		try {
 			setIsApproving(true);
@@ -420,7 +486,7 @@ export default function PositionCreate({}) {
 				address: selectedCollateral?.address as Address,
 				abi: erc20Abi,
 				functionName: "approve",
-				args: [ADDRESS[chainId].mintingHubGateway, BigInt(collateralAmount)],
+				args: [approvalTarget, BigInt(collateralAmount)],
 			});
 
 			const toastContent = [
@@ -433,7 +499,7 @@ export default function PositionCreate({}) {
 				},
 				{
 					title: t("common.txs.spender"),
-					value: shortenAddress(ADDRESS[chainId].mintingHubGateway),
+					value: shortenAddress(approvalTarget),
 				},
 				{
 					title: t("common.txs.transaction"),
@@ -459,16 +525,16 @@ export default function PositionCreate({}) {
 
 	const handleWrapETHAndMint = async () => {
 		try {
-			if (!selectedPosition || !loanDetails || !expirationDate) return;
+			if (!selectedPosition || !loanDetails || !expirationDate || !address) return;
 
 			// Validate inputs
 			if (BigInt(collateralAmount) <= 0n) {
-				toast.error("Collateral amount must be greater than 0");
+				toast.error(t("mint.collateral_amount_zero"));
 				return;
 			}
 
 			if (userBalance < BigInt(collateralAmount)) {
-				toast.error("Insufficient ETH balance");
+				toast.error(t("mint.insufficient_balance", { symbol: "ETH" }));
 				return;
 			}
 
@@ -476,193 +542,44 @@ export default function PositionCreate({}) {
 			setIsCloneLoading(true);
 			setIsCloneSuccess(false);
 
-			// Check if CoinLendingGateway is available on this chain
-			const gatewayAddress = ADDRESS[chainId]?.coinLendingGateway;
-			if (gatewayAddress && gatewayAddress !== zeroAddress) {
-				// Use the 1-click solution with CoinLendingGateway
-				const hash = await writeContract(WAGMI_CONFIG, {
-					address: gatewayAddress,
-					abi: CoinLendingGatewayABI,
-					functionName: "lendWithCoin",
-					args: [
-						selectedPosition.position as Address,
-						loanDetails.loanAmount,
-						toTimestamp(expirationDate),
-						frontendCode,
-						BigInt(liquidationPrice)
-					],
-					value: BigInt(collateralAmount)
-				});
+			const hash = await writeContract(WAGMI_CONFIG, {
+				address: ADDR.mintingHub,
+				abi: MintingHubV3ABI,
+				functionName: "clone",
+				args: [
+					address,
+					selectedPosition.position,
+					BigInt(collateralAmount),
+					loanDetails.loanAmount,
+					toTimestamp(expirationDate),
+					BigInt(liquidationPrice),
+				],
+				value: BigInt(collateralAmount),
+			});
 
-				const toastContent = [
-					{
-						title: t("common.txs.amount"),
-						value: formatBigInt(loanDetails.loanAmount) + ` ${TOKEN_SYMBOL}`,
-					},
-					{
-						title: t("common.txs.collateral"),
-						value: formatBigInt(BigInt(collateralAmount), 18) + " ETH",
-					},
-					{
-						title: t("common.txs.transaction"),
-						hash,
-					},
-				];
+			const toastContent = [
+				{
+					title: t("common.txs.amount"),
+					value: formatBigInt(loanDetails.loanAmount) + ` ${TOKEN_SYMBOL}`,
+				},
+				{
+					title: t("common.txs.collateral"),
+					value: formatBigInt(BigInt(collateralAmount), 18) + " ETH",
+				},
+				{
+					title: t("common.txs.transaction"),
+					hash,
+				},
+			];
 
-				const receipt = await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash, confirmations: 1 }), {
-					pending: {
-						render: <TxToast title={t("mint.txs.minting", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
-					},
-					success: {
-						render: <TxToast title={t("mint.txs.minting_success", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
-					},
-				});
-
-				// Extract position address from PositionCreatedWithCoin event
-				try {
-					for (const log of receipt.logs) {
-						try {
-							const decodedLog = decodeEventLog({
-								abi: CoinLendingGatewayABI,
-								data: log.data,
-								topics: log.topics,
-							});
-
-							if (decodedLog.eventName === "PositionCreatedWithCoin") {
-								const positionAddress = (decodedLog.args as any).position as Address;
-								console.log("New position created via CoinLendingGateway:", positionAddress);
-								break;
-							}
-						} catch (e) {
-							// Skip logs that don't match our ABI
-							continue;
-						}
-					}
-				} catch (error) {
-					console.warn("Could not extract position address from event logs:", error);
-				}
-			} else {
-				// Fallback to the old 3-transaction approach
-				const wethAddress = getWETHAddress(chainId);
-				if (!wethAddress) {
-					toast.error("WETH not supported on this network");
-					setIsOpenBorrowingDEUROModal(false);
-					return;
-				}
-
-				// Step 1: Wrap ETH to WETH
-				const wrapHash = await writeContract(WAGMI_CONFIG, {
-					address: wethAddress,
-					abi: WETH_ABI,
-					functionName: "deposit",
-					value: BigInt(collateralAmount),
-				});
-
-				const wrapToastContent = [
-					{
-						title: t("common.txs.amount"),
-						value: formatCurrency(formatUnits(BigInt(collateralAmount), 18)) + " ETH → WETH",
-					},
-					{
-						title: t("common.txs.transaction"),
-						hash: wrapHash,
-					},
-				];
-
-				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: wrapHash, confirmations: 1 }), {
-					pending: {
-						render: <TxToast title="Wrapping ETH to WETH" rows={wrapToastContent} />,
-					},
-					success: {
-						render: <TxToast title="Successfully wrapped ETH to WETH" rows={wrapToastContent} />,
-					},
-				});
-
-				// Step 2: Approve WETH for spending
-				const approveHash = await writeContract(WAGMI_CONFIG, {
-					address: wethAddress,
-					abi: erc20Abi,
-					functionName: "approve",
-					args: [ADDRESS[chainId].mintingHubGateway, BigInt(collateralAmount)],
-				});
-
-				const approveToastContent = [
-					{
-						title: t("common.txs.amount"),
-						value: formatCurrency(formatUnits(BigInt(collateralAmount), 18)) + " WETH",
-					},
-					{
-						title: t("common.txs.spender"),
-						value: shortenAddress(ADDRESS[chainId].mintingHubGateway),
-					},
-					{
-						title: t("common.txs.transaction"),
-						hash: approveHash,
-					},
-				];
-
-				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: approveHash, confirmations: 1 }), {
-					pending: {
-						render: <TxToast title={t("common.txs.title", { symbol: "WETH" })} rows={approveToastContent} />,
-					},
-					success: {
-						render: <TxToast title={t("common.txs.success", { symbol: "WETH" })} rows={approveToastContent} />,
-					},
-				});
-
-				// Step 3: Clone position and mint dEURO
-				let txHash = null;
-				const cloneWriteHash = await writeContract(WAGMI_CONFIG, {
-					address: ADDRESS[chainId].mintingHubGateway,
-					abi: MintingHubGatewayABI,
-					functionName: "clone",
-					args: [
-						selectedPosition.position,
-						BigInt(collateralAmount),
-						loanDetails.loanAmount,
-						toTimestamp(expirationDate),
-						frontendCode,
-					],
-				});
-				txHash = cloneWriteHash;
-
-				const toastContent = [
-					{
-						title: t("common.txs.amount"),
-						value: formatBigInt(loanDetails.loanAmount) + ` ${TOKEN_SYMBOL}`,
-					},
-					{
-						title: t("common.txs.collateral"),
-						value: formatBigInt(BigInt(collateralAmount), 18) + " ETH (via WETH)",
-					},
-					{
-						title: t("common.txs.transaction"),
-						hash: cloneWriteHash,
-					},
-				];
-
-				const receipt: TransactionReceipt = await waitForTransactionReceipt(WAGMI_CONFIG, { hash: cloneWriteHash, confirmations: 1 });
-
-				if (BigInt(liquidationPrice) !== BigInt(selectedPosition?.price)) {
-					const newPositionAddress = parseCloneEventLogs(receipt.logs);
-					const adjustPriceHash = await writeContract(WAGMI_CONFIG, {
-						address: newPositionAddress as Address,
-						abi: PositionV2ABI,
-						functionName: "adjustPrice",
-						args: [(BigInt(liquidationPrice) * 10001n) / 10000n],
-					});
-					txHash = adjustPriceHash;
-				}
-
-				await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash: txHash, confirmations: 1 }), {
-					pending: {
-						render: <TxToast title={t("mint.txs.minting", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
-					},
-					success: {
-						render: <TxToast title={t("mint.txs.minting_success", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
-					},
-				});
-			}
+			await toast.promise(waitForTransactionReceipt(WAGMI_CONFIG, { hash, confirmations: 1 }), {
+				pending: {
+					render: <TxToast title={t("mint.txs.minting", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
+				},
+				success: {
+					render: <TxToast title={t("mint.txs.minting_success", { symbol: TOKEN_SYMBOL })} rows={toastContent} />,
+				},
+			});
 
 			store.dispatch(fetchPositionsList());
 			setIsCloneSuccess(true);
@@ -749,6 +666,40 @@ export default function PositionCreate({}) {
 							options={balances}
 							onTokenSelect={handleOnSelectedToken}
 						/>
+						{selectedParentPositions.length > 1 && selectedPosition && (
+							<div className="self-stretch flex-col justify-start items-start gap-2 flex mt-2">
+								<div className="text-input-label text-xs font-medium leading-none">{t("mint.parent_position")}</div>
+								<div className="self-stretch grid gap-2">
+									{selectedParentPositions.map((position) => {
+										const isSelected = selectedPosition.position.toLowerCase() === position.position.toLowerCase();
+										const availableForClones = formatCurrency(formatUnits(BigInt(position.availableForClones), 18), 2, 2);
+
+										return (
+											<button
+												type="button"
+												key={position.position}
+												onClick={() => handleOnSelectedParentPosition(position)}
+												className={`self-stretch rounded-xl border p-3 text-left transition-colors ${
+													isSelected
+														? "border-input-borderFocus bg-card-content-secondary"
+														: "border-borders-dividerLight hover:border-input-borderHover"
+												}`}
+												>
+													<div className="flex items-center justify-between gap-3">
+														<div className="text-sm font-semibold leading-none">
+															{`v${position.version}`} · {shortenAddress(position.position)}
+														</div>
+													</div>
+													<div className="mt-2 flex items-center justify-between gap-3 text-xs text-text-muted3">
+														<div>{t("mint.available")}: {availableForClones} {TOKEN_SYMBOL}</div>
+														<div>{t("mint.maturity")}: {formatDate(position.expiration)}</div>
+													</div>
+											</button>
+										);
+									})}
+								</div>
+							</div>
+						)}
 					</div>
 					<div className="self-stretch flex-col justify-start items-center gap-1 flex">
 						<InputTitle icon={faCircleQuestion}>{t("mint.select_liquidation_price")}</InputTitle>
@@ -786,7 +737,7 @@ export default function PositionCreate({}) {
 							collateralPriceDeuro={collateralPriceDeuro}
 							extraRows={
 								<div className="py-1.5 flex justify-between">
-									<span className="text-base leading-tight">{t("mint.original_position")}</span>
+									<span className="text-base leading-tight">{t("mint.parent_position")}</span>
 									<Link
 										className="underline text-right text-sm font-extrabold leading-none tracking-tight"
 										href={`/monitoring/${selectedPosition?.position}`}

@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
-import { CONFIG, WAGMI_CONFIG } from "../../app.config";
+import { WAGMI_CONFIG } from "../../app.config";
 import { toast } from "react-toastify";
 import { shortenAddress } from "@utils";
-import { renderErrorToast, renderErrorTxToast, TxToast } from "@components/TxToast";
+import { renderErrorTxToast, TxToast } from "@components/TxToast";
 import { useAccount } from "wagmi";
 import Button from "@components/Button";
-import { Address, zeroAddress } from "viem";
+import { Address } from "viem";
 import GuardToAllowedChainBtn from "@components/Guards/GuardToAllowedChainBtn";
 import { PositionQuery } from "@deuro/api";
-import { PositionV2ABI } from "@deuro/eurocoin";
+import { PositionV2ABI, PositionV3ABI } from "@deuro/eurocoin";
 
 interface Props {
 	position: PositionQuery;
@@ -20,6 +20,7 @@ export default function GovernancePositionsAction({ position, disabled }: Props)
 	const [isDenying, setDenying] = useState<boolean>(false);
 	const [isHidden, setHidden] = useState<boolean>(false);
 	const account = useAccount();
+	const positionAbi = position.version === 3 ? PositionV3ABI : PositionV2ABI;
 
 	const handleOnClick = async function (e: any) {
 		e.preventDefault();
@@ -33,7 +34,7 @@ export default function GovernancePositionsAction({ position, disabled }: Props)
 
 			const writeHash = await writeContract(WAGMI_CONFIG, {
 				address: position.position,
-				abi: PositionV2ABI,
+				abi: positionAbi,
 				functionName: "deny",
 				args: [h, msg],
 			});

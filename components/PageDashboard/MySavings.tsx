@@ -8,6 +8,9 @@ import { useSavingsInterest } from "../../hooks/useSavingsInterest";
 import Image from "next/image";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { parseUnits } from "viem";
+
+const MIN_ACTIONABLE_INTEREST = parseUnits("0.01", 18);
 
 const SavingsRow = ({
 	balance,
@@ -35,7 +38,16 @@ const SavingsRow = ({
 };
 
 export const MySavings = () => {
-	const { userSavingsBalance, totalEarnedInterest, interestToBeCollected, isReinvesting, isClaiming, claimInterest, handleReinvest } = useSavingsInterest();
+	const {
+		userSavingsBalance,
+		totalEarnedInterest,
+		interestToBeCollected,
+		isReinvesting,
+		isClaiming,
+		claimInterest,
+		handleReinvest,
+		isNonCompounding,
+	} = useSavingsInterest();
 	const { t } = useTranslation();
 
 	const savingsData = userSavingsBalance > 0n || totalEarnedInterest > 0n || interestToBeCollected > 0n;
@@ -60,18 +72,31 @@ export const MySavings = () => {
 					)}
 				</div>
 			</div>
-			{savingsData && (
-				<div className="w-full flex-1 pt-10 flex items-end gap-4">
-					<Button className="w-full h-10 py-2.5 px-4" disabled={interestToBeCollected === 0n} isLoading={isReinvesting} onClick={handleReinvest}>
-						<FontAwesomeIcon icon={faRotateRight} />
-						{t("dashboard.reinvest")}
-					</Button>
-					<SecondaryButton className="w-full h-10 py-2.5 px-4" disabled={interestToBeCollected === 0n} isLoading={isClaiming} onClick={claimInterest}>
-						<Image src="/icons/ph_hand-coins-black.svg" alt="arrow-right" width={20} height={20} />
-						{t("dashboard.collect_interest")}
-					</SecondaryButton>
-				</div>
-			)}
+				{savingsData && (
+					<div className="w-full flex-1 pt-10 flex items-end gap-4">
+						{isNonCompounding ? (
+							<SecondaryButton
+								className="w-full h-10 py-2.5 px-4"
+								disabled={interestToBeCollected < MIN_ACTIONABLE_INTEREST}
+								isLoading={isClaiming}
+								onClick={claimInterest}
+							>
+								<Image src="/icons/ph_hand-coins-black.svg" alt="arrow-right" width={20} height={20} />
+								{t("dashboard.collect_interest")}
+							</SecondaryButton>
+						) : (
+							<Button
+								className="w-full h-10 py-2.5 px-4"
+								disabled={interestToBeCollected < MIN_ACTIONABLE_INTEREST}
+								isLoading={isReinvesting}
+								onClick={handleReinvest}
+							>
+								<FontAwesomeIcon icon={faRotateRight} />
+								{t("dashboard.compound_now")}
+							</Button>
+						)}
+					</div>
+				)}
 		</div>
 	);
 };

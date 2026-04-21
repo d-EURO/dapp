@@ -1,4 +1,13 @@
-import { ApiLeadrateInfo, ApiLeadrateProposed, ApiLeadrateRate, ApiSavingsInfo, ApiSavingsUserTable, ApiSavingsUserLeaderboard } from "@deuro/api";
+import type {
+	ApiLeadrateInfo,
+	ApiLeadrateProposed,
+	ApiLeadrateRate,
+	ApiSavingsInfo,
+	ApiSavingsUserLeaderboard,
+	ApiSavingsUserTable,
+} from "@deuro/api";
+
+export type { ApiLeadrateInfo, ApiLeadrateProposed, ApiLeadrateRate, ApiSavingsInfo, ApiSavingsUserLeaderboard, ApiSavingsUserTable };
 
 // --------------------------------------------------------------------------------
 export type SavingsState = {
