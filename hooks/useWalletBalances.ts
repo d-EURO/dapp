@@ -75,9 +75,16 @@ export function useWalletERC20Balances(tokenList: TokenDescriptor[] = [], { acco
 
 	const chainId = WAGMI_CHAIN.id as number;
 
-	// Filter out ETH from the token list for ERC20 queries
-	const erc20TokenList = tokenList.filter((token) => token.symbol !== 'ETH');
-	const ethToken = tokenList.find((token) => token.symbol === 'ETH');
+	// Filter out ETH from the token list for ERC20 queries.
+	// Memoized so downstream memos/effects don't invalidate every render — stable iff `tokenList` is stable.
+	const erc20TokenList = useMemo(
+		() => tokenList.filter((token) => token.symbol !== 'ETH'),
+		[tokenList]
+	);
+	const ethToken = useMemo(
+		() => tokenList.find((token) => token.symbol === 'ETH'),
+		[tokenList]
+	);
 
 	const query = useMemo(
 		() =>
@@ -140,7 +147,9 @@ export function useWalletERC20Balances(tokenList: TokenDescriptor[] = [], { acco
 		}
 
 		return erc20Balances;
-	}, [query, data, isLoading, ethToken, ethBalanceData]);
+	}, [query, data, erc20TokenList, ethToken, ethBalanceData]);
 
-	return { balances: Object.values(responseMappedByAddress), balancesByAddress: responseMappedByAddress, isLoading, refetchBalances: refetch };
+	const balances = useMemo(() => Object.values(responseMappedByAddress), [responseMappedByAddress]);
+
+	return { balances, balancesByAddress: responseMappedByAddress, isLoading, refetchBalances: refetch };
 }
