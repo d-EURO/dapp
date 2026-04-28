@@ -36,7 +36,7 @@ export default function GovernanceBridgesTable() {
 
 	return (
 		<Table>
-			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} actionCol />
+			<TableHeader headers={headers} tab={tab} reverse={reverse} tabOnChange={handleTabOnChange} />
 			<TableBody>
 				{sorted.length == 0 ? (
 					<TableRowEmpty>{t("governance.bridges_table_empty")}</TableRowEmpty>
