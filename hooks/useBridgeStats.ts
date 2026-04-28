@@ -15,6 +15,8 @@ export interface BridgeStat {
 	remaining: bigint;
 	horizon: bigint;
 	isExpired: boolean;
+	isStopped: boolean;
+	hasEmergencyStop: boolean;
 }
 
 export interface BridgeStatsResult {
@@ -58,6 +60,7 @@ export const useBridgeStats = (): BridgeStatsResult => {
 				{ chainId, address: b.address, abi: StablecoinBridgeABI, functionName: "minted" as const },
 				{ chainId, address: b.address, abi: StablecoinBridgeABI, functionName: "limit" as const },
 				{ chainId, address: b.address, abi: StablecoinBridgeABI, functionName: "horizon" as const },
+				{ chainId, address: b.address, abi: StablecoinBridgeABI, functionName: "stopped" as const },
 			]),
 		[bridgeMinters, chainId]
 	);
@@ -67,10 +70,13 @@ export const useBridgeStats = (): BridgeStatsResult => {
 	const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
 
 	const bridges: BridgeStat[] = bridgeMinters.map((b, i) => {
-		const base = i * 3;
+		const base = i * 4;
 		const minted = data ? decodeBigIntCall(data[base] ?? 0) : 0n;
 		const limit = data ? decodeBigIntCall(data[base + 1] ?? 0) : 0n;
 		const horizon = data ? decodeBigIntCall(data[base + 2] ?? 0) : 0n;
+		const stoppedResult = data?.[base + 3];
+		const hasEmergencyStop = stoppedResult?.status === "success";
+		const isStopped = hasEmergencyStop && stoppedResult?.result === true;
 
 		return {
 			symbol: b.symbol,
@@ -80,6 +86,8 @@ export const useBridgeStats = (): BridgeStatsResult => {
 			remaining: limit > minted ? limit - minted : 0n,
 			horizon,
 			isExpired: horizon > 0n && currentTimestamp > horizon,
+			isStopped,
+			hasEmergencyStop,
 		};
 	});
 

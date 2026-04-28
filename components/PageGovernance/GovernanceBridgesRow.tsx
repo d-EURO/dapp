@@ -5,6 +5,7 @@ import { useContractUrl } from "@hooks";
 import { TOKEN_SYMBOL, formatCurrency } from "@utils";
 import { formatUnits } from "viem";
 import { useTranslation } from "next-i18next";
+import GovernanceBridgesAction from "./GovernanceBridgesAction";
 
 interface Props {
 	headers: string[];
@@ -30,8 +31,14 @@ export default function GovernanceBridgesRow({ headers, bridge, tab }: Props) {
 	const horizonDate = bridge.horizon > 0n ? new Date(Number(bridge.horizon) * 1000) : null;
 	const daysUntilExpiry = horizonDate ? Math.round((horizonDate.getTime() - Date.now()) / 1000 / 60 / 60 / 24) : null;
 
+	const showAction = bridge.hasEmergencyStop && !bridge.isStopped;
+
 	return (
-		<TableRow headers={headers} tab={tab}>
+		<TableRow
+			headers={headers}
+			tab={tab}
+			actionCol={<div className="">{showAction ? <GovernanceBridgesAction bridge={bridge} /> : null}</div>}
+		>
 			<div className="flex items-center gap-2">
 				<TokenLogo currency={bridge.symbol} size={6} />
 				<div className="flex flex-col">
