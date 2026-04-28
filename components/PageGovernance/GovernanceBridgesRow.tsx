@@ -70,15 +70,9 @@ export default function GovernanceBridgesRow({ headers, bridge, tab }: Props) {
 			<div className="flex flex-col">
 				{horizonDate ? (
 					<>
-						<span className={bridge.isExpired ? "text-red-500" : ""}>
-							{horizonDate.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
-						</span>
-						<span className={`text-sm ${bridge.isExpired ? "text-red-500 font-bold" : "text-text-subheader"}`}>
-							{bridge.isExpired
-								? t("governance.expired")
-								: daysUntilExpiry !== null
-								? `${daysUntilExpiry} ${t("governance.days_left")}`
-								: ""}
+						<span>{horizonDate.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}</span>
+						<span className="text-sm text-text-subheader">
+							{daysUntilExpiry !== null ? `${daysUntilExpiry} ${t("governance.days_left")}` : ""}
 						</span>
 					</>
 				) : (

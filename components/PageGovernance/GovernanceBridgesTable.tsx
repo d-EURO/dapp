@@ -14,7 +14,7 @@ export default function GovernanceBridgesTable() {
 	const [reverse, setReverse] = useState<boolean>(false);
 
 	const { bridges, isLoading } = useBridgeStats();
-	const activeBridges = bridges.filter((b) => b.limit > 0n || b.minted > 0n);
+	const activeBridges = bridges.filter((b) => !b.isExpired && (b.limit > 0n || b.minted > 0n));
 
 	if (isLoading || activeBridges.length === 0) return null;
 
