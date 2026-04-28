@@ -1,6 +1,7 @@
 import Head from "next/head";
 import GovernancePositionsTable from "@components/PageGovernance/GovernancePositionsTable";
 import GovernanceMintersTable from "@components/PageGovernance/GovernanceMintersTable";
+import GovernanceBridgesTable from "@components/PageGovernance/GovernanceBridgesTable";
 import GovernanceVotersTable from "@components/PageGovernance/GovernanceVotersTable";
 import GovernanceTelegramBot from "@components/PageGovernance/GovernanceTelegramBot";
 import { SOCIAL, TOKEN_SYMBOL } from "@utils";
@@ -59,6 +60,16 @@ export default function Governance() {
 
 			<div className="md:mt-8">
 				<GovernanceMintersTable />
+			</div>
+
+			<div className="md:mt-10">
+				<span className="font-bold text-xl">{t("governance.stablecoin_bridges")}</span>
+			</div>
+
+			<div className="">{t("governance.stablecoin_bridges_description")}</div>
+
+			<div className="md:mt-8">
+				<GovernanceBridgesTable />
 			</div>
 
 			<div className="md:mt-10">

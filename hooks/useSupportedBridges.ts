@@ -4,7 +4,7 @@ import { useChainId } from "wagmi";
 
 export enum StablecoinSymbol {
 	EURC = "EURC",
-	VEUR = "VEUR",
+
 	EURS = "EURS",
 	EURR = "EURR",
 	EUROP = "EUROP",
@@ -20,48 +20,44 @@ export interface SupportedStablecoin {
 }
 
 export const useSupportedBridges = (): SupportedStablecoin[] => {
-    const chainId = useChainId();
+	const chainId = useChainId();
 
-    return  [
+	return [
 		{
 			address: ADDRESS[chainId].eurc,
 			symbol: StablecoinSymbol.EURC,
 			bridgeAddress: ADDRESS[chainId].bridgeEURC,
 		},
-		{
-			address: ADDRESS[chainId].veur,
-			symbol: StablecoinSymbol.VEUR,
-			bridgeAddress: ADDRESS[chainId].bridgeVEUR,
-		},
+
 		{
 			address: ADDRESS[chainId].eurs,
 			symbol: StablecoinSymbol.EURS,
 			bridgeAddress: ADDRESS[chainId].bridgeEURS,
 		},
 		{
-            address: ADDRESS[chainId].eurr,
+			address: ADDRESS[chainId].eurr,
 			symbol: StablecoinSymbol.EURR,
 			bridgeAddress: ADDRESS[chainId].bridgeEURR,
 		},
 		{
-            address: ADDRESS[chainId].europ,
+			address: ADDRESS[chainId].europ,
 			symbol: StablecoinSymbol.EUROP,
 			bridgeAddress: ADDRESS[chainId].bridgeEUROP,
 		},
 		{
-            address: ADDRESS[chainId].euri,
+			address: ADDRESS[chainId].euri,
 			symbol: StablecoinSymbol.EURI,
 			bridgeAddress: ADDRESS[chainId].bridgeEURI,
 		},
 		{
-            address: ADDRESS[chainId].eure,
+			address: ADDRESS[chainId].eure,
 			symbol: StablecoinSymbol.EURE,
 			bridgeAddress: ADDRESS[chainId].bridgeEURE,
 		},
-        {
-            address: ADDRESS[chainId].eura,
-            symbol: StablecoinSymbol.EURA,
-            bridgeAddress: ADDRESS[chainId].bridgeEURA,
-        },
+		{
+			address: ADDRESS[chainId].eura,
+			symbol: StablecoinSymbol.EURA,
+			bridgeAddress: ADDRESS[chainId].bridgeEURA,
+		},
 	];
 };
