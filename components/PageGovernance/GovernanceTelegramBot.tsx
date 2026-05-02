@@ -1,7 +1,7 @@
 import AppCard from "@components/AppCard";
+import { CONFIG } from "../../app.config";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SOCIAL } from "@utils";
 import Image from "next/image";
 import { useTranslation } from "next-i18next";
 
@@ -9,7 +9,7 @@ export default function GovernanceTelegramBot() {
 	const { t } = useTranslation();
 	const openExplorer = (e: any) => {
 		e.preventDefault();
-		window.open(SOCIAL.TelegramApiBot, "_blank");
+		window.open(CONFIG.telegramBot, "_blank");
 	};
 
 	return (

@@ -33,6 +33,8 @@ jobs:
           push: true
           tags: ${{ env.DOCKER_TAGS }}
           platforms: linux/arm64
+          build-args: |
+            NEXT_PUBLIC_DEPLOYMENT_ENV=prd
 
       - name: Install cloudflared
         run: |
