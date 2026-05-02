@@ -1,3 +1,11 @@
+export type DeploymentEnv = "prd" | "dev";
+
+const rawDeploymentEnv = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
+if (rawDeploymentEnv !== "prd" && rawDeploymentEnv !== "dev") {
+	throw new Error(`NEXT_PUBLIC_DEPLOYMENT_ENV must be "prd" or "dev" (got: "${rawDeploymentEnv}")`);
+}
+export const DEPLOYMENT_ENV: DeploymentEnv = rawDeploymentEnv;
+
 export const SOCIAL = {
 	Github_organization: "https://github.com/d-EURO",
 	Github_contract: "https://github.com/d-EURO/smartContracts",
@@ -5,7 +13,10 @@ export const SOCIAL = {
 	Github_dapp_new_issue: "https://github.com/d-EURO/dapp/issues/new/choose",
 	Github_contract_discussion: "https://github.com/orgs/d-EURO/discussions",
 	Telegram: "https://t.me/dEURO_DecentralizedEuro",
-	TelegramApiBot: "https://t.me/dEuro_bot",
+	TelegramBot: {
+		prd: "https://t.me/dEuro_bot",
+		dev: "https://t.me/dEuroDev_bot",
+	},
 	Twitter: "https://x.com/dEURO_com",
 	Forum: "https://github.com/d-EURO/smartContracts/discussions",
 	Docs: "https://docs.deuro.com",
