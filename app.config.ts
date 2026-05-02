@@ -8,7 +8,7 @@ import { mainnet, polygon, Chain } from "@wagmi/core/chains";
 import axios from "axios";
 import { Address, zeroAddress } from "viem";
 import { getAppAddresses, isDeployed } from "@contracts";
-import { SOCIAL } from "./utils/constant";
+import { DEPLOYMENT_ENV, SOCIAL } from "./utils/constant";
 
 export type ConfigEnv = {
 	landing: string;
@@ -32,8 +32,6 @@ export type ConfigEnv = {
 // if (process.env.NEXT_PUBLIC_CHAIN_NAME == "polygon" && !process.env.NEXT_PUBLIC_RPC_URL_POLYGON)
 // throw new Error("RPC URL for polygon (testnet), not available");
 
-const isDevDeployment = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://dev.") === true;
-
 // Config
 export const CONFIG: ConfigEnv = {
 	landing: process.env.NEXT_PUBLIC_LANDINGPAGE_URL ?? "https://deuro.com",
@@ -41,7 +39,7 @@ export const CONFIG: ConfigEnv = {
 	api: process.env.NEXT_PUBLIC_API_URL ?? "https://api.deuro.com",
 	ponder: process.env.NEXT_PUBLIC_PONDER_URL ?? "https://ponder.deuro.com",
 	ponderFallback: process.env.NEXT_PUBLIC_PONDER_FALLBACK_URL ?? "https://dev.ponder.deuro.com/",
-	telegramBot: isDevDeployment ? SOCIAL.TelegramBot.dev : SOCIAL.TelegramBot.prd,
+	telegramBot: SOCIAL.TelegramBot[DEPLOYMENT_ENV],
 	wagmiId: "e915436dd22f9ebb227b553076924700",
 	alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ?? "",
 	chain: process.env.NEXT_PUBLIC_CHAIN_NAME ?? "mainnet",

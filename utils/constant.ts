@@ -1,3 +1,11 @@
+export type DeploymentEnv = "prd" | "dev";
+
+const rawDeploymentEnv = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
+if (rawDeploymentEnv !== "prd" && rawDeploymentEnv !== "dev") {
+	throw new Error(`NEXT_PUBLIC_DEPLOYMENT_ENV must be "prd" or "dev" (got: "${rawDeploymentEnv}")`);
+}
+export const DEPLOYMENT_ENV: DeploymentEnv = rawDeploymentEnv;
+
 export const SOCIAL = {
 	Github_organization: "https://github.com/d-EURO",
 	Github_contract: "https://github.com/d-EURO/smartContracts",
