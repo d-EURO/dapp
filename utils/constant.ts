@@ -5,6 +5,10 @@ export const SOCIAL = {
 	Github_dapp_new_issue: "https://github.com/d-EURO/dapp/issues/new/choose",
 	Github_contract_discussion: "https://github.com/orgs/d-EURO/discussions",
 	Telegram: "https://t.me/dEURO_DecentralizedEuro",
+	TelegramBot: {
+		prd: "https://t.me/dEuro_bot",
+		dev: "https://t.me/dEuroDev_bot",
+	},
 	Twitter: "https://x.com/dEURO_com",
 	Forum: "https://github.com/d-EURO/smartContracts/discussions",
 	Docs: "https://docs.deuro.com",
