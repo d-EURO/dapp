@@ -170,7 +170,7 @@ export const getLoanDetailsByCollateralAndYouGetAmount = (
  *
  * Result is the *net* amount that lands in the wallet, i.e. after the reserve cut.
  */
-export const calculateNetBorrowHeadroom = (input: {
+export const calculateNetBorrowHeadroom = (params: {
 	collateralBalance: bigint;
 	price: bigint;
 	principal: bigint;
@@ -179,7 +179,7 @@ export const calculateNetBorrowHeadroom = (input: {
 	availableForMinting: bigint;
 	collateralDecimals: number;
 }): bigint => {
-	const { collateralBalance, price, principal, interest, reservePPM, availableForMinting, collateralDecimals } = input;
+	const { collateralBalance, price, principal, interest, reservePPM, availableForMinting, collateralDecimals } = params;
 	const decimalsAdjustment = collateralDecimals === 0 ? BigInt(1e36) : BigInt(1e18);
 	const collateralValue = (collateralBalance * price) / decimalsAdjustment;
 	const usablePPM = 1_000_000n - reservePPM;
