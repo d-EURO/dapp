@@ -15,7 +15,7 @@ import { PositionV2ABI, PositionV3ABI } from "@deuro/eurocoin";
 import { erc20Abi } from "viem";
 import { useAccount, useChainId } from "wagmi";
 import { useReadContracts } from "wagmi";
-import { getLoanDetailsByCollateralAndStartingLiqPrice, getLoanDetailsByCollateralAndYouGetAmount } from "../../utils/loanCalculations";
+import { calculateNetBorrowHeadroom, getLoanDetailsByCollateralAndYouGetAmount } from "../../utils/loanCalculations";
 import { renderErrorTxToast } from "@components/TxToast";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { WAGMI_CONFIG } from "../../app.config";
@@ -95,6 +95,12 @@ export const BorrowedManageSection = () => {
 					address: position.position,
 					functionName: "fixedAnnualRatePPM",
 				},
+				{
+					chainId,
+					abi: positionAbi,
+					address: position.position,
+					functionName: "availableForMinting",
+				},
 		] : [],
 	});
 
@@ -107,6 +113,7 @@ export const BorrowedManageSection = () => {
 	const interest = data?.[3]?.result || 0n;
 	const totalDebt = data?.[4]?.result || 0n;
 	const fixedAnnualRatePPM = Number(data?.[5]?.result || 0n);
+	const availableForMinting = data?.[6]?.result || 0n;
 	const amountBorrowed = reserveContribution ? BigInt(principal) - (BigInt(principal) * BigInt(reserveContribution)) / 1_000_000n : 0n;
 	const debt = amountBorrowed + interest;
 	const walletBalance = position ? balancesByAddress?.[position.deuro as Address]?.balanceOf || 0n : 0n;
@@ -115,32 +122,49 @@ export const BorrowedManageSection = () => {
 	const collBalancePosition: number = position ? Math.round((parseInt(position.collateralBalance) / 10 ** position.collateralDecimals) * 100) / 100 : 0;
 	const collTokenPriceMarket = prices[position?.collateral?.toLowerCase() as Address]?.price?.eur || 0;
 	const collTokenPricePosition: number = position ? Math.round((parseInt(position.virtualPrice || position.price) / 10 ** (36 - position.collateralDecimals)) * 100) / 100 : 0;
-	
-	const marketValueCollateral: number = collBalancePosition * collTokenPriceMarket;
-	
-	// Calculate max values for validation (will be 0 if position is undefined)
-	const maxAmountByDepositedCollateral = position 
-		? getLoanDetailsByCollateralAndStartingLiqPrice(position, balanceOf, price).amountToSendToWallet
-		: 0n;
-	const maxBeforeAddingMoreCollateral = maxAmountByDepositedCollateral - totalDebt > 0 ? maxAmountByDepositedCollateral - totalDebt : 0n;
 
-	// Error validation for Borrow More
+	const marketValueCollateral: number = collBalancePosition * collTokenPriceMarket;
+
+	const rawNetHeadroom = position
+		? calculateNetBorrowHeadroom({
+				collateralBalance: BigInt(balanceOf),
+				price: BigInt(price),
+				principal: BigInt(principal),
+				interest: BigInt(interest),
+				reserveContribution: BigInt(position.reserveContribution),
+				availableForMinting: BigInt(availableForMinting),
+				collateralDecimals: position.collateralDecimals,
+			})
+		: 0n;
+	// `_accrueInterest()` runs inside `_mint` before `_checkCollateral`, so the stored
+	// interest is higher when the TX lands than what RPC read here. Subtract the same
+	// DELAY_MINUTES buffer the pay-back branch of `handleMaxAmount` already uses — keeps
+	// the borrow-more max within the on-chain limit across realistic inclusion times.
+	const timeBufferWei = calculateTimeBuffer(BigInt(principal), fixedAnnualRatePPM);
+	const maxBeforeAddingMoreCollateral = rawNetHeadroom > timeBufferWei ? rawNetHeadroom - timeBufferWei : 0n;
+
+	// Validate borrow-more like the pay-back branch below: compare against the raw
+	// on-chain cap, not the buffered max. `handleMaxAmount` pre-discounts by the
+	// timeBuffer, so the user-set amount sits exactly `timeBufferWei` below
+	// `rawNetHeadroom`. As `interest` accrues block-by-block the raw cap drifts down
+	// too — but as long as the drift stays inside the buffer (≤ DELAY_MINUTES of
+	// accrual) the input remains valid and the Lend more button does not flicker.
 	useEffect(() => {
 		if (!position || !isBorrowMore) return;
 
 		if (!amount) {
 			setError(null);
-		} else if (BigInt(amount) > maxBeforeAddingMoreCollateral) {
+		} else if (BigInt(amount) > rawNetHeadroom) {
 			setError(
 				t("mint.error.minting_limit_exceeded", {
-					amount: formatCurrency(formatUnits(maxBeforeAddingMoreCollateral, 18)),
+					amount: formatCurrency(formatUnits(rawNetHeadroom, 18)),
 					symbol: position.deuroSymbol,
 				})
 			);
 		} else {
 			setError(null);
 		}
-	}, [isBorrowMore, amount, maxBeforeAddingMoreCollateral, position, t]);
+	}, [isBorrowMore, amount, rawNetHeadroom, position, t]);
 
 	// Error validation for Pay Back
 	useEffect(() => {
