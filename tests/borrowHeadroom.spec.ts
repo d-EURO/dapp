@@ -49,15 +49,17 @@ test.describe('calculateNetBorrowHeadroom', () => {
 		expect(calculateNetBorrowHeadroom({ ...liveState, reservePPM: 1_000_000n })).toBe(0n);
 	});
 
-	test('with calculateTimeBuffer projection survives Position._accrueInterest at mint time', () => {
-		// Real revert observed (tx 0x3dc68fbf…): mint reverted with InsufficientCollateral
-		// because `_accrueInterest()` runs inside `_mint` and the stored interest grew by
-		// ~2.66 s of drift between RPC read and TX inclusion. The 10-min projection
-		// removes that race entirely.
-		const projected = liveState.interest + calculateTimeBuffer(liveState.principal, 120_000);
-		const safe = calculateNetBorrowHeadroom({ ...liveState, interest: projected });
+	test('component-level subtract pattern (raw − calculateTimeBuffer) survives _accrueInterest', () => {
+		// Mirrors BorrowedManageSection: rawNetHeadroom = pure formula, then
+		// safe = raw > buffer ? raw − buffer : 0  (same shape as the repay branch).
+		// Real revert observed in mainnet tx 0x3dc68fbf…: only ~2.66 s of additional
+		// interest accrual blew the budget. The 10-min buffer removes that race.
+		const raw = calculateNetBorrowHeadroom(liveState);
+		const buffer = calculateTimeBuffer(liveState.principal, 120_000);
+		const safe = raw > buffer ? raw - buffer : 0n;
 
-		// Replay on-chain check with 2 minutes of additional accrued interest beyond our buffer cushion
+		// Replay on-chain check at TX-time with 2 minutes of additional interest
+		// (well inside the 10-min cushion).
 		const usablePPM = 1_000_000n - liveState.reservePPM;
 		const grossMint = (safe * 1_000_000n) / usablePPM;
 		const interest2minLater = liveState.interest +
@@ -68,9 +70,10 @@ test.describe('calculateNetBorrowHeadroom', () => {
 		const rhs = newColReq * BigInt(1e18);
 		expect(lhs >= rhs).toBe(true);
 
-		// And the displayed value is still nonzero / near the unbuffered cap
-		expect(safe).toBeGreaterThan(4_300n * BigInt(1e18));
-		expect(safe).toBeLessThan(4_369n * BigInt(1e18) + BigInt(6e17));   // < 4 369.60
+		// Sanity: the buffer should cost roughly 1 × calculateTimeBuffer net.
+		expect(raw - safe).toBe(buffer);
+		expect(safe).toBeGreaterThan(4_369n * BigInt(1e18));               // > 4 369.00
+		expect(safe).toBeLessThan(4_369n * BigInt(1e18) + BigInt(5e17));   // < 4 369.50
 	});
 
 	test('handles 18-dec collateral (decimalsAdjustment = 1e18)', () => {
