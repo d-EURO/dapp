@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { calculateNetBorrowHeadroom } from '../utils/loanCalculations';
+import { calculateTimeBuffer } from '../utils/dynamicRepayCalculations';
 
 // Live mainnet state of position 0x5AFb27c7aAdc3Ad87BdD4A6De7cc9271F80D566F
 // (eth_call results at 2026-05-16, see RPC verification)
@@ -46,6 +47,30 @@ test.describe('calculateNetBorrowHeadroom', () => {
 
 	test('returns 0 when reservePPM == 100 % (no usable headroom)', () => {
 		expect(calculateNetBorrowHeadroom({ ...liveState, reservePPM: 1_000_000n })).toBe(0n);
+	});
+
+	test('with calculateTimeBuffer projection survives Position._accrueInterest at mint time', () => {
+		// Real revert observed (tx 0x3dc68fbf…): mint reverted with InsufficientCollateral
+		// because `_accrueInterest()` runs inside `_mint` and the stored interest grew by
+		// ~2.66 s of drift between RPC read and TX inclusion. The 10-min projection
+		// removes that race entirely.
+		const projected = liveState.interest + calculateTimeBuffer(liveState.principal, 120_000);
+		const safe = calculateNetBorrowHeadroom({ ...liveState, interest: projected });
+
+		// Replay on-chain check with 2 minutes of additional accrued interest beyond our buffer cushion
+		const usablePPM = 1_000_000n - liveState.reservePPM;
+		const grossMint = (safe * 1_000_000n) / usablePPM;
+		const interest2minLater = liveState.interest +
+			(liveState.principal * usablePPM * 120_000n * 120n) / (365n * 86400n * 1_000_000n * 1_000_000n);
+		const interestOverhead = (interest2minLater * 1_000_000n + usablePPM - 1n) / usablePPM;
+		const newColReq = liveState.principal + grossMint + interestOverhead;
+		const lhs = liveState.collateralBalance * liveState.price;
+		const rhs = newColReq * BigInt(1e18);
+		expect(lhs >= rhs).toBe(true);
+
+		// And the displayed value is still nonzero / near the unbuffered cap
+		expect(safe).toBeGreaterThan(4_300n * BigInt(1e18));
+		expect(safe).toBeLessThan(4_369n * BigInt(1e18) + BigInt(6e17));   // < 4 369.60
 	});
 
 	test('handles 18-dec collateral (decimalsAdjustment = 1e18)', () => {

@@ -125,12 +125,18 @@ export const BorrowedManageSection = () => {
 
 	const marketValueCollateral: number = collBalancePosition * collTokenPriceMarket;
 
+	// Project interest forward by the same DELAY_MINUTES window used for repay quoting:
+	// `_accrueInterest()` runs inside `_mint` on-chain, so by the time the TX lands the
+	// stored interest is higher than what RPC read here. Without the buffer the headroom
+	// would round to the on-chain cap and `_checkCollateral` reverts on the few seconds
+	// of drift between read and inclusion.
+	const projectedInterest = BigInt(interest) + calculateTimeBuffer(BigInt(principal), fixedAnnualRatePPM);
 	const maxBeforeAddingMoreCollateral = position
 		? calculateNetBorrowHeadroom({
 				collateralBalance: BigInt(balanceOf),
 				price: BigInt(price),
 				principal: BigInt(principal),
-				interest: BigInt(interest),
+				interest: projectedInterest,
 				reservePPM: BigInt(position.reserveContribution),
 				availableForMinting: BigInt(availableForMinting),
 				collateralDecimals: position.collateralDecimals,
