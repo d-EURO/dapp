@@ -90,3 +90,25 @@ test.describe("calculateNetBorrowHeadroom", () => {
 		expect(calculateNetBorrowHeadroom(wstEth)).toBe(9_000n * BigInt(1e18));
 	});
 });
+
+test.describe("BorrowedManageSection validation race", () => {
+	test("user input set from max-button stays valid while raw cap drifts within the buffer", () => {
+		// At t0 the max button writes (rawNet − buffer) into the input.
+		// Validation compares against rawNet (not the buffered max), so drift inside
+		// the buffer window must NOT mark the input invalid.
+		const rawNetT0 = calculateNetBorrowHeadroom(liveState);
+		const buffer = calculateTimeBuffer(liveState.principal, 120_000);
+		const maxButtonValue = rawNetT0 > buffer ? rawNetT0 - buffer : 0n;
+		const amount = maxButtonValue;
+
+		// Simulate the page idling for 5 minutes — half the 10-min buffer window.
+		const usablePPM = 1_000_000n - liveState.reservePPM;
+		const driftSeconds = 300n;
+		const driftedInterest =
+			liveState.interest + (liveState.principal * usablePPM * 120_000n * driftSeconds) / (365n * 86400n * 1_000_000n * 1_000_000n);
+		const rawNetT1 = calculateNetBorrowHeadroom({ ...liveState, interest: driftedInterest });
+
+		expect(amount).toBeLessThanOrEqual(rawNetT1); // validation: amount > rawNet ? error : ok
+		expect(rawNetT1).toBeLessThan(rawNetT0); // sanity: cap really did drift down
+	});
+});

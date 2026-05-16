@@ -143,23 +143,29 @@ export const BorrowedManageSection = () => {
 	const timeBufferWei = calculateTimeBuffer(BigInt(principal), fixedAnnualRatePPM);
 	const maxBeforeAddingMoreCollateral = rawNetHeadroom > timeBufferWei ? rawNetHeadroom - timeBufferWei : 0n;
 
-	// Error validation for Borrow More
+	// Error validation for Borrow More.
+	// Mirror the repay branch (line 150-160): validate against the *raw* on-chain cap,
+	// not the buffered max. handleMaxAmount pre-discounts by the timeBuffer, so the
+	// user-set amount sits exactly `timeBufferWei` below `rawNetHeadroom`. As `interest`
+	// accrues block-by-block the raw cap drifts down too — but as long as the drift
+	// stays inside the buffer (≤ DELAY_MINUTES of accrual) the input remains valid and
+	// the Lend more button does not flicker disabled.
 	useEffect(() => {
 		if (!position || !isBorrowMore) return;
 
 		if (!amount) {
 			setError(null);
-		} else if (BigInt(amount) > maxBeforeAddingMoreCollateral) {
+		} else if (BigInt(amount) > rawNetHeadroom) {
 			setError(
 				t("mint.error.minting_limit_exceeded", {
-					amount: formatCurrency(formatUnits(maxBeforeAddingMoreCollateral, 18)),
+					amount: formatCurrency(formatUnits(rawNetHeadroom, 18)),
 					symbol: position.deuroSymbol,
 				})
 			);
 		} else {
 			setError(null);
 		}
-	}, [isBorrowMore, amount, maxBeforeAddingMoreCollateral, position, t]);
+	}, [isBorrowMore, amount, rawNetHeadroom, position, t]);
 
 	// Error validation for Pay Back
 	useEffect(() => {
