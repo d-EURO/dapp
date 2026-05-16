@@ -9,7 +9,7 @@ const liveState = {
 	price: 510_000_000_000_000_000_000_000_000_000_000n, // 5.1e32
 	principal: 44_494_748_000_000_000_000_000n, // 44 494.748 dEURO
 	interest: 1_485_224_500_000_000_000_000n, // ~1485.22 dEURO
-	reservePPM: 100_000n, // 10 %
+	reserveContribution: 100_000n, // 10 %
 	availableForMinting: 1_570_478_740_000_000_000_000_000n, // 1 570 478.74 dEURO
 	collateralDecimals: 8,
 };
@@ -23,7 +23,7 @@ test.describe("calculateNetBorrowHeadroom", () => {
 		expect(headroom / BigInt(1e16)).toBe(436_950n);
 
 		// Cross-check: minting the gross equivalent must satisfy on-chain _checkCollateral
-		const usablePPM = 1_000_000n - liveState.reservePPM;
+		const usablePPM = 1_000_000n - liveState.reserveContribution;
 		const grossMint = (headroom * 1_000_000n) / usablePPM;
 		const interestOverhead = (liveState.interest * 1_000_000n + usablePPM - 1n) / usablePPM;
 		const newColReq = liveState.principal + grossMint + interestOverhead;
@@ -41,12 +41,12 @@ test.describe("calculateNetBorrowHeadroom", () => {
 	test("is capped by availableForMinting (family-wide limit)", () => {
 		const tinyFamilyCap = { ...liveState, availableForMinting: 1_000_000_000_000_000_000n }; // 1 dEURO
 		const r = calculateNetBorrowHeadroom(tinyFamilyCap);
-		const usablePPM = 1_000_000n - tinyFamilyCap.reservePPM;
+		const usablePPM = 1_000_000n - tinyFamilyCap.reserveContribution;
 		expect(r).toBe((tinyFamilyCap.availableForMinting * usablePPM) / 1_000_000n); // 0.9 dEURO net
 	});
 
-	test("returns 0 when reservePPM == 100 % (no usable headroom)", () => {
-		expect(calculateNetBorrowHeadroom({ ...liveState, reservePPM: 1_000_000n })).toBe(0n);
+	test("returns 0 when reserveContribution == 100 % (no usable headroom)", () => {
+		expect(calculateNetBorrowHeadroom({ ...liveState, reserveContribution: 1_000_000n })).toBe(0n);
 	});
 
 	test("component-level subtract pattern (raw − calculateTimeBuffer) survives _accrueInterest", () => {
@@ -60,7 +60,7 @@ test.describe("calculateNetBorrowHeadroom", () => {
 
 		// Replay on-chain check at TX-time with 2 minutes of additional interest
 		// (well inside the 10-min cushion).
-		const usablePPM = 1_000_000n - liveState.reservePPM;
+		const usablePPM = 1_000_000n - liveState.reserveContribution;
 		const grossMint = (safe * 1_000_000n) / usablePPM;
 		const interest2minLater =
 			liveState.interest + (liveState.principal * usablePPM * 120_000n * 120n) / (365n * 86400n * 1_000_000n * 1_000_000n);
@@ -82,27 +82,25 @@ test.describe("calculateNetBorrowHeadroom", () => {
 			price: 3_000n * BigInt(1e18), // 3000 dEURO per whole unit (gross)
 			principal: 20_000n * BigInt(1e18), // 20 000 dEURO
 			interest: 0n,
-			reservePPM: 100_000n, // 10 %
+			reserveContribution: 100_000n, // 10 %
 			availableForMinting: 1_000_000n * BigInt(1e18), // big
 			collateralDecimals: 18,
 		};
 		// collateralValue = 10 × 3000 = 30 000; grossHeadroom = 30 000 − 20 000 = 10 000; net = 9 000
 		expect(calculateNetBorrowHeadroom(wstEth)).toBe(9_000n * BigInt(1e18));
 	});
-});
 
-test.describe("BorrowedManageSection validation race", () => {
-	test("user input set from max-button stays valid while raw cap drifts within the buffer", () => {
-		// At t0 the max button writes (rawNet − buffer) into the input.
-		// Validation compares against rawNet (not the buffered max), so drift inside
-		// the buffer window must NOT mark the input invalid.
+	test("max-button value stays valid while the raw cap drifts within the buffer window", () => {
+		// Regression for the validation race in BorrowedManageSection: at t0 the max
+		// button writes (rawNet − buffer) into the input, and validation compares
+		// against rawNet (not the buffered max). Drift inside the buffer window must
+		// NOT flip the input invalid (which would grey out the Lend more button).
 		const rawNetT0 = calculateNetBorrowHeadroom(liveState);
 		const buffer = calculateTimeBuffer(liveState.principal, 120_000);
-		const maxButtonValue = rawNetT0 > buffer ? rawNetT0 - buffer : 0n;
-		const amount = maxButtonValue;
+		const amount = rawNetT0 > buffer ? rawNetT0 - buffer : 0n;
 
 		// Simulate the page idling for 5 minutes — half the 10-min buffer window.
-		const usablePPM = 1_000_000n - liveState.reservePPM;
+		const usablePPM = 1_000_000n - liveState.reserveContribution;
 		const driftSeconds = 300n;
 		const driftedInterest =
 			liveState.interest + (liveState.principal * usablePPM * 120_000n * driftSeconds) / (365n * 86400n * 1_000_000n * 1_000_000n);

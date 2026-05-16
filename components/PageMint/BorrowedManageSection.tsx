@@ -131,25 +131,24 @@ export const BorrowedManageSection = () => {
 				price: BigInt(price),
 				principal: BigInt(principal),
 				interest: BigInt(interest),
-				reservePPM: BigInt(position.reserveContribution),
+				reserveContribution: BigInt(position.reserveContribution),
 				availableForMinting: BigInt(availableForMinting),
 				collateralDecimals: position.collateralDecimals,
 			})
 		: 0n;
 	// `_accrueInterest()` runs inside `_mint` before `_checkCollateral`, so the stored
 	// interest is higher when the TX lands than what RPC read here. Subtract the same
-	// DELAY_MINUTES buffer already used by the repay quoting on line 196 — keeps the
-	// borrow-more max within the on-chain limit across realistic inclusion times.
+	// DELAY_MINUTES buffer the pay-back branch of `handleMaxAmount` already uses — keeps
+	// the borrow-more max within the on-chain limit across realistic inclusion times.
 	const timeBufferWei = calculateTimeBuffer(BigInt(principal), fixedAnnualRatePPM);
 	const maxBeforeAddingMoreCollateral = rawNetHeadroom > timeBufferWei ? rawNetHeadroom - timeBufferWei : 0n;
 
-	// Error validation for Borrow More.
-	// Mirror the repay branch (line 150-160): validate against the *raw* on-chain cap,
-	// not the buffered max. handleMaxAmount pre-discounts by the timeBuffer, so the
-	// user-set amount sits exactly `timeBufferWei` below `rawNetHeadroom`. As `interest`
-	// accrues block-by-block the raw cap drifts down too — but as long as the drift
-	// stays inside the buffer (≤ DELAY_MINUTES of accrual) the input remains valid and
-	// the Lend more button does not flicker disabled.
+	// Validate borrow-more like the pay-back branch below: compare against the raw
+	// on-chain cap, not the buffered max. `handleMaxAmount` pre-discounts by the
+	// timeBuffer, so the user-set amount sits exactly `timeBufferWei` below
+	// `rawNetHeadroom`. As `interest` accrues block-by-block the raw cap drifts down
+	// too — but as long as the drift stays inside the buffer (≤ DELAY_MINUTES of
+	// accrual) the input remains valid and the Lend more button does not flicker.
 	useEffect(() => {
 		if (!position || !isBorrowMore) return;
 

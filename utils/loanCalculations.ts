@@ -165,7 +165,7 @@ export const getLoanDetailsByCollateralAndYouGetAmount = (
  * before tripping Position._checkCollateral on-chain (MintingHubV3/Position.sol).
  *
  * Mirrors:
- *   _getCollateralRequirement = principal + ceilDivPPM(_calculateInterest(), reservePPM)
+ *   _getCollateralRequirement = principal + ceilDivPPM(_calculateInterest(), reserveContribution)
  *   _checkCollateral:  collateral × price ≥ collateralRequirement × 1e18
  *
  * Result is the *net* amount that lands in the wallet, i.e. after the reserve cut.
@@ -175,14 +175,14 @@ export const calculateNetBorrowHeadroom = (params: {
 	price: bigint;
 	principal: bigint;
 	interest: bigint;
-	reservePPM: bigint;
+	reserveContribution: bigint;
 	availableForMinting: bigint;
 	collateralDecimals: number;
 }): bigint => {
-	const { collateralBalance, price, principal, interest, reservePPM, availableForMinting, collateralDecimals } = params;
+	const { collateralBalance, price, principal, interest, reserveContribution, availableForMinting, collateralDecimals } = params;
 	const decimalsAdjustment = collateralDecimals === 0 ? BigInt(1e36) : BigInt(1e18);
 	const collateralValue = (collateralBalance * price) / decimalsAdjustment;
-	const usablePPM = 1_000_000n - reservePPM;
+	const usablePPM = 1_000_000n - reserveContribution;
 	if (usablePPM <= 0n) return 0n;
 	const interestOverhead = (interest * 1_000_000n + usablePPM - 1n) / usablePPM;
 	const collateralRequirement = principal + interestOverhead;
