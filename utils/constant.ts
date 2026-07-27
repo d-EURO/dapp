@@ -30,6 +30,17 @@ export const POOL_SHARE_TOKEN_SYMBOL = "DEPS";
 
 export const NATIVE_POOL_SHARE_TOKEN_SYMBOL = "nDEPS";
 
+// Collateralization ratio (in %) below which a position is highlighted as at risk.
+export const COLLATERALIZATION_WARNING_THRESHOLD = 110;
+
+// Collateral specific overrides of the warning threshold, keyed by collateral symbol.
+export const COLLATERALIZATION_WARNING_THRESHOLD_OVERRIDES: Record<string, number | undefined> = {
+	WFPS: 105,
+};
+
+export const getCollateralizationWarningThreshold = (collateralSymbol?: string): number =>
+	COLLATERALIZATION_WARNING_THRESHOLD_OVERRIDES[collateralSymbol?.toUpperCase() ?? ""] ?? COLLATERALIZATION_WARNING_THRESHOLD;
+
 // For managing frontend codes
 export const MARKETING_PARAM_NAME = "ref";
 
