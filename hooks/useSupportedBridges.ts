@@ -4,7 +4,6 @@ import { useChainId } from "wagmi";
 
 export enum StablecoinSymbol {
 	EURC = "EURC",
-
 	EURS = "EURS",
 	EURR = "EURR",
 	EUROP = "EUROP",
@@ -28,7 +27,6 @@ export const useSupportedBridges = (): SupportedStablecoin[] => {
 			symbol: StablecoinSymbol.EURC,
 			bridgeAddress: ADDRESS[chainId].bridgeEURC,
 		},
-
 		{
 			address: ADDRESS[chainId].eurs,
 			symbol: StablecoinSymbol.EURS,

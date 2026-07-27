@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { DEFAULT_FRONTEND_CODE, shortenHash, SOCIAL, ZERO_FRONTEND_CODE } from "@utils";
+import { CONFIG } from "../app.config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faBook, faBookmark, faComments, faCodeCommit } from "@fortawesome/free-solid-svg-icons";
+import { faBook, faBookmark, faComments, faCodeCommit, faRobot } from "@fortawesome/free-solid-svg-icons";
 import { faGithub, faTelegram, faXTwitter, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { SubmitIssue } from "./LoadingScreen";
 import { usePathname } from "next/navigation";
@@ -50,19 +51,22 @@ export default function Footer() {
 
 			<ul className="flex justify-end gap-8 max-md:pt-12">
 				<li>
-					<FooterButton link={DynamicDocs()} text="Doc" icon={faBook} />
+					<FooterButton link={DynamicDocs()} text="Documentation" icon={faBook} />
 				</li>
 				<li>
-					<FooterButton link={SOCIAL.Github_organization} text="Github" icon={faGithub} />
+					<FooterButton link={SOCIAL.Github_organization} text="GitHub" icon={faGithub} />
 				</li>
 				<li>
 					<FooterButton link={SOCIAL.Forum} text="Forum" icon={faComments} />
 				</li>
 				<li>
-					<FooterButton link={SOCIAL.Telegram} text="Telegram" icon={faTelegram} />
+					<FooterButton link={SOCIAL.Telegram} text="Telegram community" icon={faTelegram} />
 				</li>
 				<li>
-					<FooterButton link={SOCIAL.Twitter} text="Twitter" icon={faXTwitter} />
+					<FooterButton link={CONFIG.telegramBot} text="Telegram alerts bot" icon={faRobot} />
+				</li>
+				<li>
+					<FooterButton link={SOCIAL.Twitter} text="X (Twitter)" icon={faXTwitter} />
 				</li>
 			</ul>
 		</footer>
@@ -77,7 +81,7 @@ interface ButtonProps {
 
 const FooterButton = ({ link, text, icon }: ButtonProps) => {
 	return (
-		<Link href={link} target="_blank" rel="noreferrer" className="flex gap-1 hover:opacity-70">
+		<Link href={link} target="_blank" rel="noreferrer" className="flex gap-1 hover:opacity-70" title={text} aria-label={text}>
 			<FontAwesomeIcon icon={icon} className="w-6 h-6" />
 		</Link>
 	);

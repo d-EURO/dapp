@@ -1,3 +1,11 @@
+export type DeploymentEnv = "prd" | "dev";
+
+const rawDeploymentEnv = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
+if (rawDeploymentEnv !== "prd" && rawDeploymentEnv !== "dev") {
+	throw new Error(`NEXT_PUBLIC_DEPLOYMENT_ENV must be "prd" or "dev" (got: "${rawDeploymentEnv}")`);
+}
+export const DEPLOYMENT_ENV: DeploymentEnv = rawDeploymentEnv;
+
 export const SOCIAL = {
 	Github_organization: "https://github.com/d-EURO",
 	Github_contract: "https://github.com/d-EURO/smartContracts",
@@ -5,7 +13,10 @@ export const SOCIAL = {
 	Github_dapp_new_issue: "https://github.com/d-EURO/dapp/issues/new/choose",
 	Github_contract_discussion: "https://github.com/orgs/d-EURO/discussions",
 	Telegram: "https://t.me/dEURO_DecentralizedEuro",
-	TelegramApiBot: "https://t.me/dEuro_bot",
+	TelegramBot: {
+		prd: "https://t.me/dEuro_bot",
+		dev: "https://t.me/dEuroDev_bot",
+	},
 	Twitter: "https://x.com/dEURO_com",
 	Forum: "https://github.com/d-EURO/smartContracts/discussions",
 	Docs: "https://docs.deuro.com",
@@ -18,6 +29,17 @@ export const TOKEN_SYMBOL = "dEURO";
 export const POOL_SHARE_TOKEN_SYMBOL = "DEPS";
 
 export const NATIVE_POOL_SHARE_TOKEN_SYMBOL = "nDEPS";
+
+// Collateralization ratio (in %) below which a position is highlighted as at risk.
+export const COLLATERALIZATION_WARNING_THRESHOLD = 110;
+
+// Collateral specific overrides of the warning threshold, keyed by collateral symbol.
+export const COLLATERALIZATION_WARNING_THRESHOLD_OVERRIDES: Record<string, number | undefined> = {
+	WFPS: 105,
+};
+
+export const getCollateralizationWarningThreshold = (collateralSymbol?: string): number =>
+	COLLATERALIZATION_WARNING_THRESHOLD_OVERRIDES[collateralSymbol?.toUpperCase() ?? ""] ?? COLLATERALIZATION_WARNING_THRESHOLD;
 
 // For managing frontend codes
 export const MARKETING_PARAM_NAME = "ref";
