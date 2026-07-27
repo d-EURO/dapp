@@ -7,7 +7,7 @@ import { formatCurrency } from "../../utils/format";
 import MyPositionsDisplayCollateral from "./MyPositionsDisplayCollateral";
 import { useRouter as useNavigate } from "next/navigation";
 import Button from "@components/Button";
-import { TOKEN_SYMBOL } from "@utils";
+import { getCollateralizationWarningThreshold, TOKEN_SYMBOL } from "@utils";
 
 interface Props {
 	headers: string[];
@@ -44,6 +44,7 @@ export default function MypositionsRow({ headers, subHeaders, position, tab }: P
 
 	const liquidationDEURO: number = parseInt(position.price) / 10 ** (36 - position.collateralDecimals);
 	const liquidationPct: number = (balanceDEURO / (liquidationDEURO * balance)) * 100;
+	const isLiquidationAtRisk: boolean = liquidationPct < getCollateralizationWarningThreshold(position.collateralSymbol);
 
 	const positionChallenges = challenges?.map?.[position.position.toLowerCase() as Address] ?? [];
 	const positionChallengesActive = positionChallenges.filter((ch: ChallengesQueryItem) => ch.status == "Active") ?? [];
@@ -160,7 +161,7 @@ export default function MypositionsRow({ headers, subHeaders, position, tab }: P
 
 			{/* Liquidation */}
 			<div className="flex flex-col">
-				<span className={liquidationPct < 110 ? `text-md font-bold text-text-warning` : "text-md "}>
+				<span className={isLiquidationAtRisk ? `text-md font-bold text-text-warning` : "text-md "}>
 					{formatCurrency(liquidationDEURO, 2, 2)} {TOKEN_SYMBOL}
 				</span>
 				<span className="text-sm text-text-subheader">{formatCurrency(collTokenPrice / deuroPrice, 2, 2)} {TOKEN_SYMBOL}</span>

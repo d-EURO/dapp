@@ -10,7 +10,7 @@ import { useRouter } from "next/router";
 import { useContractUrl } from "@hooks";
 import Button from "@components/Button";
 import { useTranslation } from "next-i18next";
-import { getCarryOnQueryParams, TOKEN_SYMBOL, toQueryString } from "@utils";
+import { getCarryOnQueryParams, getCollateralizationWarningThreshold, TOKEN_SYMBOL, toQueryString } from "@utils";
 
 interface Props {
 	headers: string[];
@@ -36,6 +36,8 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 	const marketValueCollateral: number = collBalancePosition * collTokenPriceMarket;
 	const positionValueCollateral: number = collBalancePosition * collTokenPricePosition;
 	const collateralizationPercentage: number = Math.round((marketValueCollateral / positionValueCollateral) * 10000) / 100;
+	const isCollateralizationAtRisk: boolean =
+		collateralizationPercentage < getCollateralizationWarningThreshold(position.collateralSymbol);
 
 	const digits: number = position.collateralDecimals;
 	const positionChallenges = challenges?.map?.[position.position.toLowerCase() as Address] ?? [];
@@ -101,7 +103,7 @@ export default function MonitoringRow({ headers, position, tab }: Props) {
 
 			{/* Coll. */}
 			<div className="flex flex-col gap-2">
-				<div className={`col-span-2 text-md ${collateralizationPercentage < 110 ? "text-text-warning font-bold" : ""}`}>
+				<div className={`col-span-2 text-md ${isCollateralizationAtRisk ? "text-text-warning font-bold" : ""}`}>
 					{!isNaN(collateralizationPercentage) ? formatCurrency(collateralizationPercentage) : "-.--"}%
 				</div>
 			</div>
