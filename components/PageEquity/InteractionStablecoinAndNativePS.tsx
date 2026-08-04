@@ -23,6 +23,10 @@ import { TokenBalance } from "../../hooks/useWalletBalances";
 import { TokenInteractionSide } from "./EquityInteractionCard";
 import { RootState } from "../../redux/redux.store";
 import { useSelector } from "react-redux";
+
+const SLIPPAGE_BPS = 50n; // 0.5% slippage tolerance on the expected output amount
+const applySlippage = (expected: bigint): bigint => expected - (expected * SLIPPAGE_BPS) / 10000n;
+
 interface Props {
 	openSelector: (tokenInteractionSide: TokenInteractionSide) => void;
 	selectedFromToken: TokenBalance | undefined;
@@ -123,7 +127,7 @@ export default function InteractionStablecoinAndNativePS({
 				address: ADDRESS[chainId].frontendGateway,
 				abi: FrontendGatewayV2ABI,
 				functionName: "invest",
-				args: [amount, result, frontendCode],
+				args: [amount, applySlippage(result), frontendCode],
 			});
 
 			const toastContent = [
@@ -248,7 +252,7 @@ export default function InteractionStablecoinAndNativePS({
 				address: ADDRESS[chainId].frontendGateway,
 				abi: FrontendGatewayV2ABI,
 				functionName: "redeem",
-				args: [account, amount, deuroResult, frontendCode],
+				args: [account, amount, applySlippage(deuroResult), frontendCode],
 			});
 
 			const toastContent = [
