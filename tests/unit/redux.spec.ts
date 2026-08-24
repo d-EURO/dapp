@@ -17,13 +17,11 @@ test.describe("redux reducers", () => {
 		expect(back.expertMode).toBe(prefsInitial.expertMode);
 	});
 
-	test("account error/loading/reset", () => {
+	test("account error/loading", () => {
 		const err = account(accountInitial, accountActions.hasError("boom"));
 		expect(err.error).toBe("boom");
 		const loading = account(err, accountActions.setLoading(true));
 		expect(loading.loading).toBe(true);
-		const reset = account(loading, accountActions.resetAccountState());
-		expect(reset).toEqual(loading);
 	});
 
 	test("positions setters", () => {

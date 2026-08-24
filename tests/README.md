@@ -23,7 +23,9 @@ yarn test:e2e:mobile      # iPhone 13 project
 
 E2E write paths inject a mock `window.ethereum` (account `0xf39F…2266`). `eth_call` balanceOf returns `maxUint256` so amount forms unlock; `eth_sendTransaction` is captured on `window.__e2eTxs` and never broadcast.
 
-Bugs found while writing these tests: [BUGS.md](../BUGS.md).
+## Bugs the suite finds
+
+A product defect is only “found” if it is in [BUGS.md](../BUGS.md) **and** has a `test.fail()` case that asserts the *correct* behaviour (`tests/unit/known-bugs.spec.ts`, `tests/e2e/known-bugs.spec.ts`). Do not turn a broken behaviour into a passing expect. When the fix lands, drop `test.fail()` and mark the row Fixed.
 
 ## Environment
 

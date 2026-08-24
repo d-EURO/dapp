@@ -1,21 +1,25 @@
-# Known bugs (from Playwright work)
+# Known bugs
 
-Found while building the Playwright suite in #335. Not yet fixed. Newest first is not required here — ordered by severity.
+This file is the **only** tracker for defects the tests find. A bug that is not in this table and not in a `test.fail()` case did not happen as far as the suite is concerned.
 
-| ID | Severity | Where | What | Fix |
-|---|---|---|---|---|
-| BUG-1 | High | `redux/slices/account.slice.ts` `resetAccountState` | Immer assignment `state = initialState` does not mutate the store. `BlockUpdater` calls this on wallet disconnect, so `loading` / `error` stay set. | `return initialState` (or reset fields in place). Prove with `tests/unit/redux.spec.ts`. |
-| BUG-2 | High | `utils/loanCalculations.ts` `getLoanDetailsByCollateralAndStartingLiqPrice` | Return value `startingLiquidationPrice` is divided by `10 ** collateralDecimals`. The other two loan helpers do not. Start and end liquidation prices are in different units; the UI can show a wrong start price. | Return the same unit as `getLoanDetailsByCollateralAndLiqPrice` / `…YouGetAmount`. Cover in `tests/unit/loanCalculations.spec.ts`. |
-| BUG-3 | Medium | `components/LoadingScreen.tsx` | Named import `{ version }` from `package.json`. Next.js warns on every load: named export from a default-exporting module will go away. | `import pkg from "../package.json"` then `pkg.version`. |
-| BUG-4 | Low | `pages/404.tsx` | Image `src="/assets/logo.svg"` — file does not exist. Real logo is `/assets/dEuro-Logo.svg`. | Point at the existing asset. E2E: `tests/e2e/navigation.spec.ts` (404). |
-| BUG-5 | Low | `components/Footer.tsx` `DynamicDocs` | On `/savings` the docs link is `https://docs.deuro.com/savings-todo` (placeholder). | Real savings docs path. |
-| BUG-6 | Low | `redux/slices/positions.slice.ts` (+ types) | Typo `deniedPositioins` in state, types, and filter. Consistent, so no crash, but every consumer must copy the misspelling. | Rename to `deniedPositions`. |
-| BUG-7 | Low | `components/Navbar/index.tsx` | `const isMainet = useIsMainnet()` is unused (and misspelled). | Remove. |
+Rule: when a test finds a product defect,
 
-## Out of scope (not product bugs)
+1. add a row here (`BUG-n`),
+2. add a test that asserts the *correct* behaviour and mark it `test.fail()` with this ID,
+3. do **not** encode the broken behaviour as a passing assertion.
 
-Playwright failures from hidden DOM (`#ss-mobile-menu`, first “My Referrals” / “Dashboard” matching the desktop nav on mobile) and WalletConnect `already initialized` / `MaxListenersExceeded` under parallel workers against one Next dev server.
+When the product is fixed, the `test.fail()` case starts passing and CI fails until you drop `test.fail()` and tick **Fixed** below.
 
-## Status
+| ID | Sev | Test | Product | Correct behaviour (what the test asserts) | Status |
+|---|---|---|---|---|---|
+| BUG-1 | High | `tests/unit/known-bugs.spec.ts` | `redux/slices/account.slice.ts` `resetAccountState` | After `resetAccountState`, state equals `initialState`. Today Immer `state = initialState` is a no-op; `BlockUpdater` still dispatches it on disconnect. | Open |
+| BUG-2 | High | `tests/unit/known-bugs.spec.ts` | `utils/loanCalculations.ts` `getLoanDetailsByCollateralAndStartingLiqPrice` | Returned `startingLiquidationPrice` stays in the same unit as the input / the other two loan helpers. Today it is divided by `10 ** collateralDecimals`. | Open |
+| BUG-3 | Medium | `tests/unit/known-bugs.spec.ts` | `components/LoadingScreen.tsx` | Do not named-import `{ version }` from `package.json` (Next.js will drop that). | Open |
+| BUG-4 | Low | `tests/e2e/known-bugs.spec.ts` | `pages/404.tsx` | 404 logo `src` is an existing file (`/assets/dEuro-Logo.svg`). Today it is `/assets/logo.svg` (404). | Open |
+| BUG-5 | Low | `tests/e2e/known-bugs.spec.ts` | `components/Footer.tsx` `DynamicDocs` | Docs link on `/savings` is a real docs path, not `…/savings-todo`. | Open |
+| BUG-6 | Low | `tests/unit/known-bugs.spec.ts` | `redux/slices/positions.slice.ts` | State field is `deniedPositions`. Today it is `deniedPositioins`. | Open |
+| BUG-7 | Low | `tests/unit/known-bugs.spec.ts` | `components/Navbar/index.tsx` | No unused `isMainet` binding. | Open |
 
-Open. No GitHub issues yet — this file is the tracker until someone files them or a fix PR lands.
+## Not product bugs
+
+Hidden-DOM Playwright locators (`#ss-mobile-menu`, first “My Referrals” / “Dashboard” hitting desktop nav on mobile) and WalletConnect `already initialized` / `MaxListenersExceeded` under parallel workers on one Next dev server.
