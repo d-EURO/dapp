@@ -23,6 +23,8 @@ yarn test:e2e:mobile      # iPhone 13 project
 
 E2E write paths inject a mock `window.ethereum` (account `0xf39F…2266`). `eth_call` balanceOf returns `maxUint256` so amount forms unlock; `eth_sendTransaction` is captured on `window.__e2eTxs` and never broadcast.
 
+Bugs found while writing these tests: [BUGS.md](../BUGS.md).
+
 ## Environment
 
 `playwright.config.ts` sets `NEXT_PUBLIC_DEPLOYMENT_ENV=dev` and public RPC/API/Ponder URLs. The Next dev server is started automatically.

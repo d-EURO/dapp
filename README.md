@@ -11,6 +11,8 @@ yarn test:e2e:mobile
 
 `NEXT_PUBLIC_DEPLOYMENT_ENV=dev` is set by `playwright.config.ts`. The Next dev server starts automatically. Wallet write-paths use an injected mock `window.ethereum` (account `0xf39F…2266`); transactions are captured and never broadcast.
 
+Known bugs from that work: [BUGS.md](BUGS.md).
+
 ## Getting Started
 
 ### Configurations for new collateral token
