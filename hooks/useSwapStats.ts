@@ -44,23 +44,17 @@ interface SwapStats extends StablecoinsStats {
 	refetch: () => void;
 }
 
-const parseStablecoinStats = (
-	data: any | undefined,
-	mintBridgeAddress: Address
-): {
+const parseStablecoinStats = (data?: any): {
 	userBal: bigint;
 	symbol: string;
 	userAllowance: bigint;
 	decimals: bigint;
 	limit: bigint;
-	minted: bigint;
-	remaining: bigint;
 	horizon: bigint;
 	isExpired: boolean;
 } => {
 	const horizon = data ? decodeBigIntCall(data?.horizon || 0) : BigInt(0);
 	const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
-	const minted = decodeBigIntCall(data?.minted?.[mintBridgeAddress] || 0);
 
 	return {
 		userBal: decodeBigIntCall(data?.balanceOf?.userBalance || 0),
@@ -68,8 +62,6 @@ const parseStablecoinStats = (
 		userAllowance: decodeBigIntCall(data?.allowance || 0),
 		decimals: decodeBigIntCall(data?.decimals || 0),
 		limit: decodeBigIntCall(data?.limit || 0),
-		minted,
-		remaining: decodeBigIntCall(data?.limit || 0) - minted,
 		isExpired: horizon > 0n && currentTimestamp > horizon,
 		horizon: horizon,
 	};
@@ -190,7 +182,8 @@ export const useSwapStats = (): SwapStats => {
 	const deuroAddress = ADDRESS[chainId].decentralizedEURO;
 
 	const stablecoinsStats = supportedStablecoins.reduce((acc, stablecoin) => {
-		const parsed = parseStablecoinStats(parsedData?.[stablecoin.address], stablecoin.bridgeAddress);
+		const parsed = parseStablecoinStats(parsedData?.[stablecoin.address]);
+		const minted = decodeBigIntCall(parsedData?.[stablecoin.address]?.minted?.[stablecoin.bridgeAddress] || 0);
 		const selectedBurn = selectBurnBridge(
 			stablecoin.burnBridgeAddresses.map((address) => ({
 				address,
@@ -205,6 +198,8 @@ export const useSwapStats = (): SwapStats => {
 			[stablecoin.symbol]: {
 				...parsed,
 				bridgeBal: selectedBurn.capacity,
+				minted,
+				remaining: parsed.limit - minted,
 				contractAddress: stablecoin.address,
 				contractBridgeAddress: stablecoin.bridgeAddress,
 				burnBridgeAddress: selectedBurn.address,
