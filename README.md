@@ -30,6 +30,7 @@ yarn run dev
 ### Copy .env.example and adjust your environment
 
 ```TS
+NEXT_PUBLIC_DEPLOYMENT_ENV=dev
 NEXT_PUBLIC_LANDINGPAGE_URL=https://deuro.com/
 NEXT_PUBLIC_APP_URL=https://app.deuro.com/
 NEXT_PUBLIC_API_URL=https://api.deuro.com
@@ -68,6 +69,7 @@ The environment variables are used at build time and cannot be passed at runtime
 ```
 Dockerfile:
 
+ENV NEXT_PUBLIC_DEPLOYMENT_ENV=NEXT_PUBLIC_DEPLOYMENT_ENV
 ENV NEXT_PUBLIC_LANDINGPAGE_URL=NEXT_PUBLIC_LANDINGPAGE_URL
 ENV NEXT_PUBLIC_APP_URL=NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL
