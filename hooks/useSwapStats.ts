@@ -44,7 +44,10 @@ interface SwapStats extends StablecoinsStats {
 	refetch: () => void;
 }
 
-const parseStablecoinStats = (data?: any): {
+const parseStablecoinStats = (
+	data: any | undefined,
+	mintBridgeAddress: Address
+): {
 	userBal: bigint;
 	symbol: string;
 	userAllowance: bigint;
@@ -57,15 +60,16 @@ const parseStablecoinStats = (data?: any): {
 } => {
 	const horizon = data ? decodeBigIntCall(data?.horizon || 0) : BigInt(0);
 	const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
-	
+	const minted = decodeBigIntCall(data?.minted?.[mintBridgeAddress] || 0);
+
 	return {
 		userBal: decodeBigIntCall(data?.balanceOf?.userBalance || 0),
 		symbol: decodeStringCall(data?.symbol ?? ""),
 		userAllowance: decodeBigIntCall(data?.allowance || 0),
 		decimals: decodeBigIntCall(data?.decimals || 0),
 		limit: decodeBigIntCall(data?.limit || 0),
-		minted: decodeBigIntCall(data?.minted || 0),
-		remaining: decodeBigIntCall(data?.limit || 0) - decodeBigIntCall(data?.minted || 0),
+		minted,
+		remaining: decodeBigIntCall(data?.limit || 0) - minted,
 		isExpired: horizon > 0n && currentTimestamp > horizon,
 		horizon: horizon,
 	};
@@ -153,13 +157,14 @@ export const useSwapStats = (): SwapStats => {
 					abi: StablecoinBridgeABI,
 					functionName: "limit",
 				},
-				{
+				...stablecoin.burnBridgeAddresses.map((burnAddress) => ({
 					chainId,
-					address: stablecoin.bridgeAddress,
+					address: burnAddress,
 					groupKey: stablecoin.address,
 					abi: StablecoinBridgeABI,
 					functionName: "minted",
-				},
+					calls: [{ id: burnAddress }],
+				})),
 				{
 					chainId,
 					address: stablecoin.bridgeAddress,
@@ -185,18 +190,21 @@ export const useSwapStats = (): SwapStats => {
 	const deuroAddress = ADDRESS[chainId].decentralizedEURO;
 
 	const stablecoinsStats = supportedStablecoins.reduce((acc, stablecoin) => {
+		const parsed = parseStablecoinStats(parsedData?.[stablecoin.address], stablecoin.bridgeAddress);
 		const selectedBurn = selectBurnBridge(
 			stablecoin.burnBridgeAddresses.map((address) => ({
 				address,
 				balance: decodeBigIntCall(parsedData?.[stablecoin.address]?.balanceOf?.[address] || 0),
+				minted: decodeBigIntCall(parsedData?.[stablecoin.address]?.minted?.[address] || 0),
+				decimals: parsed.decimals,
 			}))
 		);
 
 		return {
 			...acc,
 			[stablecoin.symbol]: {
-				...parseStablecoinStats(parsedData?.[stablecoin.address]),
-				bridgeBal: selectedBurn.balance,
+				...parsed,
+				bridgeBal: selectedBurn.capacity,
 				contractAddress: stablecoin.address,
 				contractBridgeAddress: stablecoin.bridgeAddress,
 				burnBridgeAddress: selectedBurn.address,
@@ -208,7 +216,8 @@ export const useSwapStats = (): SwapStats => {
 		(acc, stablecoin) => ({
 			...acc,
 			[stablecoin.symbol]: decodeBigIntCall(
-				parsedData?.[deuroAddress]?.allowance?.[`${stablecoin.symbol}:${stablecoinsStats[stablecoin.symbol].burnBridgeAddress}`] || 0
+				parsedData?.[deuroAddress]?.allowance?.[`${stablecoin.symbol}:${stablecoinsStats[stablecoin.symbol].burnBridgeAddress}`] ||
+					0
 			),
 		}),
 		{}
