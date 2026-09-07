@@ -100,7 +100,7 @@ export const useSwapStats = (): SwapStats => {
 			functionName: "allowance",
 			calls: supportedStablecoins.flatMap((stablecoin) =>
 				stablecoin.burnBridgeAddresses.map((burnAddress) => ({
-					id: `${stablecoin.symbol}:${burnAddress}`,
+					id: `${stablecoin.symbol}:${burnAddress.toLowerCase()}`,
 					args: [account, burnAddress],
 				}))
 			),
@@ -118,7 +118,7 @@ export const useSwapStats = (): SwapStats => {
 							args: [account],
 						},
 						...stablecoin.burnBridgeAddresses.map((burnAddress) => ({
-							id: burnAddress,
+							id: burnAddress.toLowerCase(),
 							args: [burnAddress],
 						})),
 					],
@@ -155,7 +155,7 @@ export const useSwapStats = (): SwapStats => {
 					groupKey: stablecoin.address,
 					abi: StablecoinBridgeABI,
 					functionName: "minted",
-					calls: [{ id: burnAddress }],
+					calls: [{ id: burnAddress.toLowerCase() }],
 				})),
 				{
 					chainId,
@@ -183,12 +183,12 @@ export const useSwapStats = (): SwapStats => {
 
 	const stablecoinsStats = supportedStablecoins.reduce((acc, stablecoin) => {
 		const parsed = parseStablecoinStats(parsedData?.[stablecoin.address]);
-		const minted = decodeBigIntCall(parsedData?.[stablecoin.address]?.minted?.[stablecoin.bridgeAddress] || 0);
+		const minted = decodeBigIntCall(parsedData?.[stablecoin.address]?.minted?.[stablecoin.bridgeAddress.toLowerCase()] || 0);
 		const selectedBurn = selectBurnBridge(
 			stablecoin.burnBridgeAddresses.map((address) => ({
 				address,
-				balance: decodeBigIntCall(parsedData?.[stablecoin.address]?.balanceOf?.[address] || 0),
-				minted: decodeBigIntCall(parsedData?.[stablecoin.address]?.minted?.[address] || 0),
+				balance: decodeBigIntCall(parsedData?.[stablecoin.address]?.balanceOf?.[address.toLowerCase()] || 0),
+				minted: decodeBigIntCall(parsedData?.[stablecoin.address]?.minted?.[address.toLowerCase()] || 0),
 				decimals: parsed.decimals,
 			}))
 		);
@@ -211,8 +211,9 @@ export const useSwapStats = (): SwapStats => {
 		(acc, stablecoin) => ({
 			...acc,
 			[stablecoin.symbol]: decodeBigIntCall(
-				parsedData?.[deuroAddress]?.allowance?.[`${stablecoin.symbol}:${stablecoinsStats[stablecoin.symbol].burnBridgeAddress}`] ||
-					0
+				parsedData?.[deuroAddress]?.allowance?.[
+					`${stablecoin.symbol}:${stablecoinsStats[stablecoin.symbol].burnBridgeAddress.toLowerCase()}`
+				] || 0
 			),
 		}),
 		{}

@@ -14,7 +14,8 @@ export type SelectedBurnBridge = {
 
 // minted is 18-dec dEURO; balance is stablecoin units. Floor-divide like StablecoinBridge._convertAmount.
 export const burnBridgeCapacity = (balance: bigint, minted: bigint, stablecoinDecimals: bigint): bigint => {
-	const mintedInSourceUnits = minted / 10n ** (18n - stablecoinDecimals);
+	const downscale = 18n - stablecoinDecimals;
+	const mintedInSourceUnits = minted / (downscale > 0n ? 10n ** downscale : 1n);
 	return balance < mintedInSourceUnits ? balance : mintedInSourceUnits;
 };
 

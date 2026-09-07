@@ -52,4 +52,10 @@ test.describe("selectBurnBridge", () => {
 		expect(selected.address).toBe(first);
 		expect(selected.capacity).toBe(100n * 10n ** 6n);
 	});
+
+	test("returns the only candidate with minted-capped capacity at 6 decimals", () => {
+		const selected = selectBurnBridge([{ address: first, balance: 1_000n * 10n ** 6n, minted: 100n * 10n ** 18n, decimals: 6n }]);
+		expect(selected.address).toBe(first);
+		expect(selected.capacity).toBe(100n * 10n ** 6n);
+	});
 });
