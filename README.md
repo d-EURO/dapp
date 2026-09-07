@@ -84,7 +84,7 @@ ARG NEXT_PUBLIC_DEPLOYMENT_ENV
 ENV NEXT_PUBLIC_DEPLOYMENT_ENV=$NEXT_PUBLIC_DEPLOYMENT_ENV
 ```
 
-`NEXT_PUBLIC_DEPLOYMENT_ENV` must be passed as a build argument (`--build-arg NEXT_PUBLIC_DEPLOYMENT_ENV=prd|dev`) and cannot be used as a runtime placeholder, because the value is checked at build time.
+`NEXT_PUBLIC_DEPLOYMENT_ENV` must be passed as a build argument (`--build-arg NEXT_PUBLIC_DEPLOYMENT_ENV=prd` for production, `--build-arg NEXT_PUBLIC_DEPLOYMENT_ENV=dev` for development) and cannot be used as a runtime placeholder, because the value is checked at build time.
 
 ### Production
 
