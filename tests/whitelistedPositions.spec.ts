@@ -3,7 +3,9 @@ import { getAddress } from "viem";
 import { WHITELISTED_POSITIONS } from "../utils/constant";
 
 // BorrowForm.tsx:86 filters with a case-sensitive includes(); a non-checksummed
-// entry never matches, so the collateral picker stays empty. The sort at
+// entry never matches, so that position drops out of elegiblePositions and its
+// collateral disappears from the picker — the picker only becomes fully empty if
+// no other position still gets through. The sort at
 // BorrowForm.tsx:108-109 compares case-insensitively via toLowerCase() on both
 // sides, so casing cannot change order; a duplicate still can, because findIndex
 // returns the first match. Both cases fail silently — no type/lint/runtime error.
