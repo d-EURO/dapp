@@ -4,6 +4,7 @@ import { Address, erc20Abi } from "viem";
 import { WAGMI_CHAIN } from "../app.config";
 import { ADDRESS, StablecoinBridgeABI } from "@deuro/eurocoin";
 import { buildContractBatcher } from "../utils/contractBatcher";
+import { selectBurnBridge } from "../utils/selectBurnBridge";
 import { StablecoinSymbol, SupportedStablecoin, useSupportedBridges } from "./useSupportedBridges";
 
 type DEuroBridgeAllowance = {
@@ -26,6 +27,7 @@ interface StablecoinStats {
 	minted: bigint;
 	remaining: bigint;
 	contractBridgeAddress: Address;
+	burnBridgeAddress: Address;
 	contractAddress: Address;
 	horizon: bigint;
 	isExpired: boolean;
@@ -46,7 +48,6 @@ const parseStablecoinStats = (data?: any): {
 	userBal: bigint;
 	symbol: string;
 	userAllowance: bigint;
-	bridgeBal: bigint;
 	decimals: bigint;
 	limit: bigint;
 	minted: bigint;
@@ -61,7 +62,6 @@ const parseStablecoinStats = (data?: any): {
 		userBal: decodeBigIntCall(data?.balanceOf?.userBalance || 0),
 		symbol: decodeStringCall(data?.symbol ?? ""),
 		userAllowance: decodeBigIntCall(data?.allowance || 0),
-		bridgeBal: decodeBigIntCall(data?.balanceOf?.bridgeBalance || 0),
 		decimals: decodeBigIntCall(data?.decimals || 0),
 		limit: decodeBigIntCall(data?.limit || 0),
 		minted: decodeBigIntCall(data?.minted || 0),
@@ -102,10 +102,12 @@ export const useSwapStats = (): SwapStats => {
 			address: ADDRESS[chainId].decentralizedEURO,
 			abi: erc20Abi,
 			functionName: "allowance",
-			calls: supportedStablecoins.map((stablecoin) => ({
-				id: stablecoin.symbol,
-				args: [account, stablecoin.bridgeAddress],
-			})),
+			calls: supportedStablecoins.flatMap((stablecoin) =>
+				stablecoin.burnBridgeAddresses.map((burnAddress) => ({
+					id: `${stablecoin.symbol}:${burnAddress}`,
+					args: [account, burnAddress],
+				}))
+			),
 		},
 		...supportedStablecoins
 			.map((stablecoin) => [
@@ -119,10 +121,10 @@ export const useSwapStats = (): SwapStats => {
 							id: "userBalance",
 							args: [account],
 						},
-						{
-							id: "bridgeBalance",
-							args: [stablecoin.bridgeAddress],
-						},
+						...stablecoin.burnBridgeAddresses.map((burnAddress) => ({
+							id: burnAddress,
+							args: [burnAddress],
+						})),
 					],
 				},
 				{
@@ -182,10 +184,32 @@ export const useSwapStats = (): SwapStats => {
 
 	const deuroAddress = ADDRESS[chainId].decentralizedEURO;
 
+	const stablecoinsStats = supportedStablecoins.reduce((acc, stablecoin) => {
+		const selectedBurn = selectBurnBridge(
+			stablecoin.burnBridgeAddresses.map((address) => ({
+				address,
+				balance: decodeBigIntCall(parsedData?.[stablecoin.address]?.balanceOf?.[address] || 0),
+			}))
+		);
+
+		return {
+			...acc,
+			[stablecoin.symbol]: {
+				...parseStablecoinStats(parsedData?.[stablecoin.address]),
+				bridgeBal: selectedBurn.balance,
+				contractAddress: stablecoin.address,
+				contractBridgeAddress: stablecoin.bridgeAddress,
+				burnBridgeAddress: selectedBurn.address,
+			},
+		};
+	}, {} as StablecoinsStats);
+
 	const bridgeAllowance = supportedStablecoins.reduce(
 		(acc, stablecoin) => ({
 			...acc,
-			[stablecoin.symbol]: decodeBigIntCall(parsedData?.[deuroAddress]?.allowance?.[stablecoin.symbol] || 0),
+			[stablecoin.symbol]: decodeBigIntCall(
+				parsedData?.[deuroAddress]?.allowance?.[`${stablecoin.symbol}:${stablecoinsStats[stablecoin.symbol].burnBridgeAddress}`] || 0
+			),
 		}),
 		{}
 	);
@@ -197,18 +221,6 @@ export const useSwapStats = (): SwapStats => {
 		bridgeAllowance,
 		contractAddress: ADDRESS[chainId].decentralizedEURO,
 	};
-
-	const stablecoinsStats = supportedStablecoins.reduce(
-		(acc, stablecoin) => ({
-			...acc,
-			[stablecoin.symbol]: {
-				...parseStablecoinStats(parsedData?.[stablecoin.address]),
-				contractAddress: stablecoin.address,
-				contractBridgeAddress: stablecoin.bridgeAddress,
-			},
-		}),
-		{} as StablecoinsStats
-	);
 
 	return {
 		...stablecoinsStats,
