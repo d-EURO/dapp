@@ -2,13 +2,12 @@ import { test, expect } from "@playwright/test";
 import { getAddress } from "viem";
 import { WHITELISTED_POSITIONS } from "../utils/constant";
 
-// BorrowForm.tsx:86 filters with a case-sensitive includes(); a non-checksummed
-// entry never matches, so that position drops out of elegiblePositions and its
-// collateral disappears from the picker — the picker only becomes fully empty if
-// no other position still gets through. The sort at
-// BorrowForm.tsx:108-109 compares case-insensitively via toLowerCase() on both
-// sides, so casing cannot change order; a duplicate still can, because findIndex
-// returns the first match. Both cases fail silently — no type/lint/runtime error.
+// BorrowForm.tsx:86 filters this array with a case-sensitive includes() against
+// addresses the API returns in EIP-55 casing: a non-checksummed entry never
+// matches, so its position silently drops out of elegiblePositions. The sort at
+// BorrowForm.tsx:108-109 lowercases both sides, so casing cannot affect order —
+// a duplicate can, because findIndex returns the first match. Neither failure
+// raises a type, lint or runtime error.
 
 test.describe("WHITELISTED_POSITIONS", () => {
 	test("each entry is EIP-55 checksummed", () => {
