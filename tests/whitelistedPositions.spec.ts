@@ -2,9 +2,11 @@ import { test, expect } from "@playwright/test";
 import { getAddress } from "viem";
 import { WHITELISTED_POSITIONS } from "../utils/constant";
 
-// BorrowForm matches this array with a case-sensitive includes() and uses
-// findIndex for display order. A non-checksummed or duplicate entry fails
-// silently — empty or mis-ordered collateral picker, no type/lint/runtime error.
+// BorrowForm.tsx:86 filters with a case-sensitive includes(); a non-checksummed
+// entry never matches, so the collateral picker stays empty. The sort at
+// BorrowForm.tsx:108-109 compares case-insensitively via toLowerCase() on both
+// sides, so casing cannot change order; a duplicate still can, because findIndex
+// returns the first match. Both cases fail silently — no type/lint/runtime error.
 
 test.describe("WHITELISTED_POSITIONS", () => {
 	test("each entry is EIP-55 checksummed", () => {
