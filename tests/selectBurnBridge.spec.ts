@@ -58,4 +58,10 @@ test.describe("selectBurnBridge", () => {
 		expect(selected.address).toBe(first);
 		expect(selected.capacity).toBe(100n * 10n ** 6n);
 	});
+
+	test("does not downscale minted when decimals are above 18", () => {
+		const selected = selectBurnBridge([{ address: first, balance: 500n, minted: 200n, decimals: 19n }]);
+		expect(selected.address).toBe(first);
+		expect(selected.capacity).toBe(200n);
+	});
 });
