@@ -37,6 +37,7 @@ const noTokenMeta = {
 	decimals: 0n,
 	bridgeBal: 0n,
 	contractBridgeAddress: "0x0",
+	burnBridgeAddress: "0x0",
 	contractAddress: "0x0",
 	isExpired: false,
 };
@@ -91,6 +92,7 @@ export default function Swap() {
 						decimals: swapStats.dEuro.decimals,
 						bridgeBal: 0n,
 						contractBridgeAddress: "0x0",
+						burnBridgeAddress: "0x0",
 						contractAddress: swapStats.dEuro.contractAddress,
 						isExpired: false,
 					};
@@ -180,7 +182,10 @@ export default function Swap() {
 			const fromContractAddress = fromTokenData.contractAddress;
 
 			const stablecoinSymbol = getSelectedStablecoinSymbol();
-			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress as `0x${string}`;
+			const stablecoinMeta = getTokenMetaBySymbol(stablecoinSymbol);
+			const bridgeAddress = (
+				fromSymbol === TOKEN_SYMBOL ? stablecoinMeta.burnBridgeAddress : stablecoinMeta.contractBridgeAddress
+			) as `0x${string}`;
 
 			const approveWriteHash = await writeContract(WAGMI_CONFIG, {
 				address: fromContractAddress as `0x${string}`,
@@ -274,7 +279,7 @@ export default function Swap() {
 			setTxOnGoing(true);
 
 			const stablecoinSymbol = getSelectedStablecoinSymbol();
-			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).contractBridgeAddress as `0x${string}`;
+			const bridgeAddress = getTokenMetaBySymbol(stablecoinSymbol).burnBridgeAddress as `0x${string}`;
 
 			const burnWriteHash = await writeContract(WAGMI_CONFIG, {
 				address: bridgeAddress,
