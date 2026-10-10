@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { calculateNetBorrowHeadroom } from "../utils/loanCalculations";
-import { calculateTimeBuffer } from "../utils/dynamicRepayCalculations";
+import { calculateNetBorrowHeadroom } from "../../utils/loanCalculations";
+import { calculateTimeBuffer } from "../../utils/dynamicRepayCalculations";
 
 // Live mainnet state of position 0x5AFb27c7aAdc3Ad87BdD4A6De7cc9271F80D566F
 // (eth_call results at 2026-05-16, see RPC verification)
