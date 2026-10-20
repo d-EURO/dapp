@@ -35,6 +35,16 @@ const getStartTimestampByTimeframe = (timeframe: Timeframe) => {
 	}
 };
 
+function sharePrice(lastPrice: string): number {
+	return Number(lastPrice) / 10 ** 16 / 100;
+}
+
+// At least 4 significant digits and at least 4 fraction digits.
+function sharePriceFractionDigits(price: number): number {
+	if (!Number.isFinite(price) || price <= 0) return 4;
+	return Math.min(12, Math.max(4, Math.floor(-Math.log10(price)) + 4));
+}
+
 export default function EquityNativePoolShareDetailsCard() {
 	const [timeframe, setTimeframe] = useState<Timeframe>(Timeframe.MONTH);
 	const poolStats = usePoolStats();
@@ -54,10 +64,13 @@ export default function EquityNativePoolShareDetailsCard() {
 		[trades, startTrades]
 	);
 
-	const maxPrice = useMemo(
-		() => Math.max(...filteredTrades.map((trade) => Math.round(Number(trade.lastPrice) / 10 ** 16) / 100)),
-		[filteredTrades]
-	);
+	const maxPrice = useMemo(() => {
+		if (filteredTrades.length === 0) return 0;
+		return Math.max(...filteredTrades.map((trade) => sharePrice(trade.lastPrice)));
+	}, [filteredTrades]);
+
+	const equityPrice = Number(formatUnits(poolStats.equityPrice, 18));
+	const priceDigits = sharePriceFractionDigits(equityPrice);
 
 	return (
 		<div className="bg-layout-primary border border-borders-dividerLight border-offset-1 rounded-xl overflow-clip grid grid-cols-1">
@@ -67,7 +80,7 @@ export default function EquityNativePoolShareDetailsCard() {
 						<TokenLogo currency={NATIVE_POOL_SHARE_TOKEN_SYMBOL} size={7} />
 						<div>
 							<span className="text-base font-extrabold leading-tight">
-								{formatCurrency(formatUnits(poolStats.equityPrice, 18), 4, 4)}
+								{formatCurrency(equityPrice, priceDigits, priceDigits)}
 							</span>{" "}
 							<span className="text-base font-[350] leading-tight">{TOKEN_SYMBOL}</span>
 						</div>
@@ -120,7 +133,15 @@ export default function EquityNativePoolShareDetailsCard() {
 							yaxis: {
 								show: false,
 								min: 0,
-								max: maxPrice * 2,
+								...(maxPrice > 0 ? { max: maxPrice * 2 } : {}),
+							},
+							tooltip: {
+								y: {
+									formatter: (value: number) => {
+										const digits = sharePriceFractionDigits(value);
+										return formatCurrency(value, digits, digits) ?? "";
+									},
+								},
 							},
 							fill: {
 								colors: ["#0F80F099"],
@@ -137,7 +158,7 @@ export default function EquityNativePoolShareDetailsCard() {
 							{
 								name: `${POOL_SHARE_TOKEN_SYMBOL} Price`,
 								data: filteredTrades.map((trade) => {
-									return [parseFloat(trade.time) * 1000, Number((Number(trade.lastPrice) / 10 ** 16 / 100).toFixed(4))];
+									return [parseFloat(trade.time) * 1000, sharePrice(trade.lastPrice)];
 								}),
 							},
 						]}
