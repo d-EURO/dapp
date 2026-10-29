@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { erc20Abi, formatUnits, isAddress, maxUint256 } from "viem";
+import { Address, erc20Abi, formatUnits, isAddress, maxUint256 } from "viem";
 import Button from "@components/Button";
 import { StablecoinsStats, useSwapStats } from "@hooks";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -60,7 +60,8 @@ export default function Swap() {
 		() => parseSwapQuery(router.isReady ? router.query : {}, Object.values(StablecoinSymbol), TOKEN_SYMBOL),
 		[router.isReady, router.query]
 	);
-	const swapStats = useSwapStats(route.bridge);
+	const [pinnedBridge, setPinnedBridge] = useState<Address | undefined>(undefined);
+	const swapStats = useSwapStats(pinnedBridge);
 	const options = [...swapStats.supportedStablecoins.map((stablecoin) => stablecoin.symbol), TOKEN_SYMBOL];
 	const [fromSymbol, setFromSymbol] = useState(options[0]);
 	const [toSymbol, setToSymbol] = useState(TOKEN_SYMBOL);
@@ -79,8 +80,9 @@ export default function Swap() {
 			setFromSymbol(route.fromSymbol);
 			setToSymbol(route.toSymbol);
 		}
+		setPinnedBridge(route.bridge);
 		setRouteApplied(true);
-	}, [router.isReady, route.fromSymbol, route.toSymbol]);
+	}, [router.isReady, route.fromSymbol, route.toSymbol, route.bridge]);
 
 	const allStablecoins = swapStats.supportedStablecoins;
 	const notExpiredStablecoins = allStablecoins.filter(({ symbol }) => !swapStats[symbol as keyof StablecoinsStats].isExpired);
@@ -133,6 +135,7 @@ export default function Swap() {
 	);
 
 	const onChangeDirection = () => {
+		setPinnedBridge(undefined);
 		// swap symbols
 		const prevFromSymbol = fromSymbol;
 		const prevToSymbol = toSymbol;
@@ -148,6 +151,7 @@ export default function Swap() {
 	};
 
 	const onSetFromSymbol = (symbol: string) => {
+		setPinnedBridge(undefined);
 		if (amount > 0n) {
 			const newToken = getTokenMetaBySymbol(symbol);
 			const oldToken = getTokenMetaBySymbol(fromSymbol);
@@ -159,6 +163,7 @@ export default function Swap() {
 	};
 
 	const onSetToSymbol = (symbol: string) => {
+		setPinnedBridge(undefined);
 		if (amount > 0n) {
 			const fromTokenDecimals = getTokenMetaBySymbol(fromSymbol).decimals;
 			const newTokenDecimals = getTokenMetaBySymbol(symbol).decimals;
@@ -173,7 +178,7 @@ export default function Swap() {
 	const toTokenMeta = getTokenMetaBySymbol(toSymbol);
 	const stablecoinMeta = getTokenMetaBySymbol(getSelectedStablecoinSymbol());
 	const activeBridge = fromSymbol === TOKEN_SYMBOL ? stablecoinMeta.burnBridgeAddress : stablecoinMeta.contractBridgeAddress;
-	const bridgeRejected = route.bridge !== undefined && activeBridge.toLowerCase() !== route.bridge.toLowerCase();
+	const bridgeRejected = pinnedBridge !== undefined && activeBridge.toLowerCase() !== pinnedBridge.toLowerCase();
 	const actionsLocked = !router.isReady || !routeApplied || bridgeRejected;
 	const isBridgeExpired = toSymbol === TOKEN_SYMBOL && fromTokenMeta.isExpired;
 
