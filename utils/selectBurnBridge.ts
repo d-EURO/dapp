@@ -19,11 +19,16 @@ export const burnBridgeCapacity = (balance: bigint, minted: bigint, stablecoinDe
 	return balance < mintedInSourceUnits ? balance : mintedInSourceUnits;
 };
 
-// Highest burn capacity wins; ties keep list order (first candidate).
-export const selectBurnBridge = (candidates: BurnBridgeCandidate[]): SelectedBurnBridge => {
+// Preferred address wins when it is one of the candidates, even at capacity 0.
+// Otherwise the highest burn capacity wins; ties keep list order (strictly greater).
+export const selectBurnBridge = (candidates: BurnBridgeCandidate[], preferredAddress?: Address): SelectedBurnBridge => {
 	const ranked = candidates.map((candidate) => ({
 		address: candidate.address,
 		capacity: burnBridgeCapacity(candidate.balance, candidate.minted, candidate.decimals),
 	}));
+	if (preferredAddress !== undefined) {
+		const preferred = ranked.find((candidate) => candidate.address.toLowerCase() === preferredAddress.toLowerCase());
+		if (preferred !== undefined) return preferred;
+	}
 	return ranked.reduce((best, current) => (current.capacity > best.capacity ? current : best));
 };

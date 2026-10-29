@@ -81,9 +81,11 @@
 		"swap": "Échanger",
 		"select_stablecoin": "Sélectionner un actif",
 		"bridge_expired": "Non disponible pour la frappe {{symbol}}",
+		"bridge_label": "Pont",
 		"error": {
 			"insufficient_bridge": "Quantité insuffisante de {{symbol}} disponible pour l'échange.",
-			"exceeds_limit": "Montant dépassant la limite d'échange."
+			"exceeds_limit": "Montant dépassant la limite d'échange.",
+			"unknown_bridge": "Ce contrat n'est pas un pont disponible pour {{symbol}}."
 		},
 		"swap_tx": {
 			"amount_from": "Montant en {{symbol}} :",

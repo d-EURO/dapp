@@ -64,4 +64,42 @@ test.describe("selectBurnBridge", () => {
 		expect(selected.address).toBe(first);
 		expect(selected.capacity).toBe(200n);
 	});
+
+	test("prefers the given address even when its capacity is lower", () => {
+		const selected = selectBurnBridge(
+			[
+				{ address: first, balance: 0n, minted: 0n, decimals: 18n },
+				{ address: second, balance: 50n, minted: 50n, decimals: 18n },
+			],
+			first
+		);
+		expect(selected.address).toBe(first);
+		expect(selected.capacity).toBe(0n);
+	});
+
+	test("matches the preferred address case-insensitively", () => {
+		const listed: Address = "0xB4fF7412f08C22d7381885e8BdA9EE9825092fd1";
+		const preferred: Address = "0xb4ff7412f08c22d7381885e8bda9ee9825092fd1";
+		const selected = selectBurnBridge(
+			[
+				{ address: second, balance: 80n, minted: 80n, decimals: 18n },
+				{ address: listed, balance: 5n, minted: 5n, decimals: 18n },
+			],
+			preferred
+		);
+		expect(selected.address).toBe(listed);
+		expect(selected.capacity).toBe(5n);
+	});
+
+	test("falls back to the highest capacity when the preferred address is not a candidate", () => {
+		const selected = selectBurnBridge(
+			[
+				{ address: first, balance: 10n, minted: 10n, decimals: 18n },
+				{ address: second, balance: 40n, minted: 40n, decimals: 18n },
+			],
+			third
+		);
+		expect(selected.address).toBe(second);
+		expect(selected.capacity).toBe(40n);
+	});
 });

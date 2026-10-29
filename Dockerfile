@@ -1,4 +1,5 @@
-FROM node:lts-alpine
+# Node 26 images no longer include Yarn. This app builds and starts with Yarn 1.22.22.
+FROM node:24-alpine
 
 RUN apk add --no-cache python3 make g++
 

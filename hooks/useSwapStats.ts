@@ -67,7 +67,7 @@ const parseStablecoinStats = (data?: any): {
 	};
 };
 
-export const useSwapStats = (): SwapStats => {
+export const useSwapStats = (preferredBurnBridge?: Address): SwapStats => {
 	const chainId = WAGMI_CHAIN.id as number;
 	const { address } = useAccount();
 	const account = address || "0x0";
@@ -190,7 +190,8 @@ export const useSwapStats = (): SwapStats => {
 				balance: decodeBigIntCall(parsedData?.[stablecoin.address]?.balanceOf?.[address.toLowerCase()] || 0),
 				minted: decodeBigIntCall(parsedData?.[stablecoin.address]?.minted?.[address.toLowerCase()] || 0),
 				decimals: parsed.decimals,
-			}))
+			})),
+			preferredBurnBridge
 		);
 
 		return {

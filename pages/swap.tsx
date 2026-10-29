@@ -1,6 +1,7 @@
 import Head from "next/head";
-import { useCallback, useEffect, useState } from "react";
-import { erc20Abi, formatUnits, maxUint256 } from "viem";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Address, erc20Abi, formatUnits, isAddress, maxUint256 } from "viem";
 import Button from "@components/Button";
 import { StablecoinsStats, useSwapStats } from "@hooks";
 import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
@@ -21,6 +22,8 @@ import { MaxButton } from "@components/Input/MaxButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/redux.store";
 import { TokenModalRowButton, TokenSelectModal } from "@components/TokenSelectModal";
+import { StablecoinSymbol } from "../hooks/useSupportedBridges";
+import { parseSwapQuery } from "../utils/swapQuery";
 
 enum TokenInteractionSide {
 	INPUT = "input",
@@ -52,7 +55,13 @@ const getAmountWithLeastPrecision = (amount: bigint, fromDecimals: bigint, toDec
 };
 
 export default function Swap() {
-	const swapStats = useSwapStats();
+	const router = useRouter();
+	const route = useMemo(
+		() => parseSwapQuery(router.isReady ? router.query : {}, Object.values(StablecoinSymbol), TOKEN_SYMBOL),
+		[router.isReady, router.query]
+	);
+	const [pinnedBridge, setPinnedBridge] = useState<Address | undefined>(undefined);
+	const swapStats = useSwapStats(pinnedBridge);
 	const options = [...swapStats.supportedStablecoins.map((stablecoin) => stablecoin.symbol), TOKEN_SYMBOL];
 	const [fromSymbol, setFromSymbol] = useState(options[0]);
 	const [toSymbol, setToSymbol] = useState(TOKEN_SYMBOL);
@@ -61,8 +70,19 @@ export default function Swap() {
 	const [isTxOnGoing, setTxOnGoing] = useState(false);
 	const [isInputModalOpen, setIsModalOpen] = useState<TokenInteractionSide | undefined>(undefined);
 	const [interactionSide, setInteractionSide] = useState<TokenInteractionSide>();
+	const [routeApplied, setRouteApplied] = useState(false);
 	const eurPrice = useSelector((state: RootState) => state.prices.eur?.usd);
 	const { t } = useTranslation();
+
+	useEffect(() => {
+		if (!router.isReady) return;
+		if (route.fromSymbol && route.toSymbol) {
+			setFromSymbol(route.fromSymbol);
+			setToSymbol(route.toSymbol);
+		}
+		setPinnedBridge(route.bridge);
+		setRouteApplied(true);
+	}, [router.isReady, route.fromSymbol, route.toSymbol, route.bridge]);
 
 	const allStablecoins = swapStats.supportedStablecoins;
 	const notExpiredStablecoins = allStablecoins.filter(({ symbol }) => !swapStats[symbol as keyof StablecoinsStats].isExpired);
@@ -115,6 +135,7 @@ export default function Swap() {
 	);
 
 	const onChangeDirection = () => {
+		setPinnedBridge(undefined);
 		// swap symbols
 		const prevFromSymbol = fromSymbol;
 		const prevToSymbol = toSymbol;
@@ -130,6 +151,7 @@ export default function Swap() {
 	};
 
 	const onSetFromSymbol = (symbol: string) => {
+		setPinnedBridge(undefined);
 		if (amount > 0n) {
 			const newToken = getTokenMetaBySymbol(symbol);
 			const oldToken = getTokenMetaBySymbol(fromSymbol);
@@ -141,6 +163,7 @@ export default function Swap() {
 	};
 
 	const onSetToSymbol = (symbol: string) => {
+		setPinnedBridge(undefined);
 		if (amount > 0n) {
 			const fromTokenDecimals = getTokenMetaBySymbol(fromSymbol).decimals;
 			const newTokenDecimals = getTokenMetaBySymbol(symbol).decimals;
@@ -151,8 +174,21 @@ export default function Swap() {
 		setFromSymbol(TOKEN_SYMBOL);
 	};
 
+	const fromTokenMeta = getTokenMetaBySymbol(fromSymbol);
+	const toTokenMeta = getTokenMetaBySymbol(toSymbol);
+	const stablecoinMeta = getTokenMetaBySymbol(getSelectedStablecoinSymbol());
+	const activeBridge = fromSymbol === TOKEN_SYMBOL ? stablecoinMeta.burnBridgeAddress : stablecoinMeta.contractBridgeAddress;
+	const bridgeRejected = pinnedBridge !== undefined && activeBridge.toLowerCase() !== pinnedBridge.toLowerCase();
+	const actionsLocked = !router.isReady || !routeApplied || bridgeRejected;
+	const isBridgeExpired = toSymbol === TOKEN_SYMBOL && fromTokenMeta.isExpired;
+
 	// Only for triggering errors when the amount or the symbol is changed
 	useEffect(() => {
+		if (bridgeRejected) {
+			setError(t("swap.error.unknown_bridge", { symbol: getSelectedStablecoinSymbol() }));
+			return;
+		}
+
 		const fromTokenData = getTokenMetaBySymbol(fromSymbol);
 		const toTokenData = getTokenMetaBySymbol(toSymbol);
 		const isBurning = fromSymbol === TOKEN_SYMBOL;
@@ -173,9 +209,10 @@ export default function Swap() {
 		} else {
 			setError("");
 		}
-	}, [amount, fromSymbol, toSymbol, getTokenMetaBySymbol, t]);
+	}, [amount, fromSymbol, toSymbol, getTokenMetaBySymbol, t, bridgeRejected, getSelectedStablecoinSymbol]);
 
 	const handleApprove = async () => {
+		if (actionsLocked) return;
 		try {
 			setTxOnGoing(true);
 			const fromTokenData = getTokenMetaBySymbol(fromSymbol);
@@ -227,6 +264,7 @@ export default function Swap() {
 
 	// You send an stable coin and receive dEUROs
 	const handleMint = async () => {
+		if (actionsLocked) return;
 		try {
 			setTxOnGoing(true);
 			const stablecoinSymbol = getSelectedStablecoinSymbol();
@@ -275,6 +313,7 @@ export default function Swap() {
 
 	// You send dEUROs and receive and stable coin
 	const handleBurn = async () => {
+		if (actionsLocked) return;
 		try {
 			setTxOnGoing(true);
 
@@ -342,10 +381,6 @@ export default function Swap() {
 		handleCloseModal();
 	};
 
-	const fromTokenMeta = getTokenMetaBySymbol(fromSymbol);
-	const toTokenMeta = getTokenMetaBySymbol(toSymbol);
-	const stablecoinMeta = getTokenMetaBySymbol(getSelectedStablecoinSymbol());
-	const isBridgeExpired = toSymbol === TOKEN_SYMBOL && fromTokenMeta.isExpired;
 	const limit = fromSymbol === TOKEN_SYMBOL ? stablecoinMeta.bridgeBal : isBridgeExpired ? 0n : stablecoinMeta.remaining;
 	const rebasedOutputAmount = rebaseDecimals(amount, fromTokenMeta.decimals, toTokenMeta.decimals);
 
@@ -481,21 +516,38 @@ export default function Swap() {
 									</div>
 								}
 							/>
+							{!bridgeRejected && isAddress(activeBridge) ? (
+								<div className="text-text-muted3 text-xs font-medium break-all" title={activeBridge}>
+									{t("swap.bridge_label")}: {activeBridge}
+								</div>
+							) : null}
 							<div className="mx-auto mt-12 max-w-full flex-col">
 								<GuardToAllowedChainBtn>
 									{isBridgeExpired ? (
 										<Button disabled={true}>{t("swap.bridge_expired", { symbol: TOKEN_SYMBOL })}</Button>
 									) : /* @ts-ignore come on typescript */
 									amount > fromTokenMeta.userAllowance ? (
-										<Button isLoading={isTxOnGoing} onClick={() => handleApprove()}>
+										<Button
+											disabled={actionsLocked || !!error}
+											isLoading={isTxOnGoing}
+											onClick={() => handleApprove()}
+										>
 											{t("common.approve")}
 										</Button>
 									) : fromSymbol === TOKEN_SYMBOL ? (
-										<Button disabled={amount == 0n || !!error} isLoading={isTxOnGoing} onClick={() => handleBurn()}>
+										<Button
+											disabled={actionsLocked || amount == 0n || !!error}
+											isLoading={isTxOnGoing}
+											onClick={() => handleBurn()}
+										>
 											{t("swap.swap")}
 										</Button>
 									) : (
-										<Button disabled={amount == 0n || !!error} isLoading={isTxOnGoing} onClick={() => handleMint()}>
+										<Button
+											disabled={actionsLocked || amount == 0n || !!error}
+											isLoading={isTxOnGoing}
+											onClick={() => handleMint()}
+										>
 											{t("swap.swap")}
 										</Button>
 									)}
