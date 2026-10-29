@@ -82,9 +82,11 @@
 		"swap": "Tauschen",
 		"select_stablecoin": "Besicherungsasset auswählen",
 		"bridge_expired": "Nicht verfügbar für Prägen {{symbol}}",
+		"bridge_label": "Brücke",
 		"error": {
 			"insufficient_bridge": "Nicht genügend {{symbol}} zum Tauschen verfügbar.",
-			"exceeds_limit": "Betrag überschreitet das Tauschlimit."
+			"exceeds_limit": "Betrag überschreitet das Tauschlimit.",
+			"unknown_bridge": "Dieser Vertrag ist keine verfügbare Brücke für {{symbol}}."
 		},
 		"swap_tx": {
 			"amount_from": "{{symbol}} Betrag:",

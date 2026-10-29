@@ -82,9 +82,11 @@
 		"swap": "Swap",
 		"select_stablecoin": "Select Asset",
 		"bridge_expired": "Not available for minting {{symbol}}",
+		"bridge_label": "Bridge",
 		"error": {
 			"insufficient_bridge": "Not enough {{symbol}} available to swap.",
-			"exceeds_limit": "Amount exceeds the swap limit."
+			"exceeds_limit": "Amount exceeds the swap limit.",
+			"unknown_bridge": "This contract is not an available bridge for {{symbol}}."
 		},
 		"swap_tx": {
 			"amount_from": "{{symbol}} Amount:",
